@@ -8,6 +8,25 @@ import { type Session } from '$base/server/session'
 const config = {
   httpOnly: true,
 }
+
+class SessionBinding {
+  persist?: boolean
+  constructor(readonly id: string, opts: { persist?: boolean }) {
+    this.persist = opts.persist
+  }
+
+  async getBinding() {
+    if (!this.id) {
+      return undefined
+    }
+    return (await sessions.get(this.id)) as Awaited<ReturnType<typeof sessions['get']>>
+  }
+
+  update(data: Partial<Session>) {
+    return sessions.update(this.id, data)
+  }
+}
+
 export const sessionProcedure = publicProcedure
   .use(async ({ ctx, next }) => {
     const opt = {
@@ -19,10 +38,7 @@ export const sessionProcedure = publicProcedure
       setCookie(ctx.h3Event, Constant.SessionLabel, sessionId, opt)
       return await next({
         ctx: Object.assign(ctx, {
-          session: {
-            id: sessionId,
-            persist: ctx.session.persist,
-          },
+          session: new SessionBinding(sessionId, { persist: ctx.session.persist }),
         }),
       })
     }
@@ -30,10 +46,7 @@ export const sessionProcedure = publicProcedure
     if (haveSession(ctx.h3Event)) {
       return await next({
         ctx: Object.assign(ctx, {
-          session: {
-            id: ctx.session.id,
-            persist: ctx.session.persist,
-          },
+          session: new SessionBinding(ctx.session.id, { persist: ctx.session.persist }),
         }),
       })
     }
@@ -44,10 +57,7 @@ export const sessionProcedure = publicProcedure
         setCookie(ctx.h3Event, Constant.SessionLabel, sessionId, opt)
         return await next({
           ctx: Object.assign(ctx, {
-            session: {
-              id: sessionId,
-              persist: ctx.session.persist,
-            },
+            session: new SessionBinding(sessionId, { persist: ctx.session.persist }),
           }),
         })
       }
@@ -66,27 +76,9 @@ export const sessionProcedure = publicProcedure
 
         return await next({
           ctx: Object.assign(ctx, {
-            session: {
-              id: refreshed,
-              persist,
-            },
+            session: new SessionBinding(refreshed, { persist }),
           }),
         })
       }
     }
-  })
-  .use(async ({ ctx, next }) => {
-    return await next({
-      ctx: Object.assign(ctx, {
-        session: Object.assign(ctx.session, {
-          async getBinding() {
-            if (!ctx.session.id) {
-              return undefined
-            }
-            return (await sessions.get(ctx.session.id)) as Awaited<ReturnType<typeof sessions['get']>>
-          },
-          update: (data: Partial<Session>) => sessions.update(ctx.session.id, data),
-        }),
-      }),
-    })
   })
