@@ -9,6 +9,10 @@ if (session.loggedIn) {
   router.back()
 }
 
+definePageMeta({
+  layout: 'centered',
+})
+
 const route = useRoute()
 const app = useNuxtApp()
 const { t } = useI18n()

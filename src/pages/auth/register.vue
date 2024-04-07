@@ -20,6 +20,11 @@ const shape: Shape = {
 
 const app = useNuxtApp()
 const { t } = useI18n()
+
+definePageMeta({
+  layout: 'centered',
+})
+
 const loginButton = shallowRef(t('have-account'))
 
 const reg = shallowReactive({ ...shape })

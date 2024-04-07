@@ -37,7 +37,7 @@ function clearFocus() {
   <li tabindex="0">
     <details ref="langSw">
       <summary><icon name="tabler:world" class="w-5 h-5" />{{ localeProperties.name }}</summary>
-      <ul class="p-2 w-64">
+      <ul class="mt-0 right-0 w-64">
         <li
           v-for="l in locales"
           :key="l.code"
