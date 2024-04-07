@@ -4,16 +4,15 @@ import { UserProvider } from '~/server/singleton/service'
 
 const userProvider = new UserProvider()
 export const optionalUserProcedure = sessionProcedure.use(async ({ ctx, next }) => {
-  const merge: { user?: UserCompact<unknown> } = {}
-  const returnCtx = Object.assign(ctx, merge)
+  type ReturnCTX = typeof ctx & { user?: UserCompact<unknown> }
   const session = await ctx.session.getBinding()
   if (!session) {
-    return await next({ ctx: returnCtx })
+    return await next<ReturnCTX>(undefined as any)
   }
   if (!session.userId) {
-    return await next({ ctx: returnCtx })
+    return await next<ReturnCTX>(undefined as any)
   }
   const user = await userProvider.getCompactById({ id: UserProvider.stringToId(session.userId) }).catch(noop<undefined>)
-  returnCtx.user = user
-  return await next({ ctx: returnCtx })
+  ;(ctx as ReturnCTX).user = user
+  return await next<ReturnCTX>({ ctx })
 })

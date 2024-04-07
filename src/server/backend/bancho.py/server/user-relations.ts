@@ -13,9 +13,7 @@ const config = _config()
 export class UserRelationProvider implements Base<Id> {
   static readonly stringToId = stringToId
   static readonly idToString = idToString
-  /**
-   * @deprecated prisma will be replaced by drizzle
-   */
+
   prisma = prismaClient
   config = config
 

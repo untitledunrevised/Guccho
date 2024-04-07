@@ -7,9 +7,6 @@ if (process.dev) {
   log.push('query')
 }
 
-/**
- * @deprecated prisma will be replaced by drizzle
- */
 export const prismaClient = new PrismaClient({
   log,
 })

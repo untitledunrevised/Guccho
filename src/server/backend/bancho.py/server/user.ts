@@ -98,9 +98,7 @@ export const enum FilterType {
 class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
   static readonly stringToId = stringToId
   static readonly idToString = idToString
-  /**
-   * @deprecated prisma will be replaced by drizzle
-   */
+
   prisma = prismaClient
   drizzle = drizzle
   relationships = new UserRelationProvider()

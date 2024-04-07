@@ -55,9 +55,7 @@ export function toBeatmapSourcePrisma(source: Source['server']) {
       ? BeatmapSource.PrivateServer
       : BeatmapSource.Unknown
 }
-/**
- * @deprecated Prisma will be replaced by drizzle
- */
+
 export function toBeatmapsetPrisma(beatmapset: Source, luckyOneBeatmapInBeatmapset: DBMap) {
   return toBeatmapsetReal(
     beatmapset,
@@ -144,11 +142,6 @@ export function toBeatmapCompact<Source extends BeatmapSource>(beatmap: {
     }
 }
 
-// toGucchoBeatmapSource(input: )
-
-/**
- * @deprecated Prisma will be replaced by drizzle
- */
 export function toBeatmapWithBeatmapsetPrisma(
   beatmap: DBMap & {
     source: Source

@@ -33,9 +33,6 @@ export class ScoreProvider implements Base<bigint, Id> {
   static readonly stringToScoreId = stringToScoreId
   static readonly scoreIdToString = scoreIdToString
 
-  /**
-   * @deprecated prisma will be replaced by drizzle
-   */
   prima = prismaClient
   drizzle = drizzle
   config = config

@@ -41,9 +41,6 @@ export class DatabaseRankProvider implements Base<Id> {
   static readonly stringToId = stringToId
   static readonly idToString = idToString
 
-  /**
-   * @deprecated prisma will be replaced by drizzle
-   */
   prisma = prismaClient
   drizzle = drizzle
   config = config
