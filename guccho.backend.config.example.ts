@@ -51,8 +51,8 @@ export default {
 
   mail: {
     type: 'smtp',
-    auth: '',
-    sender: '',
+    auth: 'smtps://account:password@server',
+    sender: 'pe@ppy.sb',
   },
 
 } satisfies UserBackendConfig
