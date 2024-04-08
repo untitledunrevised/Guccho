@@ -6,21 +6,21 @@ export namespace Mail {
   }
 
   interface Verify {
-    name: string
     serverName: string
-    baseURL: string
-    id: string
-
+    link: string
+    otp: string
   }
 
   interface AccountRecovery {
+    serverName: string
     name: string
-    id: string
+    link: string
+    otp: string
   }
   interface Template extends Record<string, unknown> {
-    name: string
     serverName: string
     link: string
+    otp: string
   }
 
   export interface Param {

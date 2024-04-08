@@ -7,7 +7,7 @@ CREATE TABLE `achievements` (
 	`name` varchar(128) NOT NULL,
 	`desc` varchar(256) NOT NULL,
 	`cond` varchar(64) NOT NULL,
-	CONSTRAINT `achievements_id_pk` PRIMARY KEY(`id`),
+	CONSTRAINT `achievements_id` PRIMARY KEY(`id`),
 	CONSTRAINT `achievements_desc_uindex` UNIQUE(`desc`),
 	CONSTRAINT `achievements_file_uindex` UNIQUE(`file`),
 	CONSTRAINT `achievements_name_uindex` UNIQUE(`name`)
@@ -20,7 +20,7 @@ CREATE TABLE `channels` (
 	`read_priv` int NOT NULL DEFAULT 1,
 	`write_priv` int NOT NULL DEFAULT 2,
 	`auto_join` tinyint NOT NULL DEFAULT 0,
-	CONSTRAINT `channels_id_pk` PRIMARY KEY(`id`),
+	CONSTRAINT `channels_id` PRIMARY KEY(`id`),
 	CONSTRAINT `channels_name_uindex` UNIQUE(`name`)
 );
 --> statement-breakpoint
@@ -30,7 +30,7 @@ CREATE TABLE `clans` (
 	`tag` varchar(6) NOT NULL,
 	`owner` int NOT NULL,
 	`created_at` datetime NOT NULL,
-	CONSTRAINT `clans_id_pk` PRIMARY KEY(`id`),
+	CONSTRAINT `clans_id` PRIMARY KEY(`id`),
 	CONSTRAINT `clans_name_uindex` UNIQUE(`name`),
 	CONSTRAINT `clans_owner_uindex` UNIQUE(`owner`),
 	CONSTRAINT `clans_tag_uindex` UNIQUE(`tag`)
@@ -44,7 +44,7 @@ CREATE TABLE `client_hashes` (
 	`disk_serial` char(32) NOT NULL,
 	`latest_time` datetime NOT NULL,
 	`occurrences` int NOT NULL DEFAULT 0,
-	CONSTRAINT `client_hashes_userid_osupath_adapters_uninstall_id_disk_serial_pk` PRIMARY KEY(`userid`,`osupath`,`adapters`,`uninstall_id`,`disk_serial`)
+	CONSTRAINT `client_hashes_userid_osupath_adapters_uninstall_id_disk_serial` PRIMARY KEY(`userid`,`osupath`,`adapters`,`uninstall_id`,`disk_serial`)
 );
 --> statement-breakpoint
 CREATE TABLE `comments` (
@@ -55,14 +55,14 @@ CREATE TABLE `comments` (
 	`time` int NOT NULL,
 	`comment` varchar(80) NOT NULL,
 	`colour` char(6),
-	CONSTRAINT `comments_id_pk` PRIMARY KEY(`id`)
+	CONSTRAINT `comments_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `favourites` (
 	`userid` int NOT NULL,
 	`setid` int NOT NULL,
 	`created_at` int NOT NULL DEFAULT 0,
-	CONSTRAINT `favourites_userid_setid_pk` PRIMARY KEY(`userid`,`setid`)
+	CONSTRAINT `favourites_userid_setid` PRIMARY KEY(`userid`,`setid`)
 );
 --> statement-breakpoint
 CREATE TABLE `ingame_logins` (
@@ -72,7 +72,7 @@ CREATE TABLE `ingame_logins` (
 	`osu_ver` date NOT NULL,
 	`osu_stream` varchar(128) NOT NULL,
 	`datetime` datetime NOT NULL,
-	CONSTRAINT `ingame_logins_id_pk` PRIMARY KEY(`id`)
+	CONSTRAINT `ingame_logins_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `logs` (
@@ -81,7 +81,7 @@ CREATE TABLE `logs` (
 	`to` int NOT NULL,
 	`msg` varchar(2048) NOT NULL,
 	`time` datetime NOT NULL,
-	CONSTRAINT `logs_id_pk` PRIMARY KEY(`id`)
+	CONSTRAINT `logs_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `mail` (
@@ -91,7 +91,7 @@ CREATE TABLE `mail` (
 	`msg` varchar(2048) NOT NULL,
 	`time` int,
 	`read` tinyint NOT NULL DEFAULT 0,
-	CONSTRAINT `mail_id_pk` PRIMARY KEY(`id`)
+	CONSTRAINT `mail_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `map_requests` (
@@ -100,12 +100,12 @@ CREATE TABLE `map_requests` (
 	`player_id` int NOT NULL,
 	`datetime` datetime NOT NULL,
 	`active` tinyint NOT NULL,
-	CONSTRAINT `map_requests_id_pk` PRIMARY KEY(`id`)
+	CONSTRAINT `map_requests_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `maps` (
-	`id` int NOT NULL,
 	`server` enum('osu!','private') NOT NULL DEFAULT 'osu!',
+	`id` int NOT NULL,
 	`set_id` int NOT NULL,
 	`status` int NOT NULL,
 	`md5` char(32) NOT NULL,
@@ -126,23 +126,17 @@ CREATE TABLE `maps` (
 	`ar` float(4,2) NOT NULL DEFAULT 0,
 	`od` float(4,2) NOT NULL DEFAULT 0,
 	`hp` float(4,2) NOT NULL DEFAULT 0,
-	`diff` float(6,3) NOT NULL DEFAULT 0,
-	CONSTRAINT `maps_server_id_pk` PRIMARY KEY(`server`,`id`),
+	`diff` float(8,3) NOT NULL DEFAULT 0,
+	CONSTRAINT `maps_server_id` PRIMARY KEY(`server`,`id`),
 	CONSTRAINT `maps_id_uindex` UNIQUE(`id`),
 	CONSTRAINT `maps_md5_uindex` UNIQUE(`md5`)
-);
---> statement-breakpoint
-CREATE TABLE `maps_lack` (
-	`md5` varchar(255) NOT NULL,
-	`lack_type` varchar(255) NOT NULL,
-	CONSTRAINT `maps_lack_md5_pk` PRIMARY KEY(`md5`)
 );
 --> statement-breakpoint
 CREATE TABLE `mapsets` (
 	`server` enum('osu!','private') NOT NULL DEFAULT 'osu!',
 	`id` int NOT NULL,
 	`last_osuapi_check` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT `mapsets_server_id_pk` PRIMARY KEY(`server`,`id`),
+	CONSTRAINT `mapsets_server_id` PRIMARY KEY(`server`,`id`),
 	CONSTRAINT `nmapsets_id_uindex` UNIQUE(`id`)
 );
 --> statement-breakpoint
@@ -162,21 +156,30 @@ CREATE TABLE `performance_reports` (
 	`completion` tinyint NOT NULL,
 	`identifier` varchar(128),
 	`average_frametime` int NOT NULL,
-	CONSTRAINT `performance_reports_scoreid_mod_mode_pk` PRIMARY KEY(`scoreid`,`mod_mode`)
+	CONSTRAINT `performance_reports_scoreid_mod_mode` PRIMARY KEY(`scoreid`,`mod_mode`)
 );
 --> statement-breakpoint
 CREATE TABLE `ratings` (
 	`userid` int NOT NULL,
 	`map_md5` char(32) NOT NULL,
 	`rating` tinyint NOT NULL,
-	CONSTRAINT `ratings_userid_map_md5_pk` PRIMARY KEY(`userid`,`map_md5`)
+	CONSTRAINT `ratings_userid_map_md5` PRIMARY KEY(`userid`,`map_md5`)
+);
+--> statement-breakpoint
+CREATE TABLE `email_tokens` (
+	`email` varchar(100) NOT NULL,
+	`otp` char(6) NOT NULL,
+	`link` varchar(100) NOT NULL,
+	CONSTRAINT `email_tokens_link` PRIMARY KEY(`link`),
+	CONSTRAINT `email_tokens_UN` UNIQUE(`email`,`otp`),
+	CONSTRAINT `email_tokens_email_IDX` UNIQUE(`email`,`otp`)
 );
 --> statement-breakpoint
 CREATE TABLE `relationships` (
 	`user1` int NOT NULL,
 	`user2` int NOT NULL,
 	`type` enum('friend','block') NOT NULL,
-	CONSTRAINT `relationships_user1_user2_pk` PRIMARY KEY(`user1`,`user2`)
+	CONSTRAINT `relationships_user1_user2` PRIMARY KEY(`user1`,`user2`)
 );
 --> statement-breakpoint
 CREATE TABLE `scores` (
@@ -202,7 +205,27 @@ CREATE TABLE `scores` (
 	`userid` int NOT NULL,
 	`perfect` tinyint NOT NULL,
 	`online_checksum` char(32) NOT NULL,
-	CONSTRAINT `scores_id_pk` PRIMARY KEY(`id`)
+	CONSTRAINT `scores_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `scores_foreign` (
+	`id` bigint NOT NULL,
+	`server` varchar(32) NOT NULL,
+	`original_score_id` bigint NOT NULL,
+	`original_player_id` int NOT NULL,
+	`recipient_id` int NOT NULL,
+	`has_replay` tinyint NOT NULL,
+	`receipt_time` datetime NOT NULL,
+	CONSTRAINT `scores_foreign_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `scores_suspicion` (
+	`score_id` bigint AUTO_INCREMENT NOT NULL,
+	`suspicion_reason` varchar(128) NOT NULL,
+	`ignored` tinyint NOT NULL,
+	`detail` json NOT NULL,
+	`suspicion_time` datetime NOT NULL,
+	CONSTRAINT `scores_suspicion_score_id` PRIMARY KEY(`score_id`)
 );
 --> statement-breakpoint
 CREATE TABLE `startups` (
@@ -211,11 +234,11 @@ CREATE TABLE `startups` (
 	`ver_minor` tinyint NOT NULL,
 	`ver_micro` tinyint NOT NULL,
 	`datetime` datetime NOT NULL,
-	CONSTRAINT `startups_id_pk` PRIMARY KEY(`id`)
+	CONSTRAINT `startups_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `stats` (
-	`id` int NOT NULL,
+	`id` int AUTO_INCREMENT NOT NULL,
 	`mode` tinyint NOT NULL,
 	`tscore` bigint unsigned NOT NULL DEFAULT 0,
 	`rscore` bigint unsigned NOT NULL DEFAULT 0,
@@ -231,7 +254,7 @@ CREATE TABLE `stats` (
 	`sh_count` int unsigned NOT NULL DEFAULT 0,
 	`s_count` int unsigned NOT NULL DEFAULT 0,
 	`a_count` int unsigned NOT NULL DEFAULT 0,
-	CONSTRAINT `stats_id_mode_pk` PRIMARY KEY(`id`,`mode`)
+	CONSTRAINT `stats_id_mode` PRIMARY KEY(`id`,`mode`)
 );
 --> statement-breakpoint
 CREATE TABLE `tourney_pool_maps` (
@@ -239,7 +262,7 @@ CREATE TABLE `tourney_pool_maps` (
 	`pool_id` int NOT NULL,
 	`mods` int NOT NULL,
 	`slot` tinyint NOT NULL,
-	CONSTRAINT `tourney_pool_maps_map_id_pool_id_pk` PRIMARY KEY(`map_id`,`pool_id`)
+	CONSTRAINT `tourney_pool_maps_map_id_pool_id` PRIMARY KEY(`map_id`,`pool_id`)
 );
 --> statement-breakpoint
 CREATE TABLE `tourney_pools` (
@@ -247,13 +270,20 @@ CREATE TABLE `tourney_pools` (
 	`name` varchar(16) NOT NULL,
 	`created_at` datetime NOT NULL,
 	`created_by` int NOT NULL,
-	CONSTRAINT `tourney_pools_id_pk` PRIMARY KEY(`id`)
+	CONSTRAINT `tourney_pools_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `user_achievements` (
 	`userid` int NOT NULL,
 	`achid` int NOT NULL,
-	CONSTRAINT `user_achievements_userid_achid_pk` PRIMARY KEY(`userid`,`achid`)
+	CONSTRAINT `user_achievements_userid_achid` PRIMARY KEY(`userid`,`achid`)
+);
+--> statement-breakpoint
+CREATE TABLE `username_history` (
+	`user_id` int NOT NULL,
+	`change_date` datetime NOT NULL,
+	`username` varchar(32) NOT NULL,
+	CONSTRAINT `username_history_user_id_change_date` PRIMARY KEY(`user_id`,`change_date`)
 );
 --> statement-breakpoint
 CREATE TABLE `userpages` (
@@ -262,7 +292,7 @@ CREATE TABLE `userpages` (
 	`html` text,
 	`raw` text,
 	`raw_type` enum('tiptap'),
-	CONSTRAINT `userpages_id_pk` PRIMARY KEY(`id`)
+	CONSTRAINT `userpages_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `users` (
@@ -285,19 +315,24 @@ CREATE TABLE `users` (
 	`clan_id` int NOT NULL DEFAULT 0,
 	`clan_priv` tinyint NOT NULL DEFAULT 0,
 	`api_key` char(36),
-	CONSTRAINT `users_id_pk` PRIMARY KEY(`id`),
-	CONSTRAINT `users_api_key_uindex` UNIQUE(`api_key`),
+	CONSTRAINT `users_id` PRIMARY KEY(`id`),
 	CONSTRAINT `users_email_uindex` UNIQUE(`email`),
 	CONSTRAINT `users_name_uindex` UNIQUE(`name`),
-	CONSTRAINT `users_safe_name_uindex` UNIQUE(`safe_name`)
+	CONSTRAINT `users_safe_name_uindex` UNIQUE(`safe_name`),
+	CONSTRAINT `users_api_key_uindex` UNIQUE(`api_key`)
 );
 --> statement-breakpoint
-CREATE INDEX `comments_userid_fkey` ON `comments` (`userid`);--> statement-breakpoint
 CREATE INDEX `filename` ON `maps` (`filename`);--> statement-breakpoint
+CREATE INDEX `maps_set_id_server_IDX` ON `maps` (`set_id`,`server`);--> statement-breakpoint
 CREATE INDEX `map_md5` ON `scores` (`map_md5`);--> statement-breakpoint
 CREATE INDEX `userid` ON `scores` (`userid`);--> statement-breakpoint
+CREATE INDEX `md5-mode-status` ON `scores` (`map_md5`,`mode`,`status`,`userid`);--> statement-breakpoint
+CREATE INDEX `recipient_id` ON `scores_foreign` (`recipient_id`);--> statement-breakpoint
+CREATE INDEX `original_player_id` ON `scores_foreign` (`original_score_id`);--> statement-breakpoint
+CREATE INDEX `server` ON `scores_foreign` (`server`);--> statement-breakpoint
 CREATE INDEX `tourney_pool_maps_tourney_pools_id_fk` ON `tourney_pool_maps` (`pool_id`);--> statement-breakpoint
 CREATE INDEX `tourney_pools_users_id_fk` ON `tourney_pools` (`created_by`);--> statement-breakpoint
 CREATE INDEX `user_id` ON `userpages` (`user_id`);--> statement-breakpoint
-CREATE INDEX `users_clan_id_fkey` ON `users` (`clan_id`);
+CREATE INDEX `users_clan_id_IDX` ON `users` (`clan_id`);--> statement-breakpoint
+ALTER TABLE `userpages` ADD CONSTRAINT `fk_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;
 */

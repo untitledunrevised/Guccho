@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { bigint, char, date, datetime, index, int, mysqlEnum, mysqlTable, primaryKey, text, timestamp, tinyint, unique, varchar } from 'drizzle-orm/mysql-core'
+import { bigint, char, date, datetime, index, int, json, mysqlEnum, mysqlTable, primaryKey, text, timestamp, tinyint, unique, varchar } from 'drizzle-orm/mysql-core'
 
 export const achievements = mysqlTable('achievements', {
   id: int('id').autoincrement().notNull(),
@@ -289,6 +289,37 @@ export const scores = mysqlTable('scores', {
     userid: index('userid').on(table.userid),
     md5ModeStatus: index('md5-mode-status').on(table.mapMd5, table.mode, table.status, table.userid),
     scoresId: primaryKey({ columns: [table.id], name: 'scores_id' }),
+  }
+})
+
+export const scoresForeign = mysqlTable('scores_foreign', {
+  id: bigint('id', { mode: 'number' }).notNull(),
+  server: varchar('server', { length: 32 }).notNull(),
+  originalScoreId: bigint('original_score_id', { mode: 'number' }).notNull(),
+  originalPlayerId: int('original_player_id').notNull(),
+  recipientId: int('recipient_id').notNull(),
+  hasReplay: tinyint('has_replay').notNull(),
+  receiptTime: datetime('receipt_time', { mode: 'string' }).notNull(),
+},
+(table) => {
+  return {
+    recipientId: index('recipient_id').on(table.recipientId),
+    originalPlayerId: index('original_player_id').on(table.originalScoreId),
+    server: index('server').on(table.server),
+    scoresForeignId: primaryKey({ columns: [table.id], name: 'scores_foreign_id' }),
+  }
+})
+
+export const scoresSuspicion = mysqlTable('scores_suspicion', {
+  scoreId: bigint('score_id', { mode: 'number' }).autoincrement().notNull(),
+  suspicionReason: varchar('suspicion_reason', { length: 128 }).notNull(),
+  ignored: tinyint('ignored').notNull(),
+  detail: json('detail').notNull(),
+  suspicionTime: datetime('suspicion_time', { mode: 'string' }).notNull(),
+},
+(table) => {
+  return {
+    scoresSuspicionScoreId: primaryKey({ columns: [table.scoreId], name: 'scores_suspicion_score_id' }),
   }
 })
 

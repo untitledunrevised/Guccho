@@ -5,6 +5,7 @@ import {
   MailProvider as BEmailProvider,
   FileProvider as BFileProvider,
   LogProvider as BLogProvider,
+  MailTokenProvider as BMailTokenProvider,
   MapProvider as BMapProvider,
   MonitorProvider as BMonitorProvider,
   RankProvider as BRankProvider,
@@ -27,3 +28,5 @@ export class ScoreProvider extends BScoreProvider {}
 export class SessionProvider extends BSessionProvider {}
 export class UserRelationProvider extends BUserRelationProvider {}
 export class MailProvider extends BEmailProvider {}
+
+export class MailTokenProvider extends BMailTokenProvider {}
