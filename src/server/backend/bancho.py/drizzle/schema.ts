@@ -1,4 +1,4 @@
-import { bigint, boolean, char, date, datetime, index, int, mysqlEnum, mysqlTable, primaryKey, tinyint, unique, varchar } from 'drizzle-orm/mysql-core'
+import { bigint, boolean, char, date, datetime, index, int, mysqlEnum, mysqlTable, primaryKey, timestamp, tinyint, unique, varchar } from 'drizzle-orm/mysql-core'
 import { relations, sql } from 'drizzle-orm'
 import { decimal } from './fixed-point'
 
@@ -13,7 +13,7 @@ export const achievements = mysqlTable('achievements', {
 },
 (table) => {
   return {
-    achievementsIdPk: primaryKey({ columns: [table.id], name: 'achievements_id_pk' }),
+    achievementsId: primaryKey({ columns: [table.id], name: 'achievements_id' }),
     achievementsDescUindex: unique('achievements_desc_uindex').on(table.desc),
     achievementsFileUindex: unique('achievements_file_uindex').on(table.file),
     achievementsNameUindex: unique('achievements_name_uindex').on(table.name),
@@ -30,7 +30,7 @@ export const channels = mysqlTable('channels', {
 },
 (table) => {
   return {
-    channelsIdPk: primaryKey({ columns: [table.id], name: 'channels_id_pk' }),
+    channelsId: primaryKey({ columns: [table.id], name: 'channels_id' }),
     channelsNameUindex: unique('channels_name_uindex').on(table.name),
   }
 })
@@ -44,7 +44,7 @@ export const clans = mysqlTable('clans', {
 },
 (table) => {
   return {
-    clansIdPk: primaryKey({ columns: [table.id], name: 'clans_id_pk' }),
+    clansId: primaryKey({ columns: [table.id], name: 'clans_id' }),
     clansNameUindex: unique('clans_name_uindex').on(table.name),
     clansOwnerUindex: unique('clans_owner_uindex').on(table.ownerId),
     clansTagUindex: unique('clans_tag_uindex').on(table.badge),
@@ -62,12 +62,12 @@ export const clientHashes = mysqlTable('client_hashes', {
 },
 (table) => {
   return {
-    clientHashesUseridOsuPathAdaptersUninstallIdDiskSerialPk: primaryKey({ columns: [table.userId, table.osuPath, table.adapters, table.uninstallId, table.diskSerial], name: 'client_hashes_userid_osupath_adapters_uninstall_id_disk_serial_pk' }),
+    clientHashesUseridOsupathAdaptersUninstallIdDiskSerial: primaryKey({ columns: [table.userId, table.osuPath, table.adapters, table.uninstallId, table.diskSerial], name: 'client_hashes_userid_osupath_adapters_uninstall_id_disk_serial' }),
   }
 })
 
 export const comments = mysqlTable('comments', {
-  id: int('id').autoincrement().notNull(),
+  id: int('id').primaryKey().autoincrement().notNull(),
   targetId: int('target_id').notNull(),
   targetType: mysqlEnum('target_type', ['replay', 'map', 'song']).notNull(),
   userId: int('userid').notNull(),
@@ -78,7 +78,6 @@ export const comments = mysqlTable('comments', {
 (table) => {
   return {
     userIdFkey: index('comments_userid_fkey').on(table.userId),
-    commentsIdPk: primaryKey({ columns: [table.id], name: 'comments_id_pk' }),
   }
 })
 
@@ -89,7 +88,7 @@ export const favourites = mysqlTable('favourites', {
 },
 (table) => {
   return {
-    favouritesUseridSetIdPk: primaryKey({ columns: [table.userId, table.setId], name: 'favourites_userid_setid_pk' }),
+    favouritesUseridSetid: primaryKey({ columns: [table.userId, table.setId], name: 'favourites_userid_setid' }),
   }
 })
 
@@ -104,7 +103,7 @@ export const ingameLogins = mysqlTable('ingame_logins', {
 },
 (table) => {
   return {
-    ingameLoginsIdPk: primaryKey({ columns: [table.id], name: 'ingame_logins_id_pk' }),
+    ingameLoginsId: primaryKey({ columns: [table.id], name: 'ingame_logins_id' }),
   }
 })
 
@@ -117,7 +116,7 @@ export const logs = mysqlTable('logs', {
 },
 (table) => {
   return {
-    logsIdPk: primaryKey({ columns: [table.id], name: 'logs_id_pk' }),
+    logsId: primaryKey({ columns: [table.id], name: 'logs_id' }),
   }
 })
 
@@ -131,7 +130,7 @@ export const mail = mysqlTable('mail', {
 },
 (table) => {
   return {
-    mailIdPk: primaryKey({ columns: [table.id], name: 'mail_id_pk' }),
+    mailId: primaryKey({ columns: [table.id], name: 'mail_id' }),
   }
 })
 
@@ -144,7 +143,7 @@ export const mapRequests = mysqlTable('map_requests', {
 },
 (table) => {
   return {
-    mapRequestsIdPk: primaryKey({ columns: [table.id], name: 'map_requests_id_pk' }),
+    mapRequestsId: primaryKey({ columns: [table.id], name: 'map_requests_id' }),
   }
 })
 
@@ -168,41 +167,32 @@ export const beatmaps = mysqlTable('maps', {
   mode: tinyint('mode').default(0).notNull(),
   // Warning: Can't parse float(12,2) from database
   // float(12,2)Type: float(12,2)("bpm").notNull(),
-  bpm: decimal('bpm', { scale: 12, precision: 2 }).notNull(),
+  bpm: decimal('bpm', { scale: 12, precision: 2 }).default(0.00).notNull(),
   // Warning: Can't parse float(4,2) from database
   // float(4,2)Type: float(4,2)("cs").notNull(),
-  cs: decimal('cs', { scale: 4, precision: 2 }).notNull(),
+  cs: decimal('cs', { scale: 4, precision: 2 }).default(0.00).notNull(),
   // Warning: Can't parse float(4,2) from database
   // float(4,2)Type: float(4,2)("ar").notNull(),
-  ar: decimal('ar', { scale: 4, precision: 2 }).notNull(),
+  ar: decimal('ar', { scale: 4, precision: 2 }).default(0.00).notNull(),
   // Warning: Can't parse float(4,2) from database
   // float(4,2)Type: float(4,2)("od").notNull(),
-  od: decimal('od', { scale: 4, precision: 2 }).notNull(),
+  od: decimal('od', { scale: 4, precision: 2 }).default(0.00).notNull(),
   // Warning: Can't parse float(4,2) from database
   // float(4,2)Type: float(4,2)("hp").notNull(),
-  hp: decimal('hp', { scale: 4, precision: 2 }).notNull(),
+  hp: decimal('hp', { scale: 4, precision: 2 }).default(0.00).notNull(),
   // Warning: Can't parse float(6,3) from database
   // float(6,3)Type: float(6,3)("diff").notNull(),
-  diff: decimal('diff', { scale: 6, precision: 3 }).notNull(),
+  diff: decimal('diff', { scale: 8, precision: 3 }).default(0.000).notNull(),
 },
 (table) => {
   return {
     filename: index('filename').on(table.filename),
-    mapsServerIdPk: primaryKey({ columns: [table.server, table.id], name: 'maps_server_id_pk' }),
+    setIdServerIdx: index('maps_set_id_server_IDX').on(table.setId, table.server),
+    mapsServerId: primaryKey({ columns: [table.server, table.id], name: 'maps_server_id' }),
     mapsIdUindex: unique('maps_id_uindex').on(table.id),
     mapsMd5Uindex: unique('maps_md5_uindex').on(table.md5),
   }
 })
-
-// export const mapsLack = mysqlTable('maps_lack', {
-//   md5: varchar('md5', { length: 255 }).notNull(),
-//   lackType: varchar('lack_type', { length: 255 }).notNull(),
-// },
-// (table) => {
-//   return {
-//     mapsLackMd5Pk: primaryKey({ columns: [table.md5], name: 'maps_lack_md5_pk' }),
-//   }
-// })
 
 export const sources = mysqlTable('mapsets', {
   server: bpyServerEnum.default('osu!').notNull(),
@@ -211,7 +201,7 @@ export const sources = mysqlTable('mapsets', {
 },
 (table) => {
   return {
-    mapsetsServerIdPk: primaryKey({ columns: [table.server, table.id], name: 'mapsets_server_id_pk' }),
+    mapsetsServerId: primaryKey({ columns: [table.server, table.id], name: 'mapsets_server_id' }),
     nmapsetsIdUindex: unique('nmapsets_id_uindex').on(table.id),
   }
 })
@@ -235,7 +225,7 @@ export const performanceReports = mysqlTable('performance_reports', {
 },
 (table) => {
   return {
-    performanceReportsScoreIdModModePk: primaryKey({ columns: [table.scoreId, table.modMode], name: 'performance_reports_scoreid_mod_mode_pk' }),
+    performanceReportsScoreidModMode: primaryKey({ columns: [table.scoreId, table.modMode], name: 'performance_reports_scoreid_mod_mode' }),
   }
 })
 
@@ -246,7 +236,21 @@ export const ratings = mysqlTable('ratings', {
 },
 (table) => {
   return {
-    ratingsUseridMapMd5Pk: primaryKey({ columns: [table.userId, table.mapMd5], name: 'ratings_userid_map_md5_pk' }),
+    ratingsUseridMapMd5: primaryKey({ columns: [table.userId, table.mapMd5], name: 'ratings_userid_map_md5' }),
+  }
+})
+
+export const emailToken = mysqlTable('email_tokens', {
+  email: varchar('email', { length: 100 }).notNull(),
+  otp: char('otp', { length: 6 }).notNull(),
+  token: varchar('token', { length: 100 }).notNull(),
+  invalidAfter: timestamp('invalid_after', { mode: 'date' }).notNull(),
+},
+(table) => {
+  return {
+    emailTokensLink: primaryKey({ columns: [table.token], name: 'email_tokens_link' }),
+    emailTokensUn: unique('email_tokens_UN').on(table.email, table.otp),
+    emailTokensEmailIdx: unique('email_tokens_email_IDX').on(table.email, table.otp),
   }
 })
 
@@ -262,7 +266,7 @@ export const relationships = mysqlTable('relationships', {
 })
 
 export const scores = mysqlTable('scores', {
-  id: bigint('id', { mode: 'bigint', unsigned: true }).autoincrement().notNull(),
+  id: bigint('id', { mode: 'bigint', unsigned: true }).primaryKey().autoincrement().notNull(),
   mapMd5: char('map_md5', { length: 32 }).notNull(),
   score: int('score').notNull(),
   // Warning: Can't parse float(7,3) from database
@@ -293,7 +297,7 @@ export const scores = mysqlTable('scores', {
   return {
     mapMd5: index('map_md5').on(table.mapMd5),
     userId: index('userid').on(table.userId),
-    scoresIdPk: primaryKey({ columns: [table.id], name: 'scores_id_pk' }),
+    md5ModeStatus: index('md5-mode-status').on(table.mapMd5, table.mode, table.status, table.userId),
   }
 })
 
@@ -306,19 +310,20 @@ export const startups = mysqlTable('startups', {
 },
 (table) => {
   return {
-    startupsIdPk: primaryKey({ columns: [table.id], name: 'startups_id_pk' }),
+    startupsId: primaryKey({ columns: [table.id], name: 'startups_id' }),
   }
 })
 
 export const stats = mysqlTable('stats', {
-  id: int('id').notNull(),
+  id: int('id').autoincrement().notNull(),
   mode: tinyint('mode').notNull(),
-  totalScore: bigint('tscore', { mode: 'bigint', unsigned: true }).notNull(),
-  rankedScore: bigint('rscore', { mode: 'bigint', unsigned: true }).notNull(),
+  // TypeError: Do not know how to serialize a BigInt
+  totalScore: bigint('tscore', { mode: 'bigint', unsigned: true }).default(0 as unknown as bigint).notNull(),
+  rankedScore: bigint('rscore', { mode: 'bigint', unsigned: true }).default(0 as unknown as bigint).notNull(),
   pp: int('pp', { unsigned: true }).default(0).notNull(),
   plays: int('plays', { unsigned: true }).default(0).notNull(),
   playTime: int('playtime', { unsigned: true }).default(0).notNull(),
-  accuracy: decimal('acc', { scale: 6, precision: 3 }).notNull(),
+  accuracy: decimal('acc', { scale: 6, precision: 3 }).default(0.000).notNull(),
   maxCombo: int('max_combo', { unsigned: true }).default(0).notNull(),
   totalHits: int('total_hits', { unsigned: true }).default(0).notNull(),
   replayViews: int('replay_views', { unsigned: true }).default(0).notNull(),
@@ -330,7 +335,7 @@ export const stats = mysqlTable('stats', {
 },
 (table) => {
   return {
-    statsIdModePk: primaryKey({ columns: [table.id, table.mode], name: 'stats_id_mode_pk' }),
+    statsIdMode: primaryKey({ columns: [table.id, table.mode], name: 'stats_id_mode' }),
   }
 })
 
@@ -343,7 +348,7 @@ export const tourneyPoolMaps = mysqlTable('tourney_pool_maps', {
 (table) => {
   return {
     tourneyPoolsIdFk: index('tourney_pool_maps_tourney_pools_id_fk').on(table.poolId),
-    tourneyPoolMapsMapIdPoolIdPk: primaryKey({ columns: [table.mapId, table.poolId], name: 'tourney_pool_maps_map_id_pool_id_pk' }),
+    tourneyPoolMapsMapIdPoolId: primaryKey({ columns: [table.mapId, table.poolId], name: 'tourney_pool_maps_map_id_pool_id' }),
   }
 })
 
@@ -356,7 +361,7 @@ export const tourneyPools = mysqlTable('tourney_pools', {
 (table) => {
   return {
     usersIdFk: index('tourney_pools_users_id_fk').on(table.createdBy),
-    tourneyPoolsIdPk: primaryKey({ columns: [table.id], name: 'tourney_pools_id_pk' }),
+    tourneyPoolsId: primaryKey({ columns: [table.id], name: 'tourney_pools_id' }),
   }
 })
 
@@ -366,7 +371,7 @@ export const userAchievements = mysqlTable('user_achievements', {
 },
 (table) => {
   return {
-    userAchievementsUserIdAchievementIdPk: primaryKey({ columns: [table.userId, table.achievementId], name: 'user_achievements_userid_achid_pk' }),
+    userAchievementsUseridAchid: primaryKey({ columns: [table.userId, table.achievementId], name: 'user_achievements_userid_achid' }),
   }
 })
 
@@ -393,12 +398,12 @@ export const users = mysqlTable('users', {
 },
 (table) => {
   return {
-    clanIdFkey: index('users_clan_id_fkey').on(table.clanId),
-    usersIdPk: primaryKey({ columns: [table.id], name: 'users_id_pk' }),
-    usersApiKeyUindex: unique('users_api_key_uindex').on(table.apiKey),
+    clanIdIdx: index('users_clan_id_IDX').on(table.clanId),
+    usersId: primaryKey({ columns: [table.id], name: 'users_id' }),
     usersEmailUindex: unique('users_email_uindex').on(table.email),
     usersNameUindex: unique('users_name_uindex').on(table.name),
     usersSafeNameUindex: unique('users_safe_name_uindex').on(table.safeName),
+    usersApiKeyUindex: unique('users_api_key_uindex').on(table.apiKey),
   }
 })
 

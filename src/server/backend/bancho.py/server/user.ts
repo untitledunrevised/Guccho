@@ -672,7 +672,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     return getLiveUserStatus(opt, this.config as { api: { v1: string } })
   }
 
-  async register(opt: { name: string; email: string; passwordMd5: string }) {
+  async register(opt: { name: string; email: string; safeName?: string; passwordMd5: string }) {
     const { name, email, passwordMd5 } = opt
     this.ensureUsernameIsAllowed(name)
 

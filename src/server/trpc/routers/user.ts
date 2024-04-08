@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server'
-import { array, number, object, string } from 'zod'
+import { type ZodSchema, array, number, object, string, union } from 'zod'
+
 import { hasLeaderboardRankingSystem, hasRuleset } from '../config'
 import { GucchoError } from '../messages'
 import { optionalUserProcedure } from '../middleware/optional-user'
@@ -13,13 +14,13 @@ import {
   zodRuleset,
 } from '../shapes'
 import { router as _router, publicProcedure as p } from '../trpc'
-import { MapProvider, ScoreProvider, UserProvider, mail, sessions, userRelations, users } from '~/server/singleton/service'
+import { MapProvider, ScoreProvider, UserProvider, mail, mailToken, sessions, userRelations, users } from '~/server/singleton/service'
 import { Scope, type UserCompact, UserRole } from '~/def/user'
 import { RankingStatus } from '~/def/beatmap'
 import { type RankingSystemScore } from '~/def/score'
 import { type Mode } from '~/def'
 import { type LeaderboardRankingSystem } from '~/def/common'
-import { type UserProvider as UBase } from '$base/server'
+import { type MailTokenProvider as MBase } from '$base/server'
 import { Mail } from '~/def/mail'
 import ui from '~~/guccho.ui.config'
 import type { GlobalI18n } from '~/locales/@types'
@@ -212,43 +213,76 @@ export const router = _router({
       return await users.status({ id: UserProvider.stringToId(id) })
     }),
 
-  requestEmailVerificationToken: sessionProcedure
-    .input(object({
-      email: string().email(),
-    })).mutation(async ({ ctx, input }) => {
-      await ctx.session.getBinding() ?? throwGucchoError(GucchoError.SessionNotFound)
-      const token = await users.getEmailToken(input.email as UBase.Email)
-      ctx.session.update({ emailToken: token })
-      type Param = ReturnType<Mail.Param[Mail.Variant.Verify]>
-      const t = await useTranslation(ctx.h3Event)
-      const serverName = t(localeKey.root.server.name.__path__)
-      const baseURL = ui.baseUrl
+  register: _router({
+    sendEmailCode: sessionProcedure
+      .input(string().email()).mutation(async ({ ctx, input }) => {
+        await ctx.session.getBinding() ?? throwGucchoError(GucchoError.SessionNotFound)
 
-      const param: Param = {
-        name: '',
-        serverName,
-        link: `${baseURL}/mail/verify?token=${token}`,
-      }
+        // check if email is taken
+        if (await users.getCompact({ handle: input, keys: ['email'], scope: Scope.Self }).catch(_ => undefined)) {
+          throwGucchoError(GucchoError.ConflictEmail)
+        }
 
-      const content = t(localeKey.mail(Mail.Variant.Verify), param)
+        const { otp, token } = await mailToken.getOrCreate(input as MBase.Email)
+        type Param = ReturnType<Mail.Param[Mail.Variant.Verify]>
+        const t = await useTranslation(ctx.h3Event)
+        const serverName = t(localeKey.root.server.name.__path__)
 
-      mail.send({
-        to: input.email,
-        subject: `${serverName} - verification`,
-        content,
-      })
-    }),
+        const proto = getRequestProtocol(ctx.h3Event, { xForwardedProto: true })
+        const baseURL = getRequestHost(ctx.h3Event, { xForwardedHost: true }) ?? `osu.${ui.baseUrl}`
 
-  register: sessionProcedure
-    .input(object({
-      name: string().trim(),
-      safeName: string().trim().optional(),
-      email: string().trim().email(),
-      passwordMd5: string().trim(),
-    })).mutation(async ({ input, ctx }) => {
-      const user = await users.register(input)
-      const sessionId = ctx.session.id
-      await sessions.update(sessionId, { userId: UserProvider.idToString(user.id) })
-      return user
-    }),
+        const _protoWithSlashes = `${proto}://` ?? ''
+
+        const param: Param = {
+          serverName,
+          otp,
+          link: `${_protoWithSlashes}${baseURL}/mail/verify?t=${token}`,
+        }
+
+        const content = t(localeKey.mail(Mail.Variant.Verify), param)
+
+        await mail.send({
+          to: input,
+          subject: `${serverName} - verification`,
+          content,
+        })
+      }),
+
+    getEmailToken: sessionProcedure
+      .input(
+        union([
+          object({
+            otp: string(),
+            email: string().email(),
+          }),
+          object({
+            token: string().uuid(),
+          }),
+        ]) as unknown as ZodSchema<MBase.Validation>)
+      .query(async ({ input }) => {
+        return await mailToken.get(input)
+      }),
+    createAccount: sessionProcedure
+      .input(object({
+        name: string().trim(),
+        safeName: string().trim().optional(),
+        emailToken: string().uuid(),
+        // email: string().trim().email(),
+        passwordMd5: string().trim(),
+      })).mutation(async ({ input, ctx }) => {
+        const rec = await mailToken.get({ token: input.emailToken as MBase.Token }) ?? throwGucchoError(GucchoError.EmailTokenNotFound)
+        const { name, safeName, passwordMd5 } = input
+        const user = await users.register({
+          name,
+          safeName,
+          passwordMd5,
+          email: rec?.email,
+        })
+        const sessionId = ctx.session.id
+        await sessions.update(sessionId, { userId: UserProvider.idToString(user.id) })
+        return user
+      }),
+
+  }),
+
 })

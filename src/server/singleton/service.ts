@@ -5,6 +5,7 @@ import {
   FileProvider,
   LogProvider,
   MailProvider,
+  MailTokenProvider,
   MapProvider,
   MonitorProvider,
   RankProvider,
@@ -27,18 +28,16 @@ export const users = new UserProvider()
 export const userRelations = new UserRelationProvider()
 export const clanProvider = new ClanProvider()
 export const mail = new MailProvider()
+export const mailToken = new MailTokenProvider()
 
 export {
   AdminProvider,
-  ArticleProvider,
-  FileProvider,
-  LogProvider,
-  MapProvider,
+  ArticleProvider, ClanProvider, FileProvider,
+  LogProvider, MailTokenProvider, MapProvider,
   MonitorProvider,
   RankProvider,
   ScoreProvider,
   SessionProvider,
   UserProvider,
   UserRelationProvider,
-  ClanProvider,
 } from '$active/server'

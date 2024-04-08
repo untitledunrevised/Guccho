@@ -17,6 +17,7 @@ export enum GucchoError {
   // auth
   PasswordMismatch = 3000,
   OldPasswordMismatch,
+  EmailTokenNotFound,
 
   RelationTypeNotFound = 4000,
 

@@ -15,18 +15,16 @@ export interface SessionBrowser {
   client: Client.Browser
   browser: string
 }
-export interface SessionOsuClient {
+// export interface SessionOsuClient {
 
-  client: Client.OsuStableClient
-  version: string
-}
-export interface SessionUnknown {
-  client: Client.Unknown
-}
+//   client: Client.OsuStableClient
+//   version: string
+// }
+// export interface SessionUnknown {
+//   client: Client.Unknown
+// }
 
-export type SessionClient = SessionBrowser | SessionOsuClient | SessionUnknown
-
-export type Session<T = string> = SessionBase<T> & SessionClient
+export type Session<T = string> = SessionBase<T> & SessionBrowser
 export type SessionIdType<T extends Session> = T extends Session<infer R> ? R : never
 
 export abstract class SessionProvider<TSession extends Session<string>> {

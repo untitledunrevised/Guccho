@@ -91,27 +91,28 @@ export default {
     sessions: 'Web Login',
   },
   error: {
-    [GucchoError.UnknownError]: 'Unknown Error',
-    [GucchoError.UserNotFound]: 'User not found',
-    [GucchoError.UserExists]: 'User already exists',
-    [GucchoError.ConflictEmail]: 'This email address is already used',
-    [GucchoError.PasswordMismatch]: 'Wrong password',
-    [GucchoError.OldPasswordMismatch]: 'Old password is wrong',
-    [GucchoError.RelationTypeNotFound]: 'Unknown relation type',
-    [GucchoError.AtLeastOneUserNotExists]: 'At least one user not exists',
-    [GucchoError.UnableToRetrieveSession]: 'Unable to retrieve session',
-    [GucchoError.UnableToRefreshToken]: 'Unable to update your session',
-    [GucchoError.YouNeedToLogin]: 'You need to login.',
-    [GucchoError.SessionNotFound]: 'Session Not Found',
-    [GucchoError.UpdateUserSettingsFailed]: 'Failed to update user settings',
-    [GucchoError.ConflictRelation]: 'You had relation with this player',
-    [GucchoError.MissingServerAvatarConfig]: 'server is not configured correctly, missing avatar location',
-    [GucchoError.ModeNotSupported]: 'Mode not supported',
-    [GucchoError.UpdateUserpageFailed]: 'Failed to update userpage',
-    [GucchoError.MimeNotImage]: 'Not an image',
-    [GucchoError.HackerTryingToDeleteAllAvatars]: 'SOMEONE IS TRYING TO DELETE ALL AVATARS',
-    [GucchoError.DeletingMoreThanOneAvatars]: 'trying to delete more than 2 files, please contact support to clean your old avatars',
-    [GucchoError.RequireAdminPrivilege]: 'Require Staff roles',
+    [GucchoError.UnknownError]: 'An unknown error occurred.',
+    [GucchoError.UserNotFound]: 'User not found.',
+    [GucchoError.UserExists]: 'User already exists.',
+    [GucchoError.ConflictEmail]: 'This email address is already in use.',
+    [GucchoError.PasswordMismatch]: 'Incorrect password.',
+    [GucchoError.OldPasswordMismatch]: 'The old password provided is incorrect.',
+    [GucchoError.RelationTypeNotFound]: 'Relation type unknown.',
+    [GucchoError.AtLeastOneUserNotExists]: 'At least one user does not exist.',
+    [GucchoError.UnableToRetrieveSession]: 'Unable to retrieve session.',
+    [GucchoError.UnableToRefreshToken]: 'Unable to update your session.',
+    [GucchoError.YouNeedToLogin]: 'You need to log in.',
+    [GucchoError.SessionNotFound]: 'Session not found.',
+    [GucchoError.UpdateUserSettingsFailed]: 'Failed to update user settings.',
+    [GucchoError.ConflictRelation]: 'You already have a relation with this player.',
+    [GucchoError.MissingServerAvatarConfig]: 'The server is not configured correctly; avatar location is missing.',
+    [GucchoError.ModeNotSupported]: 'Mode not supported.',
+    [GucchoError.UpdateUserpageFailed]: 'Failed to update user page.',
+    [GucchoError.MimeNotImage]: 'The provided file is not an image.',
+    [GucchoError.HackerTryingToDeleteAllAvatars]: 'SOMEONE IS ATTEMPTING TO DELETE ALL AVATARS.',
+    [GucchoError.DeletingMoreThanOneAvatars]: 'Attempting to delete more than 2 files. Please contact support to clean your old avatars.',
+    [GucchoError.RequireAdminPrivilege]: 'Requires staff roles.',
+    [GucchoError.EmailTokenNotFound]: 'Email verification token has expired.',
   },
   country: {
     [CountryCode.Unknown]: 'Unknown',
@@ -367,16 +368,22 @@ export default {
   },
   mail: {
     [Mail.Variant.Verify]: `
-Hi {name},
+Hi,
 
-to verify your email for {serverName},
-please continue with the following link:
+to verify your email for {serverName}, please continue with the following link:
 {link}
+
+or you can use the following code:
+{otp}
+
+
+{serverName}
 `,
     [Mail.Variant.AccountRecovery]: `
 Hi {name},
 
 You can reset your password from the following link:
+
 {link}
     `,
   },
