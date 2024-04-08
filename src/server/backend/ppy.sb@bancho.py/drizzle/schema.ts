@@ -1,9 +1,34 @@
 import { relations } from 'drizzle-orm'
-import { bigint, datetime, index, int, json, mysqlEnum, mysqlTable, primaryKey, text, tinyint, varchar } from 'drizzle-orm/mysql-core'
+import { bigint, date, datetime, index, int, json, mysqlEnum, mysqlTable, primaryKey, text, tinyint, varchar } from 'drizzle-orm/mysql-core'
 import { users } from '../../bancho.py/drizzle/schema'
 
-export * from '../../bancho.py/drizzle/schema'
+export {
+  achievements, beatmaps, channels,
+  clans, clansRelations, clientHashes, clientHashesRelations, comments, commentsRelations, emailToken, favourites, favouritesRelations,
+  ingameLoginsRelations,
+  // ingameLogins,
+  logs,
+  mail, mailRelations, mapRequests, mapsRelations, performanceReports,
+  ratings, relationships,
+  scores, scoresRelations, sources, sourcesRelations, startups,
+  stats, statsRelations, tourneyPoolMaps, tourneyPools, userAchievements,
+  users, usersAchievementsRelations, usersRelations,
+} from '../../bancho.py/drizzle/schema'
 
+export const ingameLogins = mysqlTable('ingame_logins', {
+  id: int('id').autoincrement().notNull(),
+  userId: int('userid').notNull(),
+  ip: varchar('ip', { length: 45 }).notNull(),
+  // you can use { mode: 'date' }, if you want to have Date as type for this column
+  osuVer: date('osu_ver', { mode: 'string' }).notNull(),
+  osuStream: varchar('osu_stream', { length: 128 }).notNull(),
+  datetime: datetime('datetime', { mode: 'date' }).notNull(),
+},
+(table) => {
+  return {
+    ingameLoginsId: primaryKey({ columns: [table.id], name: 'ingame_logins_id' }),
+  }
+})
 export const userpages = mysqlTable('userpages', {
   id: int('id').primaryKey().autoincrement().notNull(),
   userId: int('user_id').notNull(),

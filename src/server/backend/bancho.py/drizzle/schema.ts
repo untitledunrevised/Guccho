@@ -98,7 +98,7 @@ export const ingameLogins = mysqlTable('ingame_logins', {
   ip: varchar('ip', { length: 45 }).notNull(),
   // you can use { mode: 'date' }, if you want to have Date as type for this column
   osuVer: date('osu_ver', { mode: 'string' }).notNull(),
-  osuStream: varchar('osu_stream', { length: 128 }).notNull(),
+  osuStream: varchar('osu_stream', { length: 11 }).notNull(),
   datetime: datetime('datetime', { mode: 'date' }).notNull(),
 },
 (table) => {
@@ -111,7 +111,8 @@ export const logs = mysqlTable('logs', {
   id: int('id').autoincrement().notNull(),
   from: int('from').notNull(),
   to: int('to').notNull(),
-  msg: varchar('msg', { length: 2048 }).notNull(),
+  action: varchar('action', { length: 32 }).notNull(),
+  msg: varchar('msg', { length: 2048 }),
   time: datetime('time', { mode: 'date' }).notNull(),
 },
 (table) => {
@@ -182,7 +183,7 @@ export const beatmaps = mysqlTable('maps', {
   hp: decimal('hp', { scale: 4, precision: 2 }).default(0.00).notNull(),
   // Warning: Can't parse float(6,3) from database
   // float(6,3)Type: float(6,3)("diff").notNull(),
-  diff: decimal('diff', { scale: 8, precision: 3 }).default(0.000).notNull(),
+  diff: decimal('diff', { scale: 6, precision: 3 }).default(0.000).notNull(),
 },
 (table) => {
   return {
