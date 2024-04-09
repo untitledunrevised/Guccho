@@ -14,16 +14,17 @@ import {
   zodRuleset,
 } from '../shapes'
 import { router as _router, publicProcedure as p } from '../trpc'
-import { MapProvider, ScoreProvider, UserProvider, mail, mailToken, sessions, userRelations, users } from '~/server/singleton/service'
-import { Scope, type UserCompact, UserRole } from '~/def/user'
-import { RankingStatus } from '~/def/beatmap'
-import { type RankingSystemScore } from '~/def/score'
-import { type Mode } from '~/def'
-import { type LeaderboardRankingSystem } from '~/def/common'
 import { type MailTokenProvider as MBase } from '$base/server'
+import { type Mode } from '~/def'
+import { RankingStatus } from '~/def/beatmap'
+import { type LeaderboardRankingSystem } from '~/def/common'
 import { Mail } from '~/def/mail'
-import ui from '~~/guccho.ui.config'
+import { type RankingSystemScore } from '~/def/score'
+import { Scope, type UserCompact, UserRole } from '~/def/user'
 import type { GlobalI18n } from '~/locales/@types'
+import { Constant } from '~/server/common/constants'
+import { MapProvider, ScoreProvider, UserProvider, mail, mailToken, sessions, userRelations, users } from '~/server/singleton/service'
+import ui from '~~/guccho.ui.config'
 
 export const map = getPath<GlobalI18n>()()
 
@@ -237,6 +238,7 @@ export const router = _router({
           serverName,
           otp,
           link: `${_protoWithSlashes}${baseURL}/mail/verify?t=${token}`,
+          ttl: Constant.EmailTokenTTLInMinutes as number,
         }
 
         const content = t(localeKey.mail(Mail.Variant.Verify), param)

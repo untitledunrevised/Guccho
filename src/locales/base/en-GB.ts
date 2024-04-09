@@ -370,12 +370,13 @@ export default {
     [Mail.Variant.Verify]: `
 Hi,
 
-to verify your email for {serverName}, please continue with the following link:
+To verify your email for {serverName}, please proceed with the following link:
 {link}
 
-or you can use the following code:
-{otp}
+Alternatively, you can use the following code: {otp}
 
+Verification is valid for {ttl} minutes.
+Please let us know if you have any questions or concerns.
 
 {serverName}
 `,

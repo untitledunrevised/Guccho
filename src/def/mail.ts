@@ -9,6 +9,7 @@ export namespace Mail {
     serverName: string
     link: string
     otp: string
+    ttl: number
   }
 
   interface AccountRecovery {
@@ -16,11 +17,13 @@ export namespace Mail {
     name: string
     link: string
     otp: string
+    ttl: number
   }
   interface Template extends Record<string, unknown> {
     serverName: string
     link: string
     otp: string
+    ttl: number
   }
 
   export interface Param {
