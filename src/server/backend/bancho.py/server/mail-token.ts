@@ -1,7 +1,8 @@
-import { and, eq, lte, or } from 'drizzle-orm'
+import { and, eq, gte, lte, or } from 'drizzle-orm'
 import * as schema from '../drizzle/schema'
 import { useDrizzle } from './source/drizzle'
 import { MailTokenProvider as MBase } from '$base/server/mail-token'
+import { Constant } from '~/server/common/constants'
 
 export class MailTokenProvider extends MBase {
   drizzle = useDrizzle(schema)
@@ -21,10 +22,13 @@ export class MailTokenProvider extends MBase {
   }
 
   async getByEmail(email: MBase.Email): Promise<{ otp: MBase.OTP; token: MBase.Token } | undefined> {
+    const date = new Date()
     const tokens = await this.drizzle.query.emailToken.findMany({
       where: and(
         eq(schema.emailToken.email, email),
-        lte(schema.emailToken.invalidAfter, this.getInvalidAfter())
+
+        gte(schema.emailToken.invalidAfter, date),
+        lte(schema.emailToken.invalidAfter, this.offsetByMinutes(Constant.EmailTokenTTLInMinutes, date))
       ),
     })
 
@@ -44,19 +48,20 @@ export class MailTokenProvider extends MBase {
       email,
       otp,
       token,
-      invalidAfter: this.getInvalidAfter(),
+      invalidAfter: this.offsetByMinutes(+15),
     })
 
     return { otp, token }
   }
 
-  protected getInvalidAfter(date: Date = new Date()) {
+  protected offsetByMinutes(offset: number, date: Date = new Date()) {
     const dt = new Date(date)
-    dt.setMinutes(dt.getMinutes() + 15)
+    dt.setMinutes(dt.getMinutes() + offset)
     return dt
   }
 
   protected async getTokens(input: MBase.Validation): Promise<{ email: MBase.Email; otp: MBase.OTP; token: MBase.Token }[]> {
+    const date = new Date()
     return await this.drizzle.query.emailToken.findMany({
       where: and(
         or(
@@ -72,7 +77,8 @@ export class MailTokenProvider extends MBase {
             : undefined
         ),
 
-        lte(schema.emailToken.invalidAfter, this.getInvalidAfter())
+        gte(schema.emailToken.invalidAfter, date),
+        lte(schema.emailToken.invalidAfter, this.offsetByMinutes(Constant.EmailTokenTTLInMinutes, date))
       ),
       columns: {
         email: true,

@@ -10,6 +10,7 @@ definePageMeta({
   layout: 'centered',
 })
 
+// eslint-disable-next-line antfu/no-const-enum
 const enum State {
   Idle,
   Posting,
