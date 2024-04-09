@@ -25,6 +25,9 @@ import type { GlobalI18n } from '~/locales/@types'
 import { Constant } from '~/server/common/constants'
 import { MapProvider, ScoreProvider, UserProvider, mail, mailToken, sessions, userRelations, users } from '~/server/singleton/service'
 import ui from '~~/guccho.ui.config'
+import { Logger } from '$base/logger'
+
+const logger = Logger.child({ label: 'user' })
 
 export const map = getPath<GlobalI18n>()()
 
@@ -274,14 +277,20 @@ export const router = _router({
       })).mutation(async ({ input, ctx }) => {
         const rec = await mailToken.get({ token: input.emailToken as MBase.Token }) ?? throwGucchoError(GucchoError.EmailTokenNotFound)
         const { name, safeName, passwordMd5 } = input
+
         const user = await users.register({
           name,
           safeName,
           passwordMd5,
-          email: rec?.email,
+          email: rec.email,
         })
+
+        // background jobs
+        mailToken.deleteAll(rec.email).catch(e => logger.error({ message: `failed to delete mail token: ${e.message}` }))
+
         const sessionId = ctx.session.id
         await sessions.update(sessionId, { userId: UserProvider.idToString(user.id) })
+
         return user
       }),
 

@@ -17,8 +17,28 @@ export class MailTokenProvider extends MBase {
     return tokens?.at(-1)
   }
 
-  async delete(email: MBase.Email) {
+  async deleteAll(email: MBase.Email) {
     await this.drizzle.delete(schema.emailToken).where(eq(schema.emailToken.email, email))
+  }
+
+  async delete(input: MBase.Validation) {
+    const date = new Date()
+    await this.drizzle.delete(schema.emailToken).where(and(
+      or(
+        'email' in input && 'otp' in input
+          ? and(
+            eq(schema.emailToken.email, input.email),
+            eq(schema.emailToken.otp, input.otp)
+          )
+          : undefined,
+
+        'token' in input
+          ? eq(schema.emailToken.token, input.token)
+          : undefined
+      ),
+
+      lte(schema.emailToken.invalidAfter, date),
+    ))
   }
 
   async getByEmail(email: MBase.Email): Promise<{ otp: MBase.OTP; token: MBase.Token } | undefined> {
