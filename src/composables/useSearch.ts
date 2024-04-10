@@ -39,8 +39,16 @@ const includes = shallowReactive({
   beatmaps: true,
   beatmapsets: true,
   users: true,
+  pages: true,
 })
-const searchMode = computed(() => ((includes.beatmaps || includes.beatmapsets) && !includes.users) ? 'beatmap' : 'all')
+const searchMode = computed(() => {
+  const bm = (includes.beatmaps || includes.beatmapsets)
+  switch (true) {
+    case (bm && !includes.users): { return 'beatmap' }
+    case (includes.users && !bm): { return 'user' }
+    default: { return 'all' }
+  }
+})
 
 export async function useSearchResult() {
   const app = useNuxtApp()

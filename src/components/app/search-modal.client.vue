@@ -1,25 +1,28 @@
 <i18n lang="yaml">
 en-GB:
   include:
-    beatmapsets: Include beatmapsets
-    beatmaps: Include beatmaps
-    users: Include users
+    beatmapsets: Beatmapsets
+    beatmaps: Beatmaps
+    users: Users
+    pages: Pages
   search: Search...
   nothing: Found nothing.
 
 zh-CN:
   include:
-    beatmapsets: 包括歌曲
-    beatmaps: 包含铺面
-    users: 包含用户
+    beatmapsets: 歌曲
+    beatmaps: 铺面
+    users: 用户
+    pages: 导航
   search: 搜索
   nothing: 什么都没找到。
 
 fr-FR:
   include:
-    beatmapsets: Inclure beatmapsets
-    beatmaps: Inclure beatmaps
-    users: Inclure utilisateurs
+    beatmapsets: Beatmapsets
+    beatmaps: Beatmaps
+    users: Utilisateurs
+    pages: Pages
   search: Cherche...
   nothing: Aucun résultat.
 </i18n>
@@ -59,7 +62,7 @@ const {
           <label class="flex gap-2 p-0 cursor-pointer label">
             <input
               v-model="includes.beatmapsets" type="checkbox" class="checkbox checkbox-sm" @change="() => {
-                includes.users = !includes.beatmaps && !includes.beatmapsets
+                // includes.users = !includes.beatmaps && !includes.beatmapsets
                 raw(true)
               }"
             >
@@ -70,7 +73,7 @@ const {
           <label class="flex gap-2 p-0 cursor-pointer label">
             <input
               v-model="includes.beatmaps" type="checkbox" class="checkbox checkbox-sm" @change="() => {
-                includes.users = !includes.beatmaps && !includes.beatmapsets
+                // includes.users = !includes.beatmaps && !includes.beatmapsets
                 raw(true)
               }"
             >
@@ -81,16 +84,29 @@ const {
           <label class="flex gap-2 p-0 cursor-pointer label">
             <input
               v-model="includes.users" type="checkbox" class="checkbox checkbox-sm" @change="() => {
-                includes.beatmaps = !includes.users
-                includes.beatmapsets = !includes.users
+                // if (!includes.beatmaps && !includes.beatmapsets) {
+                //   includes.beatmaps = true
+                //   includes.beatmapsets = true
+                // }
                 raw(false)
               }"
             >
             <span class="label-text">{{ t('include.users') }}</span>
           </label>
         </div>
+        <div class="form-control">
+          <label class="flex gap-2 p-0 cursor-pointer label">
+            <input
+              v-model="includes.pages" type="checkbox" class="checkbox checkbox-sm" @change="() => {
+                // includes.users = !includes.beatmaps && !includes.beatmapsets
+                raw(true)
+              }"
+            >
+            <span class="label-text">{{ t('include.pages') }}</span>
+          </label>
+        </div>
       </div>
-      <div class="ml-auto" />
+      <div class="ms-auto" />
       <button class="btn btn-ghost btn-sm" @click="closeModal()">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -109,26 +125,8 @@ const {
       </button>
     </div>
     <div class="bg-gbase-50 dark:bg-gbase-800 shadow-2xl md:rounded-2xl relative max-h-[calc(100dvh-32px-4rem)] flex flex-col overflow-hidden">
-      <div class="form-control">
-        <label v-if="mode === 'beatmap'" class="input-group">
-          <span class="flex gap-2 bg-transparent">
-            <span v-if="!tags.length" class="bg-transparent opacity-50">Tags</span>
-            <span v-for="tag, index in tags" :key="index" class="gap-1 cursor-pointer badge badge-md badge-primary whitespace-nowrap" @click="tags.splice(index, 1)">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-              <div v-html="tag.toString()" />
-            </span>
-          </span>
-          <input
-            v-model="keyword"
-            type="text"
-            :placeholder="t('search')"
-            class="input input-shadow grow border-label-0 focus:input-primary bg-transparent !outline-0"
-            @input="onInput"
-            @keyup.enter="raw(true)"
-          >
-        </label>
+      <template v-if="mode === 'beatmap'">
         <input
-          v-else
           v-model="keyword"
           type="text"
           :placeholder="t('search')"
@@ -136,10 +134,29 @@ const {
           @input="onInput"
           @keyup.enter="raw(true)"
         >
-      </div>
+        <span
+          class="bg-transparent space-x-1 transition-[margin]" :class="{
+            'mt-2': tags.length,
+          }"
+        >
+          <span v-for="tag, index in tags" :key="index" class="gap-1 cursor-pointer badge badge-md badge-primary whitespace-nowrap" @click="tags.splice(index, 1)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            <div v-html="tag.toString()" />
+          </span>
+        </span>
+      </template>
+      <input
+        v-else
+        v-model="keyword"
+        type="text"
+        :placeholder="t('search')"
+        class="input input-shadow grow border-label-0 focus:input-primary bg-transparent !outline-0"
+        @input="onInput"
+        @keyup.enter="raw(true)"
+      >
       <div class="overflow-auto">
         <template
-          v-if="pages.length"
+          v-if="includes.pages && pages.length "
         >
           <transition-group tag="ul" class="menu" name="left">
             <li

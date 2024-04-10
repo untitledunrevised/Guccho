@@ -81,9 +81,10 @@ function clearFocus() {
             />
           </svg>
         </button>
-        <div v-if="session.loggedIn" class="dropdown dropdown-end self-center">
+        <div class="dropdown dropdown-end self-center">
           <label tabindex="0" class="pr-1 flex cursor-pointer active:scale-90 transition-transform">
-            <img :src="session.$state.user?.avatarSrc" class="avatar-img">
+            <img v-if="session.loggedIn" :src="session.$state.user?.avatarSrc" class="avatar-img">
+            <icon v-else class="w-full h-full avatar-img" name="solar:emoji-funny-circle-broken" />
           </label>
           <ul
             tabindex="0" class="menu menu-tint menu-md dropdown-content mt-4 p-2 w-52" :class="{
