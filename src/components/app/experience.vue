@@ -37,7 +37,7 @@ const { charging, level } = useBattery()
         />
       </div>
     </div>
-    <div class="ml-auto whitespace-nowrap">
+    <div class="ms-auto whitespace-nowrap">
       {{ fps }} fps
     </div>
   </div>

@@ -23,8 +23,6 @@ useHead({
 
 const error = shallowRef('')
 
-const registerButton = shallowRef<string>(t('have-no-account'))
-
 const login = shallowReactive<{
   user: string
   password: string
@@ -123,10 +121,10 @@ fr-FR:
         </h1>
         <div class="grid grid-cols-2 gap-2">
           <t-nuxt-link-button
-            class="btn-shadow" to="/auth/register" variant="accent"
-            @mouseenter="registerButton = $t('global.register')" @mouseleave="registerButton = t('have-no-account')"
+            class="btn-shadow stack-btn" to="/auth/register" variant="accent"
           >
-            {{ registerButton }}
+            <span class="surface">{{ t('have-no-account') }}</span>
+            <span class="reveal">{{ $t('global.register') }}</span>
           </t-nuxt-link-button>
           <button type="submit" class="btn btn-shadow btn-primary">
             {{ $t('global.login') }}

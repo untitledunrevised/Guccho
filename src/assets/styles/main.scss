@@ -222,3 +222,21 @@ dialog {
 .striped-text {
   @apply mt-1 text-sm text-gbase-900 dark:text-gbase-100 sm:col-span-2 sm:mt-0;
 }
+
+.stack-btn {
+  .reveal {
+    @apply invisible absolute;
+  }
+  .surface {
+    @apply visible absolute;
+  }
+
+  &:hover {
+    .reveal {
+      @apply visible absolute;
+    }
+    .surface {
+      @apply invisible absolute;
+    }
+  }
+}

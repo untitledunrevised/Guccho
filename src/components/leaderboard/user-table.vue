@@ -36,7 +36,10 @@ const formatter = new Intl.NumberFormat(undefined, option)
     <th scope="row">
       <div class="flex justify-center items-center w-full">
         <div class="flex-shrink-0">
-          <img :alt="t(localeKey.country(props.user.flag || CountryCode.Unknown))" class="w-6" :src="getFlagURL(props.user.flag)">
+          <img
+            :alt="t(localeKey.country(props.user.flag || CountryCode.Unknown))" class="w-6"
+            :src="getFlagURL(props.user.flag)"
+          >
         </div>
       </div>
     </th>
@@ -75,21 +78,16 @@ const formatter = new Intl.NumberFormat(undefined, option)
 
 <style lang="postcss">
 tr [data-rank="1"] {
-  /* @apply text-yellow-100 dark:text-yellow-600; */
-  /* @apply shadow-yellow-800/80 dark:shadow-yellow-200/30; */
-  @apply text-accent-focus;
+  @apply text-[color-mix(in_oklab,oklch(var(--a)),black_7%)]
 }
 
 tr [data-rank="2"] {
-  /* @apply text-gray-50 dark:text-white; */
-  /* @apply shadow-gray-600/70 dark:shadow-gray-400/30; */
 
-  @apply text-primary-focus;
+  @apply text-[color-mix(in_oklab,oklch(var(--p)),black_7%)]
 }
 
 tr [data-rank="3"] {
-  /* @apply text-orange-50 dark:text-orange-400; */
-  /* @apply shadow-yellow-700/80 dark:shadow-yellow-500/20; */
-  @apply text-secondary-focus;
+
+  @apply text-[color-mix(in_oklab,oklch(var(--s)),black_7%)]
 }
 </style>

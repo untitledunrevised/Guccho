@@ -11,8 +11,6 @@ const props = withDefaults(
     disabled: false,
   })
 
-const variant = inject<string>('variant')
-const size = inject<string>('size')
 const current = inject<Ref<unknown>>('current')
 const clickTab = inject<(value: unknown) => void>('select')
 const disabledSymbol = inject('disabled')
@@ -27,8 +25,6 @@ const isActive = computed(
   <div
     class="tab"
     :class="[
-      variant && `tab-${variant}`,
-      size && `tab-${size}`,
       isActive && 'tab-active',
       isDisabled && 'cursor-default',
     ]"

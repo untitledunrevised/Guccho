@@ -32,7 +32,7 @@ watch([() => props.mode, () => props.ruleset], () => {
 <template>
   <t-tabs
     :model-value="props.modelValue"
-    variant="lifted"
+    class="tabs-lifted"
     @update:model-value="(v: typeof props['modelValue']) => emit('update:modelValue', v)"
   >
     <t-tab
