@@ -55,7 +55,10 @@ async function checkOTP() {
     return
   }
 
-  const result = await app.$client.user.register.getEmailToken.query({ otp: otpString, email: email.value })
+  const result = await app.$client.user.register.getEmailToken.query({
+    otp: otpString,
+    email: email.value,
+  })
 
   if (!result) {
     return
@@ -78,25 +81,63 @@ fr-FR:
 
 <template>
   <div class="container max-w-screen-md mx-auto">
-    <div class="grid grid-cols-5 gap-12 w-full">
-      <div class="col-span-3">
-        <span v-if="error" class="">{{ formatGucchoErrorWithT(t, error) }}</span>
-        <form v-if="step === Step.InputEmail" action="#" method="post" @submit.prevent="go">
-          <div class="input flex items-center gap-2">
+    <h2 class="text-2xl pl-3 text-gbase-800 dark:text-gbase-50">
+      {{ $t("global.register") }}
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-10 w-full mt-8">
+      <div class="md:col-span-2 md:order-2">
+        <ul class="steps md:steps-vertical w-full overflow-y-auto">
+          <li class="step step-primary">
+            Verify Email
+          </li>
+          <li class="step">
+            Create Account
+          </li>
+          <li class="step">
+            Login with client
+          </li>
+        </ul>
+      </div>
+      <div class="md:col-span-3 p-2">
+        <form
+          v-if="step === Step.InputEmail"
+          action="#"
+          method="post"
+          @submit.prevent="go"
+        >
+          <span v-if="error" class="text-error">{{
+            formatGucchoErrorWithT(t, error)
+          }}</span>
+          <div
+            :class="{
+              'input-error': error,
+            }" class="input flex items-center gap-2"
+          >
             Email
-            <input id="email" v-model="email" class="grow" required="true" :placeholder="`cookiezi@${$config.public.baseUrl}`" type="email">
+            <input
+              id="email"
+              v-model="email"
+
+              :disabled="state === State.SendingOTP"
+              class="grow"
+              required="true"
+              :placeholder="`cookiezi@${$config.public.baseUrl}`"
+              type="email"
+            >
           </div>
 
-          <div class="grid grid-cols-2 gap-4 mt-4">
-            <button type="button" class="stack-btn btn btn-secondary" @click="navigateTo({ name: 'auth-login' })">
-              <span class="reveal">{{ $t('global.login') }}</span>
-              <span class="surface">{{ t('have-account') }}</span>
-            </button>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <button
-              type="submit" class="btn btn-primary"
+              type="button"
+              class="stack-btn btn btn-secondary"
+              @click="navigateTo({ name: 'auth-login' })"
             >
+              <span class="reveal">{{ $t("global.login") }}</span>
+              <span class="surface">{{ t("have-account") }}</span>
+            </button>
+            <button type="submit" class="btn btn-primary">
               <span>
-                {{ t('verify') }}
+                {{ t("verify") }}
               </span>
               <span
                 :class="{
@@ -109,33 +150,26 @@ fr-FR:
         <template v-else-if="step === Step.VerifyToken">
           <div class="form-control">
             <label for="email">One time code</label>
-            <input v-model="otp" type="number" class="input" @input="checkOTP">
-            <button v-show="state === State.Succeed" class="btn btn-primary mt-4" @click="navigateTo({ name: 'auth-create-account', query: { t: token } })">
+            <input
+              v-model="otp"
+              type="number"
+              class="input"
+              @input="checkOTP"
+            >
+            <button
+              v-show="state === State.Succeed"
+              class="btn btn-primary mt-4"
+              @click="
+                navigateTo({ name: 'auth-create-account', query: { t: token } })
+              "
+            >
               LGTM!
             </button>
           </div>
         </template>
       </div>
-      <div class="col-span-2">
-        <ul class="steps steps-vertical">
-          <li class="step step-primary">
-            Verify Email
-          </li>
-          <li class="step">
-            Create Account
-          </li>
-          <li class="step">
-            Login with client
-          </li>
-          <li class="step">
-            GLHF!
-          </li>
-        </ul>
-      </div>
     </div>
   </div>
 </template>
 
-<style scoped lang="postcss">
-
-</style>
+<style scoped lang="postcss"></style>

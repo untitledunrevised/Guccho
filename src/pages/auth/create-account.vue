@@ -43,7 +43,7 @@ if (!query.t) {
   })
 }
 
-const emailToken = (query.t as string).toString()
+const emailToken = (query.t as string)?.toString() ?? ''
 
 const reg = shallowReactive({ ...shape })
 const error = shallowReactive({ ...shape })
@@ -76,7 +76,10 @@ const validate: {
   [Key in keyof Shape]: () => boolean | Promise<boolean>
 } = {
   name: unique('name'),
-  safeName: async () => features.has(Feature.StableUsername) ? !!reg.safeName?.match(safeNamePattern) && await unique('safeName')() : true,
+  safeName: async () =>
+    features.has(Feature.StableUsername)
+      ? !!reg.safeName?.match(safeNamePattern) && (await unique('safeName')())
+      : true,
   // email: unique('email'),
   password() {
     return !!reg.password.match(pwPattern)
@@ -84,12 +87,15 @@ const validate: {
 }
 
 useHead({
-  title: () => `${app.$i18n.t('global.register')} - ${app.$i18n.t('server.name')}`,
+  title: () =>
+    `${app.$i18n.t('global.register')} - ${app.$i18n.t('server.name')}`,
 })
 
 async function userRegisterAction() {
   state.value = State.Posting
-  const result = (await Promise.all(Object.values(validate).map(test => test()))).every(Boolean)
+  const result = (
+    await Promise.all(Object.values(validate).map(test => test()))
+  ).every(Boolean)
   if (!result) {
     state.value = State.Idle
     return
@@ -97,13 +103,14 @@ async function userRegisterAction() {
 
   type E = TRPCClientError<AppRouter['user']['register']>
 
-  const result$ = await app.$client.user.register.createAccount.mutate({
-    name: reg.name,
-    safeName: reg.safeName,
-    // email: reg.email,
-    emailToken,
-    passwordMd5: md5(reg.password),
-  })
+  const result$ = await app.$client.user.register.createAccount
+    .mutate({
+      name: reg.name,
+      safeName: reg.safeName,
+      // email: reg.email,
+      emailToken,
+      passwordMd5: md5(reg.password),
+    })
     .catch((ex: E) => {
       const e = ex.data?.zodError?.fieldErrors
       if (e) {
@@ -170,73 +177,79 @@ fr-FR:
 </i18n>
 
 <template>
-  <div
-    class="w-full flex flex-col"
-  >
-    <div
-      class="mx-auto half-box"
-    >
-      <fetch-overlay :fetching="state === State.Posting" />
-      <div>
-        <h2
-          class="text-2xl pl-3 text-gbase-800 dark:text-gbase-50"
-        >
-          {{ $t('global.register') }}
-        </h2>
+  <div class="container max-w-screen-md mx-auto">
+    <h2 class="pl-3 text-2xl text-gbase-800 dark:text-gbase-50">
+      {{ $t("global.register") }}
+    </h2>
+    <div class="grid w-full grid-cols-1 gap-6 mt-8 md:grid-cols-5 md:gap-10">
+      <div class="md:col-span-2 md:order-2">
+        <ul class="steps md:steps-vertical w-full overflow-y-auto">
+          <li class="step step-primary">
+            Verify Email
+          </li>
+          <li class="step step-primary">
+            Create Account
+          </li>
+          <li class="step">
+            Login with client
+          </li>
+        </ul>
       </div>
-      <div v-if="session.loggedIn" class="alert alert-warning my-2">
-        You are logged in as {{ session.user?.name }}
-      </div>
-      <form
-        class="mt-8 space-y-12"
-        autocomplete="off"
-        @submit.prevent="userRegisterAction"
-      >
-        <div v-if="unknownError" class="text-error ">
-          {{ formatGucchoErrorWithT(t, unknownError) }}
+      <div class="p-2 md:col-span-3">
+        <fetch-overlay :fetching="state === State.Posting" />
+        <div v-if="session.loggedIn" class="my-2 alert alert-warning">
+          You are logged in as {{ session.user?.name }}
         </div>
-        <div class="space-y-2">
-          <div>
-            <label for="name" class="sr-only">{{ t('name') }}</label>
-            <input
-              id="nickname"
-              v-model="reg.name"
-              name="nickname"
-              type="name"
-              autocomplete="off"
-              required
-              class="w-full input input-shadow input-ghost shadow-sm"
-              :class="{ 'input-error': error.name }"
-              :placeholder="t('name')"
-              @input="error.name = ''"
-            >
-            <div class="text-error text-sm pl-4">
-              {{ error.name }}
+        <form
+          class="space-y-4"
+          autocomplete="off"
+          @submit.prevent="userRegisterAction"
+        >
+          <div class="space-y-2">
+            <div v-if="unknownError" class="text-error">
+              {{ formatGucchoErrorWithT(t, unknownError) }}
             </div>
-          </div>
-          <template v-if="features.has(Feature.StableUsername)">
             <div>
-              <label for="name" class="sr-only">{{ t('link') }}</label>
+              <label for="name" class="sr-only">{{ t("name") }}</label>
               <input
-                id="name"
-                v-model="reg.safeName"
-                name="name"
+                id="nickname"
+                v-model="reg.name"
+                name="nickname"
                 type="name"
                 autocomplete="off"
                 required
-                :pattern="safeNamePatternStr"
-                :title="t('name-pattern')"
-                class="w-full input input-shadow input-ghost shadow-sm"
-                :class="{ 'input-error': error.safeName }"
-                :placeholder="t('link')"
-                @input="error.safeName = ''"
+                class="w-full shadow-sm input input-shadow input-ghost"
+                :class="{ 'input-error': error.name }"
+                :placeholder="t('name')"
+                @input="error.name = ''"
               >
-              <div class="text-error text-sm pl-4">
-                {{ error.safeName }}
+              <div class="pl-4 text-sm text-error">
+                {{ error.name }}
               </div>
             </div>
-          </template>
-          <!-- <div>
+            <template v-if="features.has(Feature.StableUsername)">
+              <div>
+                <label for="name" class="sr-only">{{ t("link") }}</label>
+                <input
+                  id="name"
+                  v-model="reg.safeName"
+                  name="name"
+                  type="name"
+                  autocomplete="off"
+                  required
+                  :pattern="safeNamePatternStr"
+                  :title="t('name-pattern')"
+                  class="w-full shadow-sm input input-shadow input-ghost"
+                  :class="{ 'input-error': error.safeName }"
+                  :placeholder="t('link')"
+                  @input="error.safeName = ''"
+                >
+                <div class="pl-4 text-sm text-error">
+                  {{ error.safeName }}
+                </div>
+              </div>
+            </template>
+            <!-- <div>
             <label for="name" class="sr-only">{{ t('email') }}</label>
             <input
               id="email"
@@ -245,56 +258,57 @@ fr-FR:
               type="email"
               autocomplete="off"
               required
-              class="w-full input input-shadow input-ghost shadow-sm"
+              class="w-full shadow-sm input input-shadow input-ghost"
               :class="{ 'input-error': error.email }"
               :placeholder="t('email')"
               @input="error.email = ''"
             >
-            <div class="text-error text-sm pl-4">
+            <div class="pl-4 text-sm text-error">
               {{ error.email }}
             </div>
           </div> -->
-          <div>
-            <label for="password" class="sr-only">{{ t('password') }}</label>
-            <input
-              id="password"
-              v-model="reg.password"
-              name="password"
-              type="password"
-              autocomplete="off"
-              required
-              :pattern="pwPatternStr"
-              :title="t('password-pattern')"
-              class="w-full input input-shadow input-ghost shadow-sm"
-              :class="{ 'input-error': error.password }"
-              :placeholder="t('password')"
-              @input="error.password = ''"
-            >
-            <div class="text-error text-sm pl-4">
-              {{ error.password }}
+            <div>
+              <label for="password" class="sr-only">{{ t("password") }}</label>
+              <input
+                id="password"
+                v-model="reg.password"
+                name="password"
+                type="password"
+                autocomplete="off"
+                required
+                :pattern="pwPatternStr"
+                :title="t('password-pattern')"
+                class="w-full shadow-sm input input-shadow input-ghost"
+                :class="{ 'input-error': error.password }"
+                :placeholder="t('password')"
+                @input="error.password = ''"
+              >
+              <div class="pl-4 text-sm text-error">
+                {{ error.password }}
+              </div>
             </div>
           </div>
-        </div>
-        <button type="submit" class="btn btn-shadow btn-primary">
-          {{ $t('global.register') }}
-        </button>
-      </form>
+          <button type="submit" class="w-full btn btn-shadow btn-primary">
+            {{ $t("global.register") }}
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 .auth-error-text {
-  @apply text-red-500 text-sm font-medium;
+  @apply text-red-500 text-sm font-medium
 }
 
 .half-box {
-  @apply relative w-full max-w-md p-6;
+  @apply relative w-full max-w-md p-6
   /* &::before {
-    content: "";
-    @apply absolute left-0 top-0 right-0 bottom-0;
-    @apply bg-gradient-to-t from-gbase-500/5 to-transparent rounded-3xl;
-    @apply blur-sm -z-10;
+    content: ""
+    @apply absolute left-0 top-0 right-0 bottom-0
+    @apply bg-gradient-to-t from-gbase-500/5 to-transparent rounded-3xl
+    @apply blur-sm -z-10
   } */
 }
 </style>
