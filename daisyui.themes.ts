@@ -6,8 +6,8 @@ import tw from 'tailwindcss/colors'
 import { hex as colors } from './src/palette'
 import { convertSingle } from './src/utils/color'
 
-const cupcake = themes['[data-theme=cupcake]']
-const dracula = themes['[data-theme=dracula]']
+const cupcake = themes.cupcake
+const dracula = themes.dracula
 const base = {
   '--rounded-btn': '1rem',
   '--btn-text-case': 'normal',

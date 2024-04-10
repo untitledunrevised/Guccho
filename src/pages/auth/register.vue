@@ -80,11 +80,11 @@ fr-FR:
   <div class="container max-w-screen-md mx-auto">
     <div class="grid grid-cols-5 gap-12 w-full">
       <div class="col-span-3">
-        <span v-if="error">{{ formatGucchoErrorWithT(t, error) }}</span>
+        <span v-if="error" class="">{{ formatGucchoErrorWithT(t, error) }}</span>
         <form v-if="step === Step.InputEmail" action="#" method="post" @submit.prevent="go">
-          <div class="form-control">
-            <label for="email">Email</label>
-            <input id="email" v-model="email" required="true" :placeholder="`cookiezi@${$config.public.baseUrl}`" type="email" class="input">
+          <div class="input flex items-center gap-2">
+            Email
+            <input id="email" v-model="email" class="grow" required="true" :placeholder="`cookiezi@${$config.public.baseUrl}`" type="email">
           </div>
 
           <div class="grid grid-cols-2 gap-4 mt-4">
@@ -110,7 +110,6 @@ fr-FR:
           <div class="form-control">
             <label for="email">One time code</label>
             <input v-model="otp" type="number" class="input" @input="checkOTP">
-            {{ token }}
             <button v-show="state === State.Succeed" class="btn btn-primary mt-4" @click="navigateTo({ name: 'auth-create-account', query: { t: token } })">
               LGTM!
             </button>
@@ -138,21 +137,5 @@ fr-FR:
 </template>
 
 <style scoped lang="postcss">
-.stack-btn {
-  .reveal {
-    @apply invisible absolute
-  }
-  .surface {
-    @apply visible absolute
-  }
 
-  &:hover {
-    .reveal {
-      @apply visible absolute
-    }
-    .surface {
-      @apply invisible absolute
-    }
-  }
-}
 </style>

@@ -255,9 +255,8 @@ fr-FR:
         </i18n-t>
         <t-tabs
           v-model="selectedMapMd5"
-          variant="bordered"
           size="md"
-          class="self-end mx-4 bg-transparent"
+          class="self-end mx-4 bg-transparent tabs-bordered flex flex-wrap"
           @update:model-value="update"
         >
           <t-tab
@@ -534,6 +533,7 @@ fr-FR:
       <div
         class="overflow-x-auto relative bg-base-100 rounded-lg" :class="{
           '!rounded-tl-none': scoreRS?.rankingSystems[0] === switcher.rankingSystem,
+          '!rounded-tr-none': scoreRS?.rankingSystems.at(-1) === switcher.rankingSystem,
         }"
       >
         <app-scores-table

@@ -55,19 +55,18 @@ fr-FR:
   <section class="w-full pt-4 mx-auto">
     <t-tabs
       v-slot="{ select }"
+      class="flex tabs-sm sm:tabs-sm md:tabs-lg tabs-bordered"
       :model-value="page.switcher.rankingSystem"
-      variant="bordered"
       @update:model-value="(v: LeaderboardRankingSystem) => page.setSwitcher({ rankingSystem: v })"
     >
-      <t-tab disabled class="p-0 m-0 f-tab grow" />
-      <!-- <t-tab class="f-tab" value="Timeline">
+      <t-tab disabled class="p-0 m-0 grow" />
+      <!-- <t-tab class="" value="Timeline">
         Timeline
       </t-tab> -->
 
       <t-tab
         v-for="(_stats, key) of tabs"
         :key="`user-tab-${key}`"
-        class="f-tab"
         :value="key"
       >
         {{ $t(localeKey.rankingSystem(key)) }}
@@ -75,7 +74,7 @@ fr-FR:
 
       <div
         v-if="Object.keys(dropdown).length"
-        class="tab f-tab tab-bordered"
+        class="tab"
         :active="
           page.switcher.rankingSystem
             && Object.keys(dropdown).includes(page.switcher.rankingSystem)
@@ -97,13 +96,7 @@ fr-FR:
           </ul>
         </div>
       </div>
-      <t-tab disabled class="p-0 m-0 f-tab grow" />
+      <t-tab disabled class="p-0 m-0 grow" />
     </t-tabs>
   </section>
 </template>
-
-<style lang="postcss" scoped>
-.f-tab {
-  @apply tab-sm sm:tab-sm md:tab-lg;
-}
-</style>
