@@ -18,7 +18,7 @@ const enum UploadingAvatarStatus {
 }
 
 const app$ = useNuxtApp()
-const route = useRoute()
+const route = useRoute<'me-settings'>()
 const { t, locale } = useI18n()
 const session = useSession()
 const dyn = await useDynamicSettings()

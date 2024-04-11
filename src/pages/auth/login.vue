@@ -13,7 +13,7 @@ definePageMeta({
   layout: 'centered',
 })
 
-const route = useRoute()
+const route = useRoute<'auth-login'>()
 const app = useNuxtApp()
 const { t } = useI18n()
 

@@ -6,7 +6,7 @@ import { useSession } from '~/store/session'
 import userpageStore from '~/store/userpage'
 
 const page = userpageStore()
-const route = useRoute()
+const route = useRoute<'user-handle'>()
 const { t, locale } = useI18n()
 const app$ = useNuxtApp()
 const session = useSession()
