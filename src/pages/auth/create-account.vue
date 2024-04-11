@@ -6,6 +6,8 @@ import type { AppRouter } from '~/server/trpc/routers'
 import { useSession } from '~/store/session'
 import { features } from '$active'
 
+import { Step } from '~/components/register/steps.vue'
+
 definePageMeta({
   layout: 'centered',
 })
@@ -183,17 +185,7 @@ fr-FR:
     </h2>
     <div class="grid w-full grid-cols-1 gap-6 mt-8 md:grid-cols-5 md:gap-10">
       <div class="md:col-span-2 md:order-2">
-        <ul class="steps md:steps-vertical w-full overflow-y-auto">
-          <li class="step step-primary">
-            Verify Email
-          </li>
-          <li class="step step-primary">
-            Create Account
-          </li>
-          <li class="step">
-            Login with client
-          </li>
-        </ul>
+        <register-steps :step="Step.CreateAccount" />
       </div>
       <div class="p-2 md:col-span-3">
         <fetch-overlay :fetching="state === State.Posting" />
