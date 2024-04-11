@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import type { MailTokenProvider } from '$base/server'
+import { Step } from '~/components/register/steps.vue'
 
 definePageMeta({
   layout: 'centered',
 })
 // eslint-disable-next-line antfu/no-const-enum
-const enum Step {
+const enum PageStep {
   InputEmail,
   VerifyToken,
 }
 // eslint-disable-next-line antfu/no-const-enum
 const enum State {
-  ErrorState,
   Idle,
   SendingOTP,
   VerifyingOTP,
@@ -19,10 +19,10 @@ const enum State {
 }
 const app = useNuxtApp()
 const { t } = useI18n()
-const params = useRoute().query
+const params = useRoute<'auth-register'>().query
 
 const error = ref<Error>()
-const step = ref(params.token ? Step.VerifyToken : Step.InputEmail)
+const step = ref(params.token ? PageStep.VerifyToken : PageStep.InputEmail)
 const state = ref(State.Idle)
 const email = ref<MailTokenProvider.Email>()
 const otp = ref<MailTokenProvider.OTP>()
@@ -37,11 +37,10 @@ async function go() {
   try {
     state.value = State.SendingOTP
     await app.$client.user.register.sendEmailCode.mutate(email.value)
-    step.value = Step.VerifyToken
+    step.value = PageStep.VerifyToken
   }
   catch (e) {
     error.value = e as any
-    state.value = State.ErrorState
   }
   state.value = State.Idle
 }
@@ -61,6 +60,10 @@ async function checkOTP() {
   })
 
   if (!result) {
+    error.value = {
+      name: Error.name,
+      message: t('invalid-otp'),
+    }
     return
   }
   token.value = result.token
@@ -72,52 +75,56 @@ async function checkOTP() {
 en-GB:
   have-account: Have account?
   verify: Verify
+  email: Email
+  lgtm: LGTM!
+  otp: One time code
+  invalid-otp: Invalid OTP
 zh-CN:
   have-account: 已经有一个账号了?
   verify: 发送验证码
+  email: 邮箱
+  lgtm: 我觉得可以!
+  otp: 验证码
+  invalid-otp: 验证码不正确
 fr-FR:
   have-account: Vous avez déjà un compte?
+  # TODO check translation
+  verify: Verify
+  email: Email
+  lgtm: LGTM!
+  otp: One time code
+  invalid-otp: Invalid OTP
 </i18n>
 
 <template>
   <div class="container max-w-screen-md mx-auto">
-    <h2 class="text-2xl pl-3 text-gbase-800 dark:text-gbase-50">
+    <h2 class="pl-3 text-2xl text-gbase-800 dark:text-gbase-50">
       {{ $t("global.register") }}
     </h2>
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-10 w-full mt-8">
+    <div class="grid w-full grid-cols-1 gap-6 mt-8 md:grid-cols-5 md:gap-10">
       <div class="md:col-span-2 md:order-2">
-        <ul class="steps md:steps-vertical w-full overflow-y-auto">
-          <li class="step step-primary">
-            Verify Email
-          </li>
-          <li class="step">
-            Create Account
-          </li>
-          <li class="step">
-            Login with client
-          </li>
-        </ul>
+        <register-steps :step="Step.VerifyEmail" />
       </div>
-      <div class="md:col-span-3 p-2">
+      <div class="p-2 md:col-span-3">
+        <span v-if="error" class="text-error">
+          {{ formatGucchoErrorWithT(t, error) }}
+        </span>
         <form
-          v-if="step === Step.InputEmail"
+          v-if="step === PageStep.InputEmail"
           action="#"
           method="post"
           @submit.prevent="go"
         >
-          <span v-if="error" class="text-error">{{
-            formatGucchoErrorWithT(t, error)
-          }}</span>
           <div
+            class="flex items-center gap-2 input"
             :class="{
               'input-error': error,
-            }" class="input flex items-center gap-2"
+            }"
           >
-            Email
+            {{ t("email") }}
             <input
               id="email"
               v-model="email"
-
               :disabled="state === State.SendingOTP"
               class="grow"
               required="true"
@@ -126,7 +133,7 @@ fr-FR:
             >
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div class="grid grid-cols-1 gap-4 mt-4 md:grid-cols-2">
             <button
               type="button"
               class="stack-btn btn btn-secondary"
@@ -147,29 +154,24 @@ fr-FR:
             </button>
           </div>
         </form>
-        <template v-else-if="step === Step.VerifyToken">
-          <div class="form-control">
-            <label for="email">One time code</label>
-            <input
-              v-model="otp"
-              type="number"
-              class="input"
-              @input="checkOTP"
-            >
-            <button
-              v-show="state === State.Succeed"
-              class="btn btn-primary mt-4"
-              @click="
-                navigateTo({ name: 'auth-create-account', query: { t: token } })
-              "
-            >
-              LGTM!
-            </button>
+        <form
+          v-else-if="step === PageStep.VerifyToken"
+          @submit="navigateTo({ name: 'auth-create-account', query: { t: token } })"
+        >
+          <div
+            class="flex items-center gap-2 input"
+            :class="{
+              'input-error': error,
+            }"
+          >
+            {{ t("otp") }}
+            <input v-model="otp" type="number" class="grow" @input="checkOTP">
           </div>
-        </template>
+          <button v-show="state === State.Succeed" class="w-full mt-4 btn btn-primary">
+            {{ t("lgtm") }}
+          </button>
+        </form>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped lang="postcss"></style>
