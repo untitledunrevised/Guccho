@@ -4,7 +4,7 @@ import { encryptBanchoPassword } from '../crypto'
 import * as schema from '../drizzle/schema'
 import { config } from '../env'
 import { Logger } from '../log'
-import { fromCountryCode, toBanchoPyPriv, toSafeName, toUserCompact, toUserOptional } from '../transforms'
+import { type DatabaseUserCompactFields, type DatabaseUserOptionalFields, fromCountryCode, toBanchoPyPriv, toSafeName, toUserCompact, toUserOptional } from '../transforms'
 import { useDrizzle } from './source/drizzle'
 import { GucchoError } from '~/server/trpc/messages'
 import { type UserClan, type UserCompact, type UserOptional, UserRole, type UserSecrets } from '~/def/user'
@@ -13,6 +13,8 @@ import { AdminProvider as Base } from '$base/server'
 const logger = Logger.child({ label: 'user' })
 
 const drizzle = useDrizzle(schema)
+
+type DatabaseAdminUserFields = 'lastActivity' | 'creationTime'
 export class AdminProvider extends Base<Id> implements Base<Id> {
   config = config()
   drizzle = drizzle
@@ -32,7 +34,7 @@ export class AdminProvider extends Base<Id> implements Base<Id> {
     ]
 
     const baseQuery = this.drizzle.select({
-      user: pick(schema.users, ['id', 'name', 'safeName', 'priv', 'country', 'email', 'preferredMode', 'lastActivity', 'creationTime']),
+      user: pick(schema.users, ['id', 'name', 'safeName', 'priv', 'country', 'email', 'preferredMode', 'lastActivity', 'creationTime'] satisfies Array<DatabaseUserCompactFields | DatabaseUserOptionalFields | DatabaseAdminUserFields>),
       clan: pick(schema.clans, ['id', 'name', 'badge']),
     }).from(schema.users)
       .leftJoin(schema.clans, eq(schema.clans.id, schema.users.clanId))

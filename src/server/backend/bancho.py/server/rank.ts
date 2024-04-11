@@ -5,6 +5,7 @@ import { normal } from '../constants'
 import { config as _config } from '../env'
 import { Logger } from '../log'
 import {
+  type DatabaseUserCompactFields,
   fromBanchoMode,
   idToString,
   stringToId,
@@ -70,7 +71,16 @@ export class DatabaseRankProvider implements Base<Id> {
         },
       },
       select: {
-        user: true,
+        user: {
+
+          select: {
+            id: true,
+            country: true,
+            name: true,
+            safeName: true,
+            priv: true,
+          } satisfies Record<DatabaseUserCompactFields, true>,
+        },
         ...leaderboardFields,
       },
       orderBy: rankingSystem === Rank.PPv2
@@ -153,7 +163,7 @@ export class DatabaseRankProvider implements Base<Id> {
     const u = aliasedTable(schema.users, 'u')
     const _q = this.drizzle.select({
       score: s,
-      user: u,
+      user: pick(u, ['country', 'id', 'name', 'priv', 'safeName'] satisfies DatabaseUserCompactFields[]),
     }).from(s)
       .innerJoin(u, eq(s.userId, u.id))
       .where(and(
@@ -338,7 +348,23 @@ export class RedisRankProvider extends DatabaseRankProvider implements Monitored
         return super.leaderboard({ mode, ruleset, rankingSystem, page, pageSize })
       }
 
-      const uStats = await this.drizzle.select()
+      const uStats = await this.drizzle.select({
+        users: {
+          id: schema.users.id,
+          name: schema.users.name,
+          safeName: schema.users.safeName,
+          priv: schema.users.priv,
+          country: schema.users.country,
+        },
+
+        stats: {
+          [Rank.PPv2]: schema.stats.pp,
+          [Rank.TotalScore]: schema.stats.totalScore,
+          [Rank.RankedScore]: schema.stats.rankedScore,
+          accuracy: schema.stats.accuracy,
+          plays: schema.stats.plays,
+        },
+      })
         .from(schema.users)
         .innerJoin(schema.stats, and(
           eq(schema.users.id, schema.stats.id)),
@@ -355,7 +381,7 @@ export class RedisRankProvider extends DatabaseRankProvider implements Monitored
       const result: ComponentLeaderboard<Id>[] = uStats.map(({ stats: stat, users: user }, index) => ({
         user: toUserCompact(user, this.config),
         inThisLeaderboard: {
-          [Rank.PPv2]: stat.pp,
+          [Rank.PPv2]: stat[Rank.PPv2],
           [Rank.TotalScore]: stat[Rank.TotalScore],
           [Rank.RankedScore]: stat[Rank.RankedScore],
           accuracy: stat.accuracy,

@@ -5,6 +5,7 @@ import { normal } from '../constants'
 import { config as _config } from '../env'
 import {
   type AbleToTransformToScores,
+  type DatabaseUserCompactFields,
   type PrismaAbleToTransformToScores,
   assertIsBanchoPyMode,
   fromBanchoPyMode,
@@ -37,7 +38,7 @@ export class ScoreProvider implements Base<bigint, Id> {
   drizzle = drizzle
   config = config
 
-  #transformPrismaScore(dbScore: (PrismaAbleToTransformToScores & { user: User })) {
+  #transformPrismaScore(dbScore: (PrismaAbleToTransformToScores & { user: Pick<User, DatabaseUserCompactFields> })) {
     assertIsBanchoPyMode(dbScore.mode)
     const [mode, ruleset] = fromBanchoPyMode(dbScore.mode)
 
@@ -51,7 +52,7 @@ export class ScoreProvider implements Base<bigint, Id> {
     )
   }
 
-  #transformScore(dbScore: AbleToTransformToScores & { user: typeof schema['users']['$inferSelect'] }) {
+  #transformScore(dbScore: AbleToTransformToScores & { user: Pick<typeof schema['users']['$inferSelect'], DatabaseUserCompactFields> }) {
     const [mode, ruleset] = fromBanchoPyMode(dbScore.mode)
     return Object.assign(
       toScore({

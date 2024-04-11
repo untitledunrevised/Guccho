@@ -5,7 +5,7 @@ import type { Id, ScoreId } from '..'
 import * as schema from '../drizzle/schema'
 import { config } from '../env'
 import { Logger } from '../log'
-import { assertIsBanchoPyMode, fromBanchoPyMode, idToString, stringToId, toBanchoPyMode, toRankingSystemScore, toUserAvatarSrc, toUserCompact } from '../transforms'
+import { type DatabaseUserCompactFields, assertIsBanchoPyMode, fromBanchoPyMode, idToString, stringToId, toBanchoPyMode, toRankingSystemScore, toUserAvatarSrc, toUserCompact } from '../transforms'
 import { GucchoError } from '../../../trpc/messages'
 import { BanchoPyScoreStatus, ClanPrivilege as BanchopyClanPrivilege } from './../enums'
 import { useDrizzle, userPriv } from './source/drizzle'
@@ -36,6 +36,7 @@ export class ClanProvider extends Base<Id> {
   // aliased tables
   #aClan = aliasedTable(schema.clans, 'c')
   #aListOwner = aliasedTable(schema.users, 'owners')
+  #aListOwnerCompact = pick(this.#aListOwner, ['id', 'country', 'name', 'safeName', 'priv'] satisfies DatabaseUserCompactFields[])
 
   // queries
   #pListSubQuery = this.drizzle
@@ -71,7 +72,7 @@ export class ClanProvider extends Base<Id> {
 
   #pListQuery = this.drizzle
     .select({
-      owner: this.#aListOwner,
+      owner: this.#aListOwnerCompact,
       clan: {
         id: sql<number>`${this.#pListSubQuery.id}`.as('sq_id'),
         name: sql<string>`${this.#pListSubQuery.name}`.as('sq_name'),
@@ -299,7 +300,7 @@ export class ClanProvider extends Base<Id> {
   async users(opt: Base.UsersParam<Id>): Promise<Base.UsersResult<Id>> {
     const start = opt.page * opt.perPage
     const u = await this.drizzle.select({
-      user: schema.users,
+      user: pick(schema.users, ['country', 'id', 'name', 'safeName', 'priv'] satisfies DatabaseUserCompactFields[]),
       count: sql`COUNT(*) OVER ()`.mapWith(Number),
     })
       .from(schema.users)
@@ -319,7 +320,7 @@ export class ClanProvider extends Base<Id> {
     const start = opt.page * opt.perPage
     const res = await this.drizzle.select({
       score: schema.scores,
-      user: schema.users,
+      user: pick(schema.users, ['country', 'id', 'name', 'safeName', 'priv'] satisfies DatabaseUserCompactFields[]),
       beatmap: schema.beatmaps,
       source: schema.sources,
       count: sql`COUNT(*) OVER ()`.mapWith(Number),

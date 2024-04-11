@@ -24,9 +24,11 @@ import { Logger } from '../log'
 import {
   type AbleToTransformToScores,
   BPyMode,
+  type DatabaseUserCompactFields,
+  type DatabaseUserOptionalFields,
+
   createRulesetData,
   fromBanchoPyMode,
-
   fromCountryCode,
   fromRankingStatus,
   idToString,
@@ -178,6 +180,14 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
             handle: opt.handle,
             selectAgainst: ['id', 'name', 'safeName', 'email'],
           }),
+        },
+        select: {
+          id: true,
+          name: true,
+          safeName: true,
+          country: true,
+          priv: true,
+          pwBcrypt: true,
         },
       })
       return [await compareBanchoPassword(hashedPassword, user.pwBcrypt), toUserCompact(user, this.config)]
@@ -513,6 +523,15 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
       with: {
         clan: true,
       },
+      columns: {
+        id: true,
+        name: true,
+        safeName: true,
+        country: true,
+        priv: true,
+        email: true,
+        preferredMode: true,
+      } satisfies Record<DatabaseUserCompactFields | DatabaseUserOptionalFields, true>,
     }) ?? throwGucchoError(GucchoError.UserNotFound)
 
     return {
@@ -568,6 +587,15 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
       data: {
         pwBcrypt,
       },
+      // columns: {
+      //   id: true,
+      //   name: true,
+      //   safeName: true,
+      //   country: true,
+      //   priv: true,
+      //   email: true,
+      //   preferredMode: true,
+      // } satisfies Record<DatabaseUserCompactFields | DatabaseUserOptionalFields, true>,
     })
     return toUserCompact(result, this.config)
   }
