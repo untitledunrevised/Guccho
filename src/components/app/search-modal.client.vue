@@ -125,35 +125,24 @@ const {
       </button>
     </div>
     <div class="bg-gbase-50 dark:bg-gbase-800 shadow-2xl md:rounded-2xl relative max-h-[calc(100dvh-32px-4rem)] flex flex-col overflow-hidden">
-      <template v-if="mode === 'beatmap'">
+      <form action="#" method="post" class="w-full space-y-2" @submit.prevent="raw(true)">
         <input
           v-model="keyword"
           type="text"
           :placeholder="t('search')"
-          class="input input-shadow grow border-label-0 focus:input-primary bg-transparent !outline-0"
+          class="input input-shadow w-full border-label-0 focus:input-primary bg-transparent !outline-0"
           @input="onInput"
-          @keyup.enter="raw(true)"
         >
-        <span
-          class="bg-transparent space-x-1 transition-[margin]" :class="{
-            'mt-2': tags.length,
-          }"
+        <div
+          v-if="mode === 'beatmap' && tags.length"
+          class="bg-transparent space-x-1"
         >
           <span v-for="tag, index in tags" :key="index" class="gap-1 cursor-pointer badge badge-md badge-primary whitespace-nowrap" @click="tags.splice(index, 1)">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             <div v-html="tag.toString()" />
           </span>
-        </span>
-      </template>
-      <input
-        v-else
-        v-model="keyword"
-        type="text"
-        :placeholder="t('search')"
-        class="input input-shadow grow border-label-0 focus:input-primary bg-transparent !outline-0"
-        @input="onInput"
-        @keyup.enter="raw(true)"
-      >
+        </div>
+      </form>
       <div class="overflow-auto">
         <template
           v-if="includes.pages && pages.length "

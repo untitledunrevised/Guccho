@@ -53,6 +53,8 @@ const searchMode = computed(() => {
 export async function useSearchResult() {
   const app = useNuxtApp()
 
+  let cancel = new AbortController()
+
   const {
     data: users,
     pending: pendingUsers,
@@ -68,6 +70,7 @@ export async function useSearchResult() {
       context: {
         skipBatch: true,
       },
+      signal: cancel.signal,
     })
   })
 
@@ -87,6 +90,7 @@ export async function useSearchResult() {
       context: {
         skipBatch: true,
       },
+      signal: cancel.signal,
     })
   })
 
@@ -106,6 +110,7 @@ export async function useSearchResult() {
       context: {
         skipBatch: true,
       },
+      signal: cancel.signal,
     })
   })
 
@@ -122,6 +127,10 @@ export async function useSearchResult() {
         return
       }
     }
+    if (cancel) {
+      cancel.abort()
+    }
+    cancel = new AbortController()
 
     includes.users ? searchUsers() : (users.value = [])
     includes.beatmaps ? searchBeatmaps() : (beatmaps.value = [])
