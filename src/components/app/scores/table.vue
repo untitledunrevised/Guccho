@@ -76,7 +76,7 @@ fr-FR:
           <th scope="row">
             <div class="flex items-center space-x-3">
               <div class="avatar">
-                <div class="mask mask-squircle w-8 h-8">
+                <div class="w-8 h-8 mask mask-squircle">
                   <img :src="item.user.avatarSrc" alt="avatar">
                 </div>
               </div>
@@ -87,16 +87,22 @@ fr-FR:
               </div>
             </div>
           </th>
-          <td class="flex justify-end gap-1 tooltip tooltip-primary lg:tooltip-right" :data-tip="item.score.mods.map(m => StableMod[m]).join(', ')">
+          <td
+            class="flex justify-end gap-1"
+            :class="{
+              'tooltip tooltip-primary lg:tooltip-right': item.score.mods.length,
+            }"
+            :data-tip="item.score.mods.map(m => StableMod[m]).join(', ')"
+          >
             <app-mod v-for="mod in item.score.mods" :key="mod" :mod="mod" class="w-6 h-6" />
           </td>
-          <td class="text-right font-mono">
+          <td class="font-mono text-right">
             {{ comma(item.score.score) }}
           </td>
-          <td v-if="rankingSystem === Rank.PPv2" class="text-right font-mono">
+          <td v-if="rankingSystem === Rank.PPv2" class="font-mono text-right">
             {{ pp(item.score[Rank.PPv2] || 0) }}
           </td>
-          <td v-else-if="rankingSystem === Rank.PPv1" class="text-right font-mono">
+          <td v-else-if="rankingSystem === Rank.PPv1" class="font-mono text-right">
             {{ pp(item.score[Rank.PPv1] || 0) }}
           </td>
           <td class="font-mono">
