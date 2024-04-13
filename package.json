@@ -130,6 +130,7 @@
     "prisma": "^5.11.0",
     "sass": "^1.69.3",
     "tailwind-highlightjs": "^2.0.1",
+    "tailwindcss-view-transitions": "^0.1.1",
     "typescript": "^5.2.2",
     "vue-tsc": "^1.8.19"
   }

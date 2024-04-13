@@ -256,7 +256,7 @@ fr-FR:
         <t-tabs
           v-model="selectedMapMd5"
           size="md"
-          class="self-end mx-4 bg-transparent tabs-bordered flex flex-wrap"
+          class="flex flex-wrap self-end mx-4 bg-transparent tabs-bordered"
           @update:model-value="update"
         >
           <t-tab
@@ -311,13 +311,16 @@ fr-FR:
         </div>
         <div class="flex flex-col md:flex-row">
           <div class="w-full md:w-1/3 grow">
-            <div class="p-4 md:p-3 text-center relative">
-              <img
-                class="shadow-md rounded-xl mx-auto min-w-1/2"
-                :src="beatmapset.assets['list@2x']"
-                :alt="selectedMap.version"
-                :onerror="placeholder"
-              >
+            <div class="relative p-4 text-center md:p-3">
+              <picture class="vt-name-[beatmap-list]">
+                <source v-if="beatmapset.assets['list@2x']" :srcset="`${beatmapset.assets.list} 1x, ${beatmapset.assets['list@2x']} 2x`">
+                <img
+                  :src="beatmapset.assets.list"
+                  :alt="autoLocale(beatmapset.meta).title"
+                  :onerror="placeholder"
+                  class="object-cover w-full mx-auto shadow-md rounded-xl"
+                >
+              </picture>
               <div v-if="links" class="pt-2 text-start">
                 <ul class="menu">
                   <li>
@@ -531,14 +534,14 @@ fr-FR:
         :ruleset="switcher.ruleset" @update:model-value="update"
       />
       <div
-        class="overflow-x-auto relative bg-base-100 rounded-lg" :class="{
+        class="relative overflow-x-auto rounded-lg bg-base-100" :class="{
           '!rounded-tl-none': scoreRS?.rankingSystems[0] === switcher.rankingSystem,
           '!rounded-tr-none': scoreRS?.rankingSystems.at(-1) === switcher.rankingSystem,
         }"
       >
         <app-scores-table
           v-if="leaderboard" :scores="leaderboard" :ranking-system="switcher.rankingSystem"
-          class="transition-filter transition-opacity opacity-100"
+          class="transition-opacity opacity-100 transition-filter"
           :class="{
             'clear-rounded-tl': scoreRS?.rankingSystems[0] === switcher.rankingSystem,
             'opacity-30 saturate-50 blur-md': pendingLeaderboard,
@@ -625,5 +628,9 @@ fr-FR:
 
 .tab-active .h-mode {
   @apply opacity-100;
+}
+
+.v-b-img {
+  view-transition-name: beatmap-img;
 }
 </style>

@@ -63,6 +63,7 @@ module.exports = {
     require('@tailwindcss/typography'),
     require('tailwind-highlightjs'),
     require('@tailwindcss/container-queries'),
+    require('tailwindcss-view-transitions'),
   ],
   daisyui: {
     darkTheme: 'guccho-dark',

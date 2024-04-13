@@ -99,7 +99,7 @@ fr-FR:
               class="object-cover w-20 h-16 shadow-md rounded-xl"
             >
           </picture>
-          <icon v-else class="w-20 h-16" name="clarity:unknown-status-line" size="100%" />
+          <icon v-else class="w-20 h-16 vt-name-[beatmap-list]" name="clarity:unknown-status-line" size="100%" />
         </div>
         <div class="flex flex-col min-w-0">
           <router-link
@@ -140,7 +140,7 @@ fr-FR:
                 <app-mod v-for="mod in score.mods" :key="mod" :mod="mod" class="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
               </span>
             </div>
-            <div class="text-xs md:text-sm lg:text-md opacity-0 pointer-events-none">
+            <div class="text-xs opacity-0 pointer-events-none md:text-sm lg:text-md">
               IM HERE TO TAKE HEIGHT
             </div>
           </router-link>

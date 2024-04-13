@@ -98,7 +98,7 @@ function refresh() {
     <template v-if="clan">
       <div class="px-2 lg:px-0">
         <div class="flex flex-col items-center gap-8 md:flex-row">
-          <div class="relative drop-shadow-md">
+          <div class="relative drop-shadow-md vt-name-[clan-avatar]">
             <img :alt="clan.name" :src="clan.avatarSrc" class="object-cover w-48 h-auto mask mask-squircle">
             <span class="absolute bottom-0 right-0 font-semibold badge badge-lg md:badge-xl">
               {{ clan.badge }}
@@ -106,7 +106,7 @@ function refresh() {
           </div>
           <div class="flex flex-col w-full md:self-end md:flex-row grow">
             <span class="self-center text-3xl md:text-4xl md:self-end">{{ clan.name }}</span>
-            <div class="md:ms-auto flex gap-2 items-end">
+            <div class="flex items-end gap-2 md:ms-auto">
               <template v-if="session.loggedIn">
                 <button v-if="includes(relation, allowToJoin)" class="mx-auto md:ms-auto md:me-0 btn btn-primary btn-circle" @click="requestJoin">
                   <icon name="material-symbols:group-add-outline-rounded" class="w-5 h-5" />

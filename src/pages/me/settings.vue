@@ -406,7 +406,7 @@ fr-FR:
       class="my-auto"
     >
       <div
-        class="space-x-2 p-4 shadow-xl rounded-xl bg-gbase-50 dark:bg-gbase-700"
+        class="p-4 space-x-2 shadow-xl rounded-xl bg-gbase-50 dark:bg-gbase-700"
       >
         <div class="flex items-center justify-center w-full">
           <label v-if="!newAvatar" for="dropzone-file" class="dropzone">
@@ -612,7 +612,7 @@ fr-FR:
         <div class="flex flex-wrap items-end gap-4 p-3 overflow-hidden lg:mr-4">
           <div class="drop-shadow-md">
             <div
-              class="relative z-10 mask mask-squircle hoverable w-100 self-center [&>img]:hover:blur-lg [&>img]:hover:opacity-50 no-animation"
+              class="relative z-10 mask mask-squircle hoverable w-100 self-center [&>img]:hover:blur-lg [&>img]:hover:opacity-50 no-animation t-avatar"
             >
               <button
                 class="absolute top-0 z-20 w-full h-full btn btn-primary hover:bg-primary/50 focus:active:bg-primary/50"
@@ -658,7 +658,7 @@ fr-FR:
                   </tr>
                 </thead>
                 <tbody
-                  class="origin-center transition-filter transition-opacity"
+                  class="transition-opacity origin-center transition-filter"
                   :class="{
                     'opacity-30 saturate-50 blur-md': pendingSession,
                   }"
@@ -730,7 +730,7 @@ fr-FR:
                     </td>
                     <th scope="row">
                       <button
-                        class="btn btn-ghost btn-xs inline"
+                        class="inline btn btn-ghost btn-xs"
                         :disabled="pendingSession || session.current"
                         @click="kickSession(id)"
                       >
@@ -891,7 +891,7 @@ fr-FR:
           </label>
           <app-mode-switcher
             v-model="user.preferredMode"
-            class="min-w-min w-1/2 mx-auto"
+            class="w-1/2 mx-auto min-w-min"
           />
         </div>
         <div>
@@ -966,5 +966,9 @@ fr-FR:
   min-width: 150px;
   max-width: 200px;
   @apply object-cover aspect-square;
+}
+
+.t-avatar {
+ view-transition-name: user-avatar;
 }
 </style>

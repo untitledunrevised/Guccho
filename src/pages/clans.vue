@@ -92,7 +92,7 @@ const { data: res } = await app.$client.clan.search.useQuery(mergeQuery)
           class="flex flex-row items-center gap-2 md:flex-col"
           :to="{ name: 'clan-id', params: { id: clan.id } }"
         >
-          <div class="relative drop-shadow-md tooltip md:mx-auto" :data-tip="clan.owner.name">
+          <div class="relative drop-shadow-md tooltip md:mx-auto vt-name-[clan-avatar]" :data-tip="clan.owner.name">
             <img :alt="clan.owner.name" :src="clan.avatarSrc" class="object-cover w-24 h-24 mask mask-squircle">
             <span class="absolute bottom-0 right-0 font-semibold badge badge-lg">
               {{ clan.badge }}

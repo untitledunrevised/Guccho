@@ -128,6 +128,7 @@ export default defineNuxtConfig({
     headNext: true,
     inlineRouteRules: true,
     typedPages: true,
+    viewTransition: true,
   },
 
   devtools: {

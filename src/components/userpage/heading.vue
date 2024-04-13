@@ -122,7 +122,7 @@ fr-FR:
     class="flex flex-col items-center w-full gap-5 mx-auto mt-2 md:p-2 md:container custom-container md:flex-row md:items-end"
   >
     <!-- Logo -->
-    <div class="relative">
+    <div class="relative vt-name-[user-avatar]">
       <div
         :style="`background-image: url(${page.user.avatarSrc}); background-position: center`"
         class="bg-cover mask mask-squircle w-44 sm:w-56 md:w-72 lg:w-64 aspect-square"

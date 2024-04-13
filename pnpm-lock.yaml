@@ -319,6 +319,9 @@ devDependencies:
   tailwind-highlightjs:
     specifier: ^2.0.1
     version: 2.0.1(highlight.js@11.9.0)(tailwindcss@3.4.1)
+  tailwindcss-view-transitions:
+    specifier: ^0.1.1
+    version: 0.1.1(tailwindcss@3.4.1)
   typescript:
     specifier: ^5.2.2
     version: 5.3.3
@@ -10728,6 +10731,14 @@ packages:
       tailwindcss: 3.4.1
     transitivePeerDependencies:
       - encoding
+    dev: true
+
+  /tailwindcss-view-transitions@0.1.1(tailwindcss@3.4.1):
+    resolution: {integrity: sha512-YIiZAoYDSwcUC6kt/TD7knkOkiDyyQArUN3fgYAvrRIF7zzta7/olQM44z9zeuGRBMSWpkbP1slYH67gEMMIKA==}
+    peerDependencies:
+      tailwindcss: '>=3.0.0'
+    dependencies:
+      tailwindcss: 3.4.1
     dev: true
 
   /tailwindcss@3.4.1:
