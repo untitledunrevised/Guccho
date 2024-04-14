@@ -1,7 +1,6 @@
 <script lang="ts" setup>
-// @ts-expect-error we don't have to know
-import { JsonViewer } from 'vue3-json-viewer'
-import 'vue3-json-viewer/dist/index.css'
+import JsonViewer from 'vue-json-pretty'
+import 'vue-json-pretty/lib/styles.css'
 
 defineProps<{
   value: any
@@ -9,5 +8,5 @@ defineProps<{
 </script>
 
 <template>
-  <JsonViewer :value="value" class="rounded-lg" />
+  <JsonViewer :data="value" class="rounded-lg border-base bg-base-100 border p-4" :deep="1" />
 </template>
