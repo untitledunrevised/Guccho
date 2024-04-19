@@ -14,7 +14,7 @@ export class RedisSessionStore<TDoc extends Document & Session<any>> extends Ses
     return this.#redis?.isReady ? [Monitored.Status.Up] : [Monitored.Status.Down, 'failed to connect to session server']
   }
 
-  static REDIS_SESSION_PREFIX = 'session:guccho:'
+  static readonly REDIS_SESSION_PREFIX = 'session:guccho:'
   #redis: ReturnType<typeof createClient>
 
   #askForBuffer = commandOptions({ returnBuffers: true })
