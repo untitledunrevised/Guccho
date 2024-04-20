@@ -130,15 +130,19 @@ async function updateUserSettings() {
   posting.value = true
 
   const [result, profileResult] = await Promise.all([
-    app$.$client.me.changeSettings.mutate(updateData).catch((error) => {
-      if (!error.data.zodError) {
-        errorMessage.value.push(formatGucchoErrorWithT(t, error))
-      }
-      for (const key in error.data.zodError.fieldErrors) {
-        const v: string[] = error.data.zodError.fieldErrors[key]
-        errorMessage.value.push(`${key}: ${v.join(';')}`)
-      }
-    }),
+    app$.$client.me.changeSettings.mutate(updateData)
+      .catch((error) => {
+        if (!error.data.zodError) {
+          errorMessage.value.push(formatGucchoErrorWithT(t, error))
+        }
+        else {
+          for (const key in error.data.zodError.fieldErrors) {
+            const v: string[] = error.data.zodError.fieldErrors[key]
+            errorMessage.value.push(`${key}: ${v.join(';')}`)
+          }
+        }
+      }),
+
     profile.value
       && profileEdited.value
       && app$.$client.me.changeUserpage
@@ -152,6 +156,7 @@ async function updateUserSettings() {
   setTimeout(() => {
     updateResult.value = false
   }, 3000)
+
   if (result) {
     unchanged.value = { ...unchanged.value, ...result }
     user.value = { ...unchanged.value }
@@ -646,11 +651,6 @@ fr-FR:
               <table class="table">
                 <thead>
                   <tr>
-                    <!-- <th>
-                      <label>
-                        <input type="checkbox" class="checkbox">
-                      </label>
-                    </th> -->
                     <th>{{ t("session.name") }}</th>
                     <th>{{ t("session.last-activity") }}</th>
                     <th>{{ t("session.actions") }}</th>
@@ -765,6 +765,7 @@ fr-FR:
             <span class="pl-3 label-text">{{ t("username") }}</span>
           </label>
           <div
+            class="join"
             :class="
               unchanged.name !== user.name && 'input-group input-group-sm'
             "
@@ -774,8 +775,8 @@ fr-FR:
               v-model="user.name"
               type="text"
               :placeholder="t('username')"
-              class="w-full input input-shadow input-sm"
-              :disabled="!user.roles.includes(UserRole.Supporter)"
+              class="join-item grow input input-shadow input-sm"
+              :disabled="!user.changeable.name"
               :class="{
                 'input-bordered input-primary': unchanged.name !== user.name,
                 '!input-ghost border-none': unchanged.name === user.name,
@@ -783,7 +784,7 @@ fr-FR:
             >
             <button
               v-if="unchanged.name !== user.name"
-              class="btn btn-shadow btn-sm"
+              class="join-item btn btn-shadow btn-sm"
               type="button"
               :disabled="unchanged.name === user.name"
               @click="
@@ -825,6 +826,7 @@ fr-FR:
             <span class="pl-3 label-text">{{ t("email") }}</span>
           </label>
           <div
+            class="join"
             :class="
               unchanged.email !== user.email && 'input-group input-group-sm'
             "
@@ -834,7 +836,8 @@ fr-FR:
               v-model="user.email"
               type="email"
               placeholder="abc@123.com"
-              class="w-full input input-shadow input-sm"
+              class="join-item grow input input-shadow input-sm"
+              :disabled="!user.changeable.email"
               :class="{
                 'input-bordered input-primary': unchanged.email !== user.email,
                 'input-ghost': unchanged.email === user.email,
@@ -842,7 +845,7 @@ fr-FR:
             >
             <button
               v-show="unchanged.email !== user.email"
-              class="btn btn-shadow btn-sm"
+              class="join-item btn btn-shadow btn-sm"
               type="button"
               :disabled="unchanged.email === user.email"
               @click="
@@ -862,7 +865,7 @@ fr-FR:
           </label>
           <div class="flex gap-2 pl-3">
             <img :src="getFlagURL(user.flag)" class="w-6" alt="flag">
-            <select v-model="user.flag" class="w-full select select-sm">
+            <select v-model="user.flag" class="w-full select select-sm" :disabled="!user.changeable.flag">
               <option
                 v-for="countryCode in CountryCode"
                 :key="countryCode"

@@ -12,16 +12,17 @@ import type {
 } from '~/def/common'
 import type { CountryCode } from '~/def/country-code'
 import type { RankingSystemScore } from '~/def/score'
-import type {
-  DynamicSettingStore,
-  Scope,
-  UserClan,
-  UserCompact,
-  UserCompact as UserCompact$2,
-  UserExtra,
-  UserOptional,
-  UserStatistic,
-  UserStatus,
+import {
+  type DynamicSettingStore,
+  type Scope,
+  type UserClan,
+  type UserCompact,
+  type UserCompact as UserCompact$2,
+  type UserExtra,
+  type UserOptional,
+  UserRole,
+  type UserStatistic,
+  type UserStatus,
 } from '~/def/user'
 
 export namespace UserProvider {
@@ -87,7 +88,7 @@ export abstract class UserProvider<Id, ScoreId> extends IdTransformable {
       ]: UserProvider.ComposableProperties<Id>[K];
     }
   >
-  getFullWithSettings<
+  async getSettings<
     Excludes extends Partial<
       Record<keyof UserProvider.ComposableProperties<Id>, boolean>
     >,
@@ -98,7 +99,24 @@ export abstract class UserProvider<Id, ScoreId> extends IdTransformable {
     includeHidden?: boolean
     scope: _Scope
   }) {
-    return this.getFull(query)
+    const result = await this.getFull(query) as unknown as UserCompact<Id> & {
+      [K in keyof UserProvider.ComposableProperties<Id> as Excludes[K] extends true
+        ? never
+        : K
+      ]: UserProvider.ComposableProperties<Id>[K];
+    }
+    const isSupporter = result.roles.includes(UserRole.Supporter)
+
+    const changeable = {
+      email: true,
+      name: isSupporter,
+      flag: isSupporter,
+    }
+
+    return {
+      ...result,
+      changeable,
+    }
   }
 
   abstract changeSettings(

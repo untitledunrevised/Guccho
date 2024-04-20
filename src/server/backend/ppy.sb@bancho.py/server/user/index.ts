@@ -35,7 +35,7 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
   ]
 
   async changeSettings(
-    user: { id: Id },
+    user: { id: Id; roles: UserRole[] },
     input: {
       email?: string
       name?: string
@@ -46,10 +46,12 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
       }
     },
   ) {
-    const updatedUser = await super.changeSettings(user, input)
-    if (!updatedUser.roles.includes(UserRole.Supporter)) {
-      updatedUser.roles.push(UserRole.Supporter)
+    if (!user.roles.includes(UserRole.Supporter)) {
+      user.roles.push(UserRole.Supporter)
     }
+
+    // TODO: check email(should verified by frontend with another request (not impl'd yet ))
+    const updatedUser = await super.changeSettings(user, input)
     return updatedUser
   }
 
@@ -148,14 +150,18 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
     return returnValue
   }
 
-  async getFullWithSettings<
+  async getSettings<
     Excludes extends Partial<Record<keyof Base.ComposableProperties<Id>, boolean>>,
     _Scope extends Scope = Scope.Public,
   >(query: { handle: string; excludes?: Excludes; includeHidden?: boolean; scope: _Scope }) {
     const fullUser = await this.getFull(query)
-    if (!fullUser.roles.includes(UserRole.Supporter)) {
-      fullUser.roles.push(UserRole.Supporter)
+    return {
+      ...fullUser,
+      changeable: {
+        email: true,
+        name: true,
+        flag: true,
+      },
     }
-    return fullUser
   }
 }

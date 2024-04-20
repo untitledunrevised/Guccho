@@ -46,7 +46,7 @@ import { prismaClient } from './source/prisma'
 import { client as redisClient } from './source/redis'
 import { UserRelationProvider } from './user-relations'
 import { useDrizzle, userPriv } from './source/drizzle'
-import { type DynamicSettingStore, Scope, type UserCompact, type UserStatistic, UserStatus } from '~/def/user'
+import { type DynamicSettingStore, Scope, type UserCompact, UserRole, type UserStatistic, UserStatus } from '~/def/user'
 import type { CountryCode } from '~/def/country-code'
 import type { ActiveMode, ActiveRuleset, LeaderboardRankingSystem } from '~/def/common'
 import { Mode, Rank, Ruleset } from '~/def'
@@ -503,7 +503,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
   }
 
   async changeSettings(
-    user: { id: Id },
+    user: { id: Id; roles: UserRole[] },
     input: {
       email?: string
       name?: string
@@ -514,17 +514,34 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
       }
     },
   ) {
-    input.name && this.ensureUsernameIsAllowed(input.name)
+    if (input.name) {
+      this.ensureUsernameIsAllowed(input.name)
+      const existingUser = await this.getCompact({
+        handle: input.name,
+        keys: ['id', 'name', 'safeName'],
+        scope: Scope.Self,
+      }).catch(noop<undefined>)
+
+      if (existingUser) {
+        return throwGucchoError(GucchoError.UserExists)
+      }
+    }
 
     await this.drizzle.update(schema.users)
       .set({
         email: input.email,
 
-        name: input.name,
+        name: user.roles.includes(UserRole.Supporter)
+          ? input.name
+          : undefined,
 
-        safeName: input.name && toSafeName(input.name),
+        safeName: user.roles.includes(UserRole.Supporter)
+          ? input.name && toSafeName(input.name)
+          : undefined,
 
-        country: input.flag && fromCountryCode(input.flag),
+        country: user.roles.includes(UserRole.Supporter)
+          ? input.flag && fromCountryCode(input.flag)
+          : undefined,
 
         preferredMode: input.preferredMode
           ? toBanchoPyMode(input.preferredMode.mode, input.preferredMode.ruleset)

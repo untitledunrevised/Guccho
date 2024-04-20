@@ -13,7 +13,7 @@ import { Mode, Ruleset } from '~/def'
 // const verifiedEmail = new Map<string, Set<string>>()
 export const router = _router({
   settings: pUser.query(async ({ ctx }) => {
-    const result = await users.getFullWithSettings({
+    const result = await users.getSettings({
       handle: UserProvider.idToString(ctx.user.id),
       includeHidden: true,
       excludes: { statistics: true, relationships: true, secrets: false },
@@ -58,21 +58,7 @@ export const router = _router({
       }).partial(),
     )
     .mutation(async ({ ctx, input }) => {
-      const update: typeof input = pick(input, ['flag', 'preferredMode', 'email'])
-      // TODO: check email(should verified by frontend with another request (not impl'd yet ))
-      if (input.name) {
-        const existingUser = await users.getCompact({
-          handle: input.name,
-          keys: ['id', 'name', 'safeName'],
-        }).catch(noop<undefined>)
-        if (existingUser?.name === input.name) {
-          throwGucchoError(GucchoError.UserExists)
-        }
-
-        update.name = input.name
-      }
-
-      const result = await users.changeSettings(ctx.user, update) ?? throwGucchoError(GucchoError.UpdateUserSettingsFailed)
+      const result = await users.changeSettings(ctx.user, input) ?? throwGucchoError(GucchoError.UpdateUserSettingsFailed)
 
       ctx.user = result
       return mapId(ctx.user, UserProvider.idToString)
