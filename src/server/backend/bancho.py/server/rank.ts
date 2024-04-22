@@ -1,7 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { aliasedTable, and, desc, eq, gt, inArray, sql } from 'drizzle-orm'
 import { type Id, hasRuleset } from '..'
-import { normal } from '../constants'
 import { config as _config } from '../env'
 import { Logger } from '../log'
 import {
@@ -15,6 +14,7 @@ import {
 } from '../transforms'
 import * as schema from '../drizzle/schema'
 import { BanchoPyScoreStatus } from '../enums'
+import { GucchoError } from '../../../trpc/messages'
 import { RedisNotReadyError, client as redisClient } from './source/redis'
 import { useDrizzle, userPriv } from './source/drizzle'
 import { prismaClient } from './source/prisma'
@@ -28,15 +28,6 @@ const logger = Logger.child({ label: 'leaderboard', backend: 'bancho.py' })
 
 const config = _config()
 const drizzle = useDrizzle(schema)
-
-const leaderboardFields = {
-  id: true,
-  pp: true,
-  accuracy: true,
-  [Rank.TotalScore]: true,
-  [Rank.RankedScore]: true,
-  plays: true,
-} as const
 
 export class DatabaseRankProvider implements Base<Id> {
   static readonly stringToId = stringToId
@@ -60,47 +51,36 @@ export class DatabaseRankProvider implements Base<Id> {
     pageSize: number
   }): Promise<ComponentLeaderboard<Id>[]> {
     const start = page * pageSize
-    const result = await this.prisma.stat.findMany({
-      where: {
-        pp: rankingSystem === Rank.PPv2 ? { gt: 0 } : undefined,
-        rankedScore: rankingSystem === Rank.RankedScore ? { gt: 0 } : undefined,
-        totalScore: rankingSystem === Rank.TotalScore ? { gt: 0 } : undefined,
-        mode: toBanchoPyMode(mode, ruleset),
-        user: {
-          priv: { in: normal },
-        },
-      },
-      select: {
-        user: {
 
-          select: {
-            id: true,
-            country: true,
-            name: true,
-            safeName: true,
-            priv: true,
-          } satisfies Record<DatabaseUserCompactFields, true>,
-        },
-        ...leaderboardFields,
-      },
-      orderBy: rankingSystem === Rank.PPv2
-        ? {
-            pp: 'desc',
-          }
-        : rankingSystem === Rank.RankedScore
-          ? {
-              [Rank.RankedScore]: 'desc',
-            }
-          : rankingSystem === Rank.TotalScore
-            ? {
-                [Rank.TotalScore]: 'desc',
-              }
-            : {},
-      skip: start,
-      take: pageSize,
-    })
+    const result = await this.drizzle
+      .select({
+        user: pick(schema.users, ['id', 'country', 'name', 'safeName', 'priv'] satisfies DatabaseUserCompactFields[]),
+        stat: pick(schema.stats, ['pp', 'rankedScore', 'totalScore', 'accuracy', 'plays']),
+      })
+      .from(schema.stats)
+      .innerJoin(schema.users, eq(schema.stats.id, schema.users.id))
+      .where(
+        and(
+          userPriv(schema.users),
+          rankingSystem === Rank.PPv2 ? gt(schema.stats.pp, 0) : undefined,
+          rankingSystem === Rank.RankedScore ? gt(schema.stats.rankedScore, 0n) : undefined,
+          rankingSystem === Rank.TotalScore ? gt(schema.stats.totalScore, 0n) : undefined,
+          eq(schema.stats.mode, toBanchoPyMode(mode, ruleset)),
+        )
+      )
+      .orderBy(
+        rankingSystem === Rank.PPv2
+          ? desc(schema.stats.pp)
+          : rankingSystem === Rank.RankedScore
+            ? desc(schema.stats.rankedScore)
+            : rankingSystem === Rank.TotalScore
+              ? desc(schema.stats.totalScore)
+              : throwGucchoError(GucchoError.ModeNotSupported)
+      )
+      .limit(pageSize)
+      .offset(start)
 
-    return result.map(({ user, ...stat }, index) => ({
+    return result.map(({ user, stat }, index) => ({
       user: toUserCompact(user, this.config),
       inThisLeaderboard: {
         [Rank.PPv2]: stat.pp,

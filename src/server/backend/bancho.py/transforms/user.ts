@@ -113,7 +113,7 @@ export function toOneBanchoPyPriv(role: UserRole): number {
   }
 }
 
-export function toUserClan(user: Pick<DatabaseUser & { clan: Pick<Clan, 'id' | 'name'> | null }, 'name' | 'clan'>) {
+export function toPrismaUserClan(user: Pick<DatabaseUser & { clan: Pick<Clan, 'id' | 'name'> | null }, 'name' | 'clan'>) {
   return {
     clan: user.clan
       ? {

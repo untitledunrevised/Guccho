@@ -11,7 +11,7 @@ import type { Mode, Ruleset } from '~/def'
 import type { CountryCode } from '~/def/country-code'
 import { Scope, type UserCompact, UserRole, UserStatus } from '~/def/user'
 import { ArticleProvider, UserProvider as BanchoPyUser } from '~/server/backend/bancho.py/server'
-import { fromBanchoPyMode, toFullUser, toUserClan } from '~/server/backend/bancho.py/transforms'
+import { fromBanchoPyMode, toFullUser, toPrismaUserClan } from '~/server/backend/bancho.py/transforms'
 import type { UserProvider as Base } from '$base/server'
 
 const logger = Logger.child({ label: 'user' })
@@ -112,7 +112,7 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
     const [mode, ruleset] = fromBanchoPyMode(user.preferredMode)
     const returnValue = {
       ...fullUser,
-      clan: excludes?.clan === true ? (undefined as never) : toUserClan(user).clan,
+      clan: excludes?.clan === true ? (undefined as never) : toPrismaUserClan(user).clan,
       preferredMode: {
         mode, ruleset,
       },

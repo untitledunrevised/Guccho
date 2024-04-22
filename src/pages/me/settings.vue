@@ -6,7 +6,6 @@ import type { ArticleProvider } from '$base/server/article'
 import 'vue-advanced-cropper/dist/style.css'
 import { CountryCode } from '~/def/country-code'
 import { Client, OS } from '~/def/device'
-import { UserRole } from '~/def/user'
 import { useSession } from '~/store/session'
 
 // eslint-disable-next-line antfu/no-const-enum

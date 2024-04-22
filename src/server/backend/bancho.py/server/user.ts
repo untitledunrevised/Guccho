@@ -1,8 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { unlink, writeFile } from 'node:fs/promises'
 import { isAbsolute, join, resolve, sep } from 'node:path'
-import { aliasedTable, and, desc, eq, inArray, sql } from 'drizzle-orm'
-import { merge } from 'lodash-es'
+import { aliasedTable, and, desc, eq, inArray, like, or, sql } from 'drizzle-orm'
 import imageType from 'image-type'
 import { glob } from 'glob'
 import { TRPCError } from '@trpc/server'
@@ -10,11 +9,9 @@ import { Prisma } from 'prisma-client-bancho-py'
 import { type QueryError } from 'mysql2'
 import type { Id, ScoreId } from '..'
 import { getLiveUserStatus } from '../api-client'
-import { normal } from '../constants'
 import { compareBanchoPassword, encryptBanchoPassword } from '../crypto'
 import {
   createUserHandleWhereQuery,
-  createUserLikeQuery,
   prismaUserCompactFields,
 } from '../db-query'
 import type { settings } from '../dynamic-settings'
@@ -36,9 +33,9 @@ import {
   stringToId,
   toBanchoPyMode,
   toFullUser,
+  toPrismaUserClan,
   toRankingSystemScores,
   toSafeName,
-  toUserClan,
   toUserCompact,
   toUserOptional,
 } from '../transforms'
@@ -147,28 +144,39 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
 
   async getCompact(opt: Base.OptType & { scope?: Scope }) {
     const { handle, scope, keys = ['id', 'name', 'safeName', 'email'] } = opt
-    /* optimized */
-    const user = await this.prisma.user.findFirstOrThrow({
 
-      where: {
-        AND: [
-          createUserHandleWhereQuery({
-            handle,
-            selectAgainst: keys,
-          }),
-          scope === Scope.Self
-            ? {}
-            : {
-                priv: {
-                  in: normal,
-                },
-              }],
+    let handleNum = +handle
+    if (Number.isNaN(handleNum)) {
+      handleNum = -1
+    }
+    const user = await this.drizzle.query.users.findFirst({
+      where: and(
+        or(
+          keys.includes('id') && !Number.isNaN(handleNum)
+            ? eq(schema.users.id, handleNum)
+            : undefined,
+
+          keys.includes('name')
+            ? eq(schema.users.name, handle)
+            : undefined,
+
+          keys.includes('safeName')
+            ? eq(schema.users.safeName, handle)
+            : undefined,
+
+          keys.includes('email')
+            ? eq(schema.users.email, handle)
+            : undefined
+        ),
+        scope === Scope.Self
+          ? userPriv(schema.users)
+          : undefined
+      ),
+      columns: {
+        ...prismaUserCompactFields.select,
       },
-      ...prismaUserCompactFields,
-    })
-      .catch(() => {
-        throwGucchoError(GucchoError.UserNotFound)
-      })
+    }) ?? throwGucchoError(GucchoError.UserNotFound)
+
     return toUserCompact(user, this.config)
   }
 
@@ -416,23 +424,36 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
       Record<keyof Base.ComposableProperties<Id>, boolean>
     >,
     _Scope extends Scope = Scope.Public,
-  >({ handle, excludes, includeHidden, scope }: { handle: string; excludes?: Excludes; includeHidden?: boolean; scope: _Scope }) {
-    if (!excludes) {
-      excludes = {} as Excludes
-    }
-    const user = await this.prisma.user.findFirstOrThrow({
-      where: {
-        AND: [
-          createUserHandleWhereQuery({
-            handle,
-          }),
-          includeHidden ? {} : { priv: { in: normal } },
-        ],
-      },
-      include: {
-        clan: true,
-      },
-    })
+  >({
+    handle,
+    excludes = {} as Excludes,
+    includeHidden,
+    scope,
+  }: {
+    handle: string
+    excludes?: Excludes
+    includeHidden?: boolean
+    scope: _Scope
+  }) {
+    const userId = +handle
+    const isNumber = Number.isNaN(userId)
+    const [result] = await this.drizzle.select({
+      user: schema.users,
+      clan: schema.clans,
+    }).from(schema.users)
+      .innerJoin(schema.clans, eq(schema.users.clanId, schema.clans.id))
+      .where(
+        and(
+          or(
+            isNumber ? eq(schema.users.id, userId) : undefined,
+            eq(schema.users.name, handle),
+            eq(schema.users.safeName, handle),
+          ),
+          includeHidden ? undefined : userPriv(schema.users)
+        )
+      ).limit(1)
+
+    const { user, clan } = result ?? throwGucchoError(GucchoError.UserNotFound)
 
     const returnValue = toFullUser(user, this.config) as NonNullable<Awaited<ReturnType<Base<Id, ScoreId>['getFull']>>>
     const [mode, ruleset] = fromBanchoPyMode(user.preferredMode)
@@ -462,7 +483,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     }
 
     if (excludes.clan !== true) {
-      returnValue.clan = toUserClan(user).clan
+      returnValue.clan = toPrismaUserClan({ ...user, clan }).clan
     }
 
     if (excludes.profile !== true) {
@@ -536,7 +557,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
 
     return {
       ...toUserCompact(returning, this.config),
-      ...toUserClan(returning),
+      ...toPrismaUserClan(returning),
       ...toUserOptional(returning),
     }
   }
@@ -631,25 +652,46 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
   }
 
   async search({ keyword, limit }: { keyword: string; limit: number }) {
-    const userLike = createUserLikeQuery(keyword)
-    /* optimized */
-    const result = await this.prisma.user.findMany(
-      merge(
-        structuredClone(prismaUserCompactFields),
-        merge(
-          userLike,
-          {
-            where: { priv: { in: normal } },
-            select: { clan: true },
-            take: limit,
-          }
-        )
-      )
-    )
+    const _user = `%${keyword}`
+    const user_ = `${keyword}%`
+    const _user_ = `%${keyword}%`
 
-    return result.map(user => ({
+    const userId = +keyword
+    const isNumber = !Number.isNaN(userId)
+    const result = await this.drizzle.select({
+      user: schema.users,
+      clan: schema.clans,
+      tag: {
+        exactId: isNumber ? eq(schema.users.id, userId) : sql.raw('(select 0)'),
+
+        exactName: eq(schema.users.name, keyword),
+        startsWith: like(schema.users.name, user_),
+        endsWith: like(schema.users.name, _user),
+        contains: like(schema.users.name, _user_),
+      },
+    }).from(schema.users)
+      .innerJoin(schema.clans, schema => eq(schema.user.clanId, schema.clan.id))
+      .where(schema => and(
+        or(
+          schema.tag.exactId,
+          schema.tag.startsWith,
+          schema.tag.endsWith,
+          schema.tag.contains,
+        ),
+        userPriv(schema.user)
+      ))
+      .orderBy(table => [
+        desc(table.tag.exactId),
+        desc(table.tag.exactName),
+        desc(table.tag.startsWith),
+        desc(table.tag.endsWith),
+        desc(table.tag.contains),
+      ])
+      .limit(limit)
+
+    return result.map(({ user, clan }) => ({
       ...toUserCompact(user, this.config),
-      ...toUserClan(user),
+      ...toPrismaUserClan({ ...user, clan }),
     }))
   }
 
