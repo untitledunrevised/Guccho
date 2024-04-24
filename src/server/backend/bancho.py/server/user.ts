@@ -436,7 +436,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     scope: _Scope
   }) {
     const userId = +handle
-    const isNumber = Number.isNaN(userId)
+    const isNumber = !Number.isNaN(userId)
     const [result] = await this.drizzle.select({
       user: schema.users,
       clan: schema.clans,
@@ -448,6 +448,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
             isNumber ? eq(schema.users.id, userId) : undefined,
             eq(schema.users.name, handle),
             eq(schema.users.safeName, handle),
+            handle.startsWith('@') ? eq(schema.users.safeName, handle.slice(1)) : undefined,
           ),
           includeHidden ? undefined : userPriv(schema.users)
         )

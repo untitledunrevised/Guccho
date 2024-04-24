@@ -90,29 +90,32 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
   }
 
   async getFull<Excludes extends Partial<Record<keyof Base.ComposableProperties<Id>, boolean>>>({ handle, excludes, includeHidden, scope }: { handle: string; excludes?: Excludes; includeHidden?: boolean; scope?: Scope }) {
-    const nHandle = Number.parseInt(handle)
-    const user = await this.drizzle.query.users.findFirst({
-      where: and(
-        or(
-          eq(schema.users.safeName, handle.startsWith('@') ? handle.slice(1) : handle),
-          eq(schema.users.name, handle),
-          Number.isNaN(nHandle) ? undefined : eq(schema.users.id, nHandle)
-        ),
-        (includeHidden || scope === Scope.Self) ? sql`1` : userPriv(schema.users)
-      ),
-      with: {
-        clan: true,
-      },
-    }) ?? throwGucchoError(GucchoError.UserNotFound)
+    const userId = +handle
+    const isNumber = !Number.isNaN(userId)
+    const [{ user, clan, profile }] = await this.drizzle.select({
+      user: schema.users,
+      clan: schema.clans,
+      profile: schema.userpages,
+    }).from(schema.users)
+      .innerJoin(schema.clans, eq(schema.users.clanId, schema.clans.id))
+      .leftJoin(schema.userpages, eq(schema.users.id, schema.userpages.userId))
+      .where(
+        and(
+          or(
+            isNumber ? eq(schema.users.id, userId) : undefined,
+            eq(schema.users.name, handle),
+            eq(schema.users.safeName, handle),
+            handle.startsWith('@') ? eq(schema.users.safeName, handle.slice(1)) : undefined,
+          ),
+          (includeHidden || scope === Scope.Self) ? undefined : userPriv(schema.users)
+        )
+      ).limit(1)
 
     const fullUser = toFullUser(user, this.config)
-    const profile = await this.drizzle.query.userpages.findFirst({
-      where: eq(schema.userpages.userId, user.id),
-    })
     const [mode, ruleset] = fromBanchoPyMode(user.preferredMode)
     const returnValue = {
       ...fullUser,
-      clan: excludes?.clan === true ? (undefined as never) : toPrismaUserClan(user).clan,
+      clan: excludes?.clan === true ? (undefined as never) : toPrismaUserClan({ ...user, clan }).clan,
       preferredMode: {
         mode, ruleset,
       },
