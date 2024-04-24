@@ -15,6 +15,7 @@ import {
   union,
 } from 'zod'
 import { hasRuleset } from '../config'
+import { type MailTokenProvider } from '$base/server'
 import type { ArticleProvider } from '$base/server/article'
 import { LeaderboardScoreRank, Mode, PPRank, Relationship, Ruleset, ScoreRank } from '~/def'
 import { RankingStatus } from '~/def/beatmap'
@@ -96,3 +97,13 @@ export const zodPath = string().trim().superRefine((val, ctx) => {
     })
   }
 })
+
+export const zodEmailValidation = union([
+  object({
+    otp: string(),
+    email: string().email(),
+  }),
+  object({
+    token: string().uuid(),
+  }),
+]) as unknown as ZodSchema<MailTokenProvider.Validation>

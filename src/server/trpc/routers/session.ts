@@ -69,9 +69,7 @@ export const router = _router({
       }
       if (session.userId) {
         try {
-          const user = await users.getCompactById({
-            id: UserProvider.stringToId(session.userId),
-          })
+          const user = await users.getCompactById(UserProvider.stringToId(session.userId))
           return {
             user: mapId(user, UserProvider.idToString),
           }

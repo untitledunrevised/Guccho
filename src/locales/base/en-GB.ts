@@ -367,7 +367,9 @@ export default {
     [CountryCode.Zimbabwe]: 'Zimbabwe',
   },
   mail: {
-    [Mail.Variant.Verify]: `
+    [Mail.Variant.Registration]: {
+      subject: '{serverName} - Account Registration',
+      content: `
 Hi,
 
 To verify your email for {serverName}, please proceed with the following link:
@@ -380,12 +382,29 @@ Please let us know if you have any questions or concerns.
 
 {serverName}
 `,
-    [Mail.Variant.AccountRecovery]: `
+    },
+    [Mail.Variant.AccountRecovery]: {
+      subject: '{serverName} - Account Recovery',
+      content: `
 Hi {name},
 
 You can reset your password from the following link:
 
 {link}
-    `,
+`,
+    },
+    [Mail.Variant.ChangeMail]: {
+      subject: '{serverName} - Change Email Address',
+      content: `
+Hi {name},
+
+To change your email for {serverName}, please continue with the following code:
+{otp}
+
+Verification is valid for {ttl} minutes.
+
+{serverName}
+`,
+    },
   },
 } satisfies GlobalI18n as GlobalI18n

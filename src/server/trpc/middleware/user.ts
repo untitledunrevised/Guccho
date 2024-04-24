@@ -11,7 +11,9 @@ export const userProcedure = sessionProcedure.use(async ({ ctx, next }) => {
   if (!session.userId) {
     throwGucchoError(GucchoError.YouNeedToLogin)
   }
-  const user = await users.getCompactById({ id: UserProvider.stringToId(session.userId) }).catch(noop)
+  const user = await users
+    .getCompactById(UserProvider.stringToId(session.userId))
+    .catch(noop)
   if (!user) {
     throwGucchoError(GucchoError.UserNotFound)
   }

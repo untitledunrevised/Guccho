@@ -1,14 +1,18 @@
-import { instanceof as instanceof_, nativeEnum, object, string } from 'zod'
-import { zodHandle, zodRelationType, zodTipTapJSONContent } from '../shapes'
-import { router as _router } from '../trpc'
+import { type ZodSchema, instanceof as instanceof_, nativeEnum, object, string } from 'zod'
 import { GucchoError } from '../messages'
-import { UserProvider, UserRelationProvider, sessions, userRelations, users } from '~/server/singleton/service'
-import { extractLocationSettings, extractSettingValidators } from '$base/@define-setting'
+import { zodEmailValidation, zodHandle, zodRelationType, zodTipTapJSONContent } from '../shapes'
+import { router as _router } from '../trpc'
 import { settings } from '$active/dynamic-settings'
-import { userProcedure as pUser } from '~/server/trpc/middleware/user'
-import { CountryCode } from '~/def/country-code'
-import { DynamicSettingStore, Scope } from '~/def/user'
+import { extractLocationSettings, extractSettingValidators } from '$base/@define-setting'
+import { type MailTokenProvider } from '$base/server'
 import { Mode, Ruleset } from '~/def'
+import { CountryCode } from '~/def/country-code'
+import { Mail } from '~/def/mail'
+import { DynamicSettingStore, Scope } from '~/def/user'
+import { Constant } from '~/server/common/constants'
+import { UserProvider, UserRelationProvider, mail, mailToken, sessions, userRelations, users } from '~/server/singleton/service'
+import { userProcedure as pUser } from '~/server/trpc/middleware/user'
+import ui from '~~/guccho.ui.config'
 
 // const verifiedEmail = new Map<string, Set<string>>()
 export const router = _router({
@@ -45,10 +49,63 @@ export const router = _router({
       return result
     }),
 
+  changeEmail: _router({
+    validateEmail: pUser
+      .input<ZodSchema<MailTokenProvider.Email>>(string().email() as any)
+      .mutation(async ({ ctx, input: email }): Promise<'otp' | 'succeed'> => {
+        const mailUser = await users.getByEmail(email, { scope: Scope.Self }).catch(noop)
+
+        if (mailUser?.id === ctx.user.id) {
+          return 'succeed'
+        }
+
+        if (mailUser) {
+          throwGucchoError(GucchoError.ConflictEmail)
+        }
+
+        type Param = Mail.Param[Mail.Variant.ChangeMail]
+
+        const [t, { otp, token }] = await Promise.all([
+          useTranslation(ctx.h3Event),
+          mailToken.getOrCreate(email),
+        ])
+
+        const serverName = t(localeKey.root.server.name.__path__)
+        const mailVariant = localeKey.root.mail[Mail.Variant.ChangeMail]
+
+        await mail.send({
+          to: email,
+
+          content: t(
+            mailVariant.content.__path__,
+            {
+              name: ctx.user.name,
+              serverName,
+              otp,
+              link: host(`/mail/change?t=${token}`, ctx.h3Event, { fallbackURL: `osu.${ui.baseUrl}` }), // TODO WIP
+              ttl: Constant.EmailTokenTTLInMinutes as number,
+            } satisfies Param['content']
+          ),
+
+          subject: t(
+            mailVariant.subject.__path__,
+            { serverName } satisfies Param['subject']
+          ),
+        })
+        return 'otp'
+      }),
+
+    changeWithToken: pUser
+      .input(zodEmailValidation).mutation(async ({ ctx, input }) => {
+        const rec = await mailToken.get(input) ?? throwGucchoError(GucchoError.EmailTokenNotFound)
+        return await users.changeEmail(ctx.user, rec.email)
+      }),
+  }),
+
   changeSettings: pUser
     .input(
       object({
-        email: string().email(),
+        // email: string().email(),
         name: string().trim(),
         flag: nativeEnum(CountryCode),
         preferredMode: object({

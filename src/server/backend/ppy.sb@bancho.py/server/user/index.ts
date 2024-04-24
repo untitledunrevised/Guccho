@@ -37,7 +37,7 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
   async changeSettings(
     user: { id: Id; roles: UserRole[] },
     input: {
-      email?: string
+      // email?: string
       name?: string
       flag?: CountryCode
       preferredMode?: {

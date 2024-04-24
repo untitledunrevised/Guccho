@@ -54,7 +54,7 @@ async function checkOTP() {
     return
   }
 
-  const result = await app.$client.user.register.getEmailToken.query({
+  const result = await app.$client.mail.getToken.query({
     otp: otpString,
     email: email.value,
   })

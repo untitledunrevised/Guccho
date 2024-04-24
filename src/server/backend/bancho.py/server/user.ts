@@ -46,11 +46,11 @@ import { prismaClient } from './source/prisma'
 import { client as redisClient } from './source/redis'
 import { UserRelationProvider } from './user-relations'
 import { useDrizzle, userPriv } from './source/drizzle'
-import { type DynamicSettingStore, Scope, type UserCompact, UserRole, type UserStatistic, UserStatus } from '~/def/user'
+import { type DynamicSettingStore, Scope, type UserCompact, type UserOptional, UserRole, type UserStatistic, UserStatus } from '~/def/user'
 import type { CountryCode } from '~/def/country-code'
 import type { ActiveMode, ActiveRuleset, LeaderboardRankingSystem } from '~/def/common'
 import { Mode, Rank, Ruleset } from '~/def'
-import { UserProvider as Base } from '$base/server'
+import { UserProvider as Base, type MailTokenProvider } from '$base/server'
 import type { ExtractLocationSettings, ExtractSettingType } from '$base/@define-setting'
 import { type RankingSystemScore } from '~/def/score'
 
@@ -130,7 +130,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     ) > 0
   }
 
-  async getCompactById({ id }: { id: Id }) {
+  async getCompactById(id: Id, _opt?: { scope: Scope }) {
     /* optimized */
     const user = await this.prisma.user.findFirstOrThrow({
       where: {
@@ -140,6 +140,10 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     })
 
     return toUserCompact(user, this.config)
+  }
+
+  async getByEmail(email: MailTokenProvider.Email, opt: { scope: Scope }): Promise<UserCompact<number>> {
+    return this.getCompact({ handle: email, scope: opt.scope, keys: ['email'] })
   }
 
   async getCompact(opt: Base.OptType & { scope?: Scope }) {
@@ -502,10 +506,35 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     return returnValue
   }
 
+  async changeEmail(user: { id: Id }, newEmail: MailTokenProvider.Email): Promise<Pick<UserOptional, 'email'>> {
+    return await this.drizzle.transaction(async (tx) => {
+      await tx.update(schema.users)
+        .set({
+          email: newEmail,
+        })
+        .where(eq(schema.users.id, user.id))
+        .catch((e: QueryError) => {
+          if (e.code === 'ER_DUP_ENTRY') {
+            throwGucchoError(GucchoError.ConflictEmail)
+          }
+          throw e
+        })
+
+      const result = await tx.query.users.findFirst({
+        where: (tb, op) => op.eq(tb.id, user.id),
+        columns: {
+          email: true,
+        },
+      }) ?? throwGucchoError(GucchoError.UserNotFound)
+
+      return result
+    })
+  }
+
   async changeSettings(
     user: { id: Id; roles: UserRole[] },
     input: {
-      email?: string
+      // email?: string
       name?: string
       flag?: CountryCode
       preferredMode?: {
@@ -529,8 +558,6 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
 
     await this.drizzle.update(schema.users)
       .set({
-        email: input.email,
-
         name: user.roles.includes(UserRole.Supporter)
           ? input.name
           : undefined,

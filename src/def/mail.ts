@@ -1,24 +1,15 @@
 /* eslint-disable antfu/no-const-enum */
 export namespace Mail {
   export const enum Variant {
-    Verify,
+    Registration,
+    ChangeMail,
     AccountRecovery,
   }
 
-  interface Verify {
+  interface Subject {
     serverName: string
-    link: string
-    otp: string
-    ttl: number
   }
 
-  interface AccountRecovery {
-    serverName: string
-    name: string
-    link: string
-    otp: string
-    ttl: number
-  }
   interface Template extends Record<string, unknown> {
     serverName: string
     link: string
@@ -26,9 +17,23 @@ export namespace Mail {
     ttl: number
   }
 
+  interface ChangeMail extends Template {
+    name: string
+  }
+
   export interface Param {
-    [Variant.AccountRecovery]: (input: AccountRecovery) => Template
-    [Variant.Verify]: (input: Verify) => Template
+    [Variant.ChangeMail]: {
+      subject: Subject
+      content: Template
+    }
+    [Variant.AccountRecovery]: {
+      subject: Subject
+      content: Template
+    }
+    [Variant.Registration]: {
+      subject: Subject
+      content: Template
+    }
   }
 
 }

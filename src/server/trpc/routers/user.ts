@@ -1,6 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { type ZodSchema, array, number, object, string, union } from 'zod'
-
+import { array, number, object, string } from 'zod'
 import { hasLeaderboardRankingSystem, hasRuleset } from '../config'
 import { GucchoError } from '../messages'
 import { optionalUserProcedure } from '../middleware/optional-user'
@@ -223,50 +222,41 @@ export const router = _router({
         await ctx.session.getBinding() ?? throwGucchoError(GucchoError.SessionNotFound)
 
         // check if email is taken
-        if (await users.getCompact({ handle: input, keys: ['email'], scope: Scope.Self }).catch(_ => undefined)) {
+        if (
+          await users
+            .getByEmail(input as MBase.Email, { scope: Scope.Self })
+            .catch(_ => undefined)
+        ) {
           throwGucchoError(GucchoError.ConflictEmail)
         }
 
         const { otp, token } = await mailToken.getOrCreate(input as MBase.Email)
-        type Param = ReturnType<Mail.Param[Mail.Variant.Verify]>
         const t = await useTranslation(ctx.h3Event)
         const serverName = t(localeKey.root.server.name.__path__)
+        const mailVariant = localeKey.root.mail[Mail.Variant.Registration]
 
-        const proto = getRequestProtocol(ctx.h3Event, { xForwardedProto: true })
-        const baseURL = getRequestHost(ctx.h3Event, { xForwardedHost: true }) ?? `osu.${ui.baseUrl}`
-
-        const _protoWithSlashes = `${proto}://` ?? ''
-
-        const param: Param = {
-          serverName,
-          otp,
-          link: `${_protoWithSlashes}${baseURL}/mail/verify?t=${token}`,
-          ttl: Constant.EmailTokenTTLInMinutes as number,
-        }
-
-        const content = t(localeKey.mail(Mail.Variant.Verify), param)
+        type Param = Mail.Param[Mail.Variant.Registration]
 
         await mail.send({
           to: input,
-          subject: `${serverName} - verification`,
-          content,
+
+          subject: t(
+            mailVariant.subject.__path__,
+            { serverName } satisfies Param['subject']
+          ),
+
+          content: t(
+            localeKey.mail.content(Mail.Variant.Registration),
+            {
+              serverName,
+              otp,
+              link: host(`/mail/verify?t=${token}`, ctx.h3Event, { fallbackURL: `osu.${ui.baseUrl}` }),
+              ttl: Constant.EmailTokenTTLInMinutes as number,
+            } satisfies Param['content']
+          ),
         })
       }),
 
-    getEmailToken: sessionProcedure
-      .input(
-        union([
-          object({
-            otp: string(),
-            email: string().email(),
-          }),
-          object({
-            token: string().uuid(),
-          }),
-        ]) as unknown as ZodSchema<MBase.Validation>)
-      .query(async ({ input }) => {
-        return await mailToken.get(input)
-      }),
     createAccount: sessionProcedure
       .input(object({
         name: string().trim(),
@@ -274,7 +264,8 @@ export const router = _router({
         emailToken: string().uuid(),
         // email: string().trim().email(),
         passwordMd5: string().trim(),
-      })).mutation(async ({ input, ctx }) => {
+      }))
+      .mutation(async ({ input, ctx }) => {
         const rec = await mailToken.get({ token: input.emailToken as MBase.Token }) ?? throwGucchoError(GucchoError.EmailTokenNotFound)
         const { name, safeName, passwordMd5 } = input
 

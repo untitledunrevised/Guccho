@@ -63,7 +63,10 @@ export interface GlobalI18n extends PathAccessibleObject {
 
   country: Record<CountryCode, string>
 
-  mail: Record<Mail.Variant, string>
+  mail: Record<Mail.Variant, {
+    subject: string
+    content: string
+  }>
 }
 
 interface T { [x: string]: localeMessages<VueMessageType> }

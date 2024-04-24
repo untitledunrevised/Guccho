@@ -18,17 +18,22 @@ export async function sideEffect(event: H3Event) {
   if (!event.context.session.userId) {
     return
   }
-  const user = await users.getCompactById({ id: UserProvider.stringToId(event.context.session.userId) }).catch(noop)
+  const user = await users
+    .getCompactById(UserProvider.stringToId(event.context.session.userId))
+    .catch(noop)
+
   if (!user) {
     return
   }
   event.context.user = user
 }
 
-export function assertLoggedIn(event: H3Event & { context: { session: Session<any> } }): asserts event is typeof event & { context: { user: UserCompact<any> } } {
+export function assertLoggedIn(event: H3Event & { context: { session: Session<any> } }):
+  asserts event is typeof event & { context: { user: UserCompact<any> } } {
   loggedIn(event) || raise(Error, 'no session')
 }
 
-export function loggedIn(event: H3Event & { context: { session: Session<any> } }): event is typeof event & { context: { user: UserCompact<any> } } {
+export function loggedIn(event: H3Event & { context: { session: Session<any> } }):
+  event is typeof event & { context: { user: UserCompact<any> } } {
   return !!event.context.user
 }

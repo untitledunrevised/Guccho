@@ -12,7 +12,10 @@ export const optionalUserProcedure = sessionProcedure.use(async ({ ctx, next }) 
   if (!session.userId) {
     return await next<ReturnCTX>(undefined as any)
   }
-  const user = await userProvider.getCompactById({ id: UserProvider.stringToId(session.userId) }).catch(noop<undefined>)
+  const user = await userProvider
+    .getCompactById(UserProvider.stringToId(session.userId))
+    .catch(noop<undefined>)
+
   ;(ctx as ReturnCTX).user = user
   return await next<ReturnCTX>({ ctx })
 })

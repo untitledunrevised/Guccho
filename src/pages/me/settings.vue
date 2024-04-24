@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import md5 from 'md5'
 import { Cropper } from 'vue-advanced-cropper'
-import { type ContentEditor, TModal, TResponsiveModal } from '#components'
+import { type ContentEditor, TResponsiveModal } from '#components'
+import type { MailTokenProvider } from '$base/server'
 import type { ArticleProvider } from '$base/server/article'
 import 'vue-advanced-cropper/dist/style.css'
 import { CountryCode } from '~/def/country-code'
@@ -9,11 +10,50 @@ import { Client, OS } from '~/def/device'
 import { useSession } from '~/store/session'
 
 // eslint-disable-next-line antfu/no-const-enum
-const enum UploadingAvatarStatus {
+const enum UpdateUserSettingsState {
+  Errored,
+  Idle,
+  Posting,
+  Succeed,
+}
+
+// eslint-disable-next-line antfu/no-const-enum
+const enum UploadingAvatarState {
+  Errored,
   Idle,
   Uploading,
   Succeed,
+}
+
+// eslint-disable-next-line antfu/no-const-enum
+const enum ChangeEmailState {
   Errored,
+  Idle,
+  Posting,
+  Succeed,
+}
+
+// eslint-disable-next-line antfu/no-const-enum
+const enum ChangeEmailStep {
+  InputEmail,
+  InputOTP,
+}
+
+// eslint-disable-next-line antfu/no-const-enum
+const enum ChangePasswordState {
+  Error,
+  Idle,
+  Posting,
+  Succeed,
+}
+
+// eslint-disable-next-line antfu/no-const-enum
+const enum ProfileState {
+  Errored,
+  Idle,
+  Edited,
+  Posting,
+  Succeed,
 }
 
 const app$ = useNuxtApp()
@@ -31,9 +71,11 @@ useHead({
   title: () => `${t('titles.settings')} - ${app$.$i18n.t('server.name')}`,
 })
 
-const { data: user, refresh: refreshSettings } = await useAsyncData(() =>
-  app$.$client.me.settings.query()
-)
+const {
+  data: user,
+  refresh: refreshSettings,
+} = await useAsyncData(() => app$.$client.me.settings.query())
+
 const {
   data: sessions,
   refresh: refreshSession,
@@ -48,6 +90,7 @@ if (!user.value) {
     },
   })
 }
+
 const unchanged = shallowRef({
   ...(user.value as Exclude<(typeof user)['value'], null>),
 })
@@ -68,16 +111,12 @@ if (user.value?.profile) {
     profile.value = pf.raw
   }
 }
+let changeEmailTimeout: NodeJS.Timeout | undefined
 
-const uploadingAvatarStat = shallowRef<UploadingAvatarStatus>(
-  UploadingAvatarStatus.Idle
-)
-const changeAvatar = shallowRef<InstanceType<typeof TModal>>()
-const changePassword = shallowRef<InstanceType<typeof TModal>>()
-
-const errorMessage = shallowRef<string[]>([])
-const updateResult = shallowRef(false)
-const posting = shallowRef(false)
+const updateUserSettingsState = shallowRef(UpdateUserSettingsState.Idle)
+const uploadingAvatarState = shallowRef(UploadingAvatarState.Idle)
+const changePasswordState = shallowRef(ChangePasswordState.Idle)
+const changeEmailState = ref<[ChangeEmailStep, ChangeEmailState]>([ChangeEmailStep.InputEmail, ChangeEmailState.Idle])
 
 const changePasswordForm = shallowReactive<{
   oldPassword?: string
@@ -88,7 +127,16 @@ const changePasswordForm = shallowReactive<{
   newPassword: undefined,
   repeatNewPassword: undefined,
 })
+
+const errorMessage = shallowRef<string[]>([])
 const changePasswordError = shallowRef('')
+
+const changeEmailError = shallowRef('')
+const otp = shallowRef('')
+
+const changeAvatar = shallowRef<InstanceType<typeof TResponsiveModal>>()
+const changePassword = shallowRef<InstanceType<typeof TResponsiveModal>>()
+const changeEmail = shallowRef<InstanceType<typeof TResponsiveModal>>()
 
 onMounted(() => {
   route.hash === '#avatar' && changeAvatar.value?.showModal()
@@ -99,13 +147,13 @@ async function saveAvatar() {
     return
   }
 
-  uploadingAvatarStat.value = UploadingAvatarStatus.Uploading
+  uploadingAvatarState.value = UploadingAvatarState.Uploading
 
   const url = await app$.$client.me.changeAvatar.mutate({
     avatar: new Uint8Array(croppedAvatar.value),
   })
 
-  uploadingAvatarStat.value = UploadingAvatarStatus.Succeed
+  uploadingAvatarState.value = UploadingAvatarState.Succeed
   newAvatarURL.value = url
   session.setAvatarTimestamp()
   await refreshSettings()
@@ -120,14 +168,14 @@ async function updateUserSettings() {
   const updateData = {
     name:
       user.value.name !== unchanged.value.name ? user.value.name : undefined,
-    email:
-      user.value.email !== unchanged.value.email ? user.value.email : undefined,
+    // email:
+    //   user.value.email !== unchanged.value.email ? user.value.email : undefined,
     flag:
       user.value.flag !== unchanged.value.flag ? user.value.flag : undefined,
     preferredMode: user.value.preferredMode,
   }
 
-  posting.value = true
+  updateUserSettingsState.value = UpdateUserSettingsState.Posting
 
   const [result, profileResult] = await Promise.all([
     app$.$client.me.changeSettings.mutate(updateData)
@@ -141,6 +189,8 @@ async function updateUserSettings() {
             errorMessage.value.push(`${key}: ${v.join(';')}`)
           }
         }
+        updateUserSettingsState.value = UpdateUserSettingsState.Errored
+        return UpdateUserSettingsState.Errored as const
       }),
 
     profile.value
@@ -149,12 +199,18 @@ async function updateUserSettings() {
         .mutate({ profile: profile.value })
         .catch((error) => {
           errorMessage.value.push(formatGucchoErrorWithT(t, error))
+          updateUserSettingsState.value = UpdateUserSettingsState.Errored
+          return UpdateUserSettingsState.Errored as const
         }),
   ])
-  updateResult.value = true
-  posting.value = false
+
+  if (result === UpdateUserSettingsState.Errored || profileResult === UpdateUserSettingsState.Errored) {
+    return
+  }
+
+  updateUserSettingsState.value = UpdateUserSettingsState.Succeed
   setTimeout(() => {
-    updateResult.value = false
+    updateUserSettingsState.value = UpdateUserSettingsState.Idle
   }, 3000)
 
   if (result) {
@@ -170,6 +226,7 @@ async function updateUserSettings() {
     profile.value = profileResult.raw
   }
 }
+
 async function selectAvatarFile(e: Event) {
   avatarError.value = undefined
   const file = (e?.target as HTMLInputElement)?.files?.[0]
@@ -196,27 +253,33 @@ function crop({ canvas }: { canvas: HTMLCanvasElement }) {
   )
 }
 
-const updatingPassword = ref(false)
 async function updatePassword(closeModal: () => void) {
-  updatingPassword.value = true
+  changePasswordState.value = ChangePasswordState.Error
+
   if (!changePasswordForm.newPassword) {
-    return (updatingPassword.value = false)
-  } // checked by browser
+    changePasswordState.value = ChangePasswordState.Idle
+    return
+  }
+
   if (changePasswordForm.newPassword !== changePasswordForm.repeatNewPassword) {
     changePasswordError.value = t('password.new-password-mismatch')
-    return (updatingPassword.value = false)
+    return
   }
+
   if (changePasswordForm.oldPassword === changePasswordForm.newPassword) {
     changePasswordError.value = t('password.same-password-as-old')
-    return (updatingPassword.value = false)
+    return
   }
+
+  changePasswordState.value = ChangePasswordState.Posting
 
   const md5HashedPassword = {
     newPassword: md5(changePasswordForm.newPassword),
-    oldPassword: md5(changePasswordForm.oldPassword || ''),
+    oldPassword: md5(changePasswordForm.oldPassword ?? ''),
   }
 
   try {
+    changePasswordState.value = ChangePasswordState.Posting
     const result = await app$.$client.me.updatePassword.mutate(
       md5HashedPassword
     )
@@ -225,22 +288,78 @@ async function updatePassword(closeModal: () => void) {
       ...result,
     }
     closeModal()
+    changePasswordState.value = ChangePasswordState.Idle
   }
   catch (error: any) {
     changePasswordError.value = formatGucchoErrorWithT(t, error)
   }
-  updatingPassword.value = false
 }
 
 function resetAvatar() {
   newAvatar.value = undefined
   newAvatarURL.value = undefined
-  uploadingAvatarStat.value = UploadingAvatarStatus.Idle
+  uploadingAvatarState.value = UploadingAvatarState.Idle
 }
 
 async function kickSession(session: string) {
   await app$.$client.me.kickSession.mutate({ session })
   refreshSession()
+}
+
+async function setNewEmail(closeModal: CallableFunction) {
+  clearTimeout(changeEmailTimeout)
+  changeEmailState.value = [ChangeEmailStep.InputEmail, ChangeEmailState.Posting]
+  try {
+    const result = await app$.$client.me.changeEmail.validateEmail.mutate(user.value!.email as MailTokenProvider.Email)
+    changeEmailError.value = ''
+    switch (result) {
+      case 'otp': {
+        changeEmailState.value = [ChangeEmailStep.InputOTP, ChangeEmailState.Idle]
+        break
+      }
+      case 'succeed': {
+        changeEmailState.value = [ChangeEmailStep.InputEmail, ChangeEmailState.Succeed]
+        changeEmailTimeout = setTimeout(() => {
+          changeEmailState.value = [ChangeEmailStep.InputEmail, ChangeEmailState.Idle]
+          closeModal()
+        }, 3000)
+      }
+    }
+  }
+  catch (e) {
+    changeEmailError.value = formatGucchoErrorWithT(t, e as Error)
+    changeEmailState.value = [ChangeEmailStep.InputEmail, ChangeEmailState.Errored]
+  }
+}
+
+async function validateOTPAndChangeEmail(closeModal: CallableFunction) {
+  clearTimeout(changeEmailTimeout)
+  changeEmailState.value = [ChangeEmailStep.InputOTP, ChangeEmailState.Posting]
+  try {
+    const result = await app$.$client.me.changeEmail.changeWithToken.mutate({
+      email: user.value!.email as MailTokenProvider.Email,
+      otp: otp.value as MailTokenProvider.OTP,
+    })
+
+    unchanged.value = {
+      ...unchanged.value,
+      ...result,
+    }
+    user.value = {
+      ...user.value!,
+      ...result,
+    }
+    changeEmailError.value = ''
+    changeEmailState.value = [ChangeEmailStep.InputOTP, ChangeEmailState.Succeed]
+    changeEmailTimeout = setTimeout(() => {
+      changeEmailState.value = [ChangeEmailStep.InputEmail, ChangeEmailState.Idle]
+      closeModal()
+    }, 3000)
+  }
+  catch (e) {
+    changeEmailError.value = formatGucchoErrorWithT(t, e as Error)
+    changeEmailState.value = [ChangeEmailStep.InputOTP, ChangeEmailState.Errored]
+  }
 }
 </script>
 
@@ -296,6 +415,9 @@ en-GB:
     actions: Action
     current: Current Session
     kick: Kick
+
+  change-email:
+    otp: One time code
 
 zh-CN:
   reset: 恢复
@@ -461,7 +583,7 @@ fr-FR:
             >
           </label>
           <output
-            v-else-if="uploadingAvatarStat !== UploadingAvatarStatus.Succeed"
+            v-else-if="uploadingAvatarState !== UploadingAvatarState.Succeed"
             class="m-2 drop-shadow w-96"
           >
             <Cropper
@@ -488,14 +610,14 @@ fr-FR:
         </div>
         <t-button
           v-if="
-            uploadingAvatarStat !== UploadingAvatarStatus.Succeed && newAvatar
+            uploadingAvatarState !== UploadingAvatarState.Succeed && newAvatar
           "
           class="btn-shadow grow"
-          :loading="uploadingAvatarStat === UploadingAvatarStatus.Uploading"
+          :loading="uploadingAvatarState === UploadingAvatarState.Uploading"
           @click="saveAvatar"
         >
           {{
-            uploadingAvatarStat === UploadingAvatarStatus.Idle
+            uploadingAvatarState === UploadingAvatarState.Idle
               ? t("avatar.status.ready")
               : t("avatar.status.uploading")
           }}
@@ -503,14 +625,14 @@ fr-FR:
         <t-button
           class="btn-shadow grow"
           :variant="
-            uploadingAvatarStat === UploadingAvatarStatus.Succeed
+            uploadingAvatarState === UploadingAvatarState.Succeed
               ? 'success'
               : 'gbase'
           "
           @click="closeModal(resetAvatar)"
         >
           {{
-            uploadingAvatarStat === UploadingAvatarStatus.Succeed
+            uploadingAvatarState === UploadingAvatarState.Succeed
               ? t("avatar.status.done")
               : t("avatar.status.abort")
           }}
@@ -518,7 +640,7 @@ fr-FR:
       </div>
     </TResponsiveModal>
 
-    <TModal ref="changePassword" v-slot="{ closeModal }" class="my-auto">
+    <TResponsiveModal ref="changePassword" v-slot="{ closeModal }" class="my-auto">
       <div class="shadow-lg card bg-base-100">
         <form action="#" @submit.prevent="updatePassword(closeModal)">
           <div class="card-body w-96">
@@ -529,9 +651,10 @@ fr-FR:
                 }}</span>
               </label>
               <input
+                id="old-password"
                 v-model="changePasswordForm.oldPassword"
                 type="password"
-                class="input input-shadow input-sm input-ghost"
+                class="input input-shadow input-sm input-bordered"
                 required
               >
             </div>
@@ -542,9 +665,10 @@ fr-FR:
                 }}</span>
               </label>
               <input
+                id="new-password"
                 v-model="changePasswordForm.newPassword"
                 type="password"
-                class="input input-shadow input-sm input-ghost"
+                class="input input-shadow input-sm input-bordered"
                 required
               >
             </div>
@@ -555,9 +679,10 @@ fr-FR:
                 }}</span>
               </label>
               <input
+                id="repeat-password"
                 v-model="changePasswordForm.repeatNewPassword"
                 type="password"
-                class="input input-shadow input-sm input-ghost"
+                class="input input-shadow input-sm input-bordered"
                 required
               >
             </div>
@@ -565,7 +690,7 @@ fr-FR:
           </div>
           <div class="flex gap-2 p-4">
             <t-button class="btn-shadow grow" size="sm" variant="accent">
-              <span v-if="updatingPassword" class="loading loading-sm" />
+              <span v-if="changePasswordState === ChangePasswordState.Posting" class="loading loading-sm" />
               <icon v-else name="ic:round-check" class="w-5 h-5" size="100%" />
               {{ t("password.ok") }}
             </t-button>
@@ -587,27 +712,120 @@ fr-FR:
           </div>
         </form>
       </div>
-    </TModal>
+    </TResponsiveModal>
+
+    <TResponsiveModal ref="changeEmail" v-slot="{ closeModal }" class="my-auto">
+      <div class="shadow-lg card bg-base-100">
+        <form v-if="changeEmailState[0] === ChangeEmailStep.InputEmail" action="#" @submit.prevent="setNewEmail(closeModal)">
+          <div class="card-body w-96">
+            <div class="form-control">
+              <label class="label" for="new-email">
+                <span class="pl-2 label-text">{{
+                  t("email")
+                }}</span>
+              </label>
+              <input
+                id="new-email"
+                v-model="user.email"
+                type="email"
+                class="input input-bordered input-shadow input-sm"
+                required
+              >
+            </div>
+
+            <span class="px-2 text-error">{{ changeEmailError }}</span>
+          </div>
+          <div class="flex gap-2 p-4">
+            <t-button class="btn-shadow grow transition-colors" size="sm" variant="accent" :disabled="user.email === unchanged.email">
+              <span v-if="changeEmailState[1] === ChangeEmailState.Posting" class="loading loading-sm" />
+              <icon v-else name="ic:round-check" class="w-5 h-5" size="100%" />
+              {{ t("password.ok") }}
+            </t-button>
+            <t-button
+              class="btn-shadow grow"
+              size="sm"
+              variant="secondary"
+              type="button"
+              @click="
+                closeModal(() => {
+                  user!.email = unchanged.email
+                })
+              "
+            >
+              <icon name="ic:round-clear" class="w-5 h-5" size="100%" />
+              {{ t("password.abort") }}
+            </t-button>
+          </div>
+        </form>
+        <form v-else-if="changeEmailState[0] === ChangeEmailStep.InputOTP" action="#" @submit.prevent="validateOTPAndChangeEmail(closeModal)">
+          <div class="card-body w-96">
+            <div class="form-control">
+              <label class="label" for="otp">
+                <span class="pl-2 label-text">{{
+                  t("change-email.otp")
+                }}</span>
+              </label>
+              <input
+                id="otp"
+                v-model="otp"
+                class="input input-bordered input-shadow input-sm"
+                required
+              >
+            </div>
+
+            <span class="px-2 text-error">{{ changeEmailError }}</span>
+          </div>
+          <div class="flex gap-2 p-4">
+            <t-button class="btn-shadow grow" size="sm" :variant="changeEmailState[1] === ChangeEmailState.Succeed ? 'success' : 'accent'">
+              <span v-if="changeEmailState[1] === ChangeEmailState.Posting" class="loading loading-sm" />
+              <icon v-else name="ic:round-check" class="w-5 h-5" size="100%" />
+              {{ t("password.ok") }}
+            </t-button>
+            <t-button
+              class="btn-shadow grow"
+              size="sm"
+              variant="secondary"
+              type="button"
+              @click="
+                closeModal(() => {
+                  user!.email = unchanged.email
+                  otp = ''
+                  changeEmailState = [ChangeEmailStep.InputEmail, ChangeEmailState.Idle]
+                })
+              "
+            >
+              <icon name="ic:round-clear" class="w-5 h-5" size="100%" />
+              {{ t("password.abort") }}
+            </t-button>
+          </div>
+        </form>
+      </div>
+    </TResponsiveModal>
     <div class="flex items-end justify-between p-2">
       <div class="text-3xl font-bold">
         {{ t("preferences") }}
       </div>
       <button
         class="btn btn-shadow btn-sm"
-        :class="[
-          updateResult ? 'btn-success' : 'btn-accent',
-          posting ? 'loading' : '',
-        ]"
+        :class="{
+          'btn-accent': updateUserSettingsState !== UpdateUserSettingsState.Succeed,
+          'btn-success': updateUserSettingsState === UpdateUserSettingsState.Succeed,
+        }"
         type="button"
         @click="updateUserSettings"
       >
+        <span v-if="updateUserSettingsState === UpdateUserSettingsState.Posting" class="loading" />
         <icon
-          v-if="!posting"
-          :name="updateResult ? 'line-md:confirm' : 'ic:round-save'"
+          v-else
+          :name="
+            updateUserSettingsState === UpdateUserSettingsState.Succeed
+              ? 'line-md:confirm'
+              : 'ic:round-save'
+          "
           class="w-5 h-5 me-1"
           size="100%"
         />
-        {{ updateResult ? t("status.done") : t("status.ready") }}
+        {{ updateUserSettingsState === UpdateUserSettingsState.Succeed ? t("status.done") : t("status.ready") }}
       </button>
     </div>
 
@@ -624,7 +842,7 @@ fr-FR:
                 @click="() => changeAvatar?.showModal()"
               >
                 <icon name="ic:round-edit-note" class="w-5 h-5" size="100%" />
-                {{ t("avatar.change") }}
+                <span>{{ t("avatar.change") }}</span>
               </button>
               <img
                 :src="newAvatarURL || `${user.avatarSrc}`"
@@ -711,7 +929,7 @@ fr-FR:
                           </div>
                         </div>
                         <div>
-                          <div class="font-bold">
+                          <div class="font-bold whitespace-nowrap">
                             {{ OS[session.OS] }}
                             <span
                               v-if="session.current"
@@ -729,7 +947,7 @@ fr-FR:
                     </td>
                     <th scope="row">
                       <button
-                        class="btn btn-ghost btn-xs inline"
+                        class="btn btn-ghost btn-xs inline whitespace-nowrap"
                         :disabled="pendingSession || session.current"
                         @click="kickSession(id)"
                       >
@@ -779,7 +997,6 @@ fr-FR:
               :disabled="!user.changeable.name"
               :class="{
                 'input-bordered input-primary': unchanged.name !== user.name,
-                '!input-ghost border-none': unchanged.name === user.name,
               }"
             >
             <button
@@ -807,13 +1024,11 @@ fr-FR:
               id="g-link"
               v-model="user.safeName"
               type="text"
-              class="input input-shadow input-sm grow"
+              class="w-full input input-shadow input-sm grow"
               disabled
               :class="{
                 'input-bordered input-primary':
                   unchanged.safeName !== user.safeName,
-                '!input-ghost border-none':
-                  unchanged.safeName === user.safeName,
               }"
             >
             <!-- <button class="btn btn-shadow btn-sm btn-secondary" type="button" disabled>
@@ -827,35 +1042,24 @@ fr-FR:
           </label>
           <div
             class="join"
-            :class="
-              unchanged.email !== user.email && 'input-group input-group-sm'
-            "
           >
+            <!-- :disabled="!user.changeable.email" -->
             <input
               id="email"
               v-model="user.email"
               type="email"
-              placeholder="abc@123.com"
+              disabled
               class="join-item grow input input-shadow input-sm"
-              :disabled="!user.changeable.email"
-              :class="{
-                'input-bordered input-primary': unchanged.email !== user.email,
-                'input-ghost': unchanged.email === user.email,
-              }"
             >
+
             <button
-              v-show="unchanged.email !== user.email"
-              class="join-item btn btn-shadow btn-sm"
+              id="#email"
+              class="join-item btn btn-shadow btn-sm btn-secondary"
               type="button"
-              :disabled="unchanged.email === user.email"
-              @click="
-                () => {
-                  if (!user || !unchanged) return;
-                  user.email = unchanged.email;
-                }
-              "
+              @click.prevent="() => changeEmail?.showModal()"
             >
-              {{ t("reset") }}
+              <icon name="ic:round-edit-note" class="w-5 h-5" size="100%" />
+              {{ t("password.change") }}
             </button>
           </div>
         </div>

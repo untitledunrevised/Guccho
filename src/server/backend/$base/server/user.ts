@@ -2,6 +2,7 @@ import type { JSONContent } from '@tiptap/core'
 import type { ExtractLocationSettings, ExtractSettingType } from '../@define-setting'
 import type { Composition } from './@common'
 import { IdTransformable } from './@extends'
+import type { MailTokenProvider } from './mail-token'
 import type { settings } from '$active/dynamic-settings'
 import type { Mode, Ruleset } from '~/def'
 import type { BeatmapSource, RankingStatus } from '~/def/beatmap'
@@ -60,10 +61,9 @@ export abstract class UserProvider<Id, ScoreId> extends IdTransformable {
     hashedPassword: string,
   ): Promise<[boolean, UserCompact<Id> | undefined]>
 
-  abstract getCompactById(opt: {
-    id: Id
-    scope: Scope
-  }): Promise<UserCompact<Id>>
+  abstract getCompactById(id: Id /** , opt?: { scope: Scope } */): Promise<UserCompact<Id>>
+
+  abstract getByEmail(email: MailTokenProvider.Email, opt?: { scope: Scope }): Promise<UserCompact<Id>>
 
   abstract getStatistics(query: {
     id: Id
@@ -119,10 +119,12 @@ export abstract class UserProvider<Id, ScoreId> extends IdTransformable {
     }
   }
 
+  abstract changeEmail(user: { id: Id }, newEmail: MailTokenProvider.Email): PromiseLike<Pick<UserOptional, 'email'>>
+
   abstract changeSettings(
     user: { id: Id },
     input: {
-      email?: string
+      // email?: string
       name?: string
       flag?: CountryCode
       preferredMode: {
