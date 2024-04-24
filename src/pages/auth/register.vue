@@ -156,7 +156,7 @@ fr-FR:
         </form>
         <form
           v-else-if="step === PageStep.VerifyToken"
-          @submit="navigateTo({ name: 'auth-create-account', query: { t: token } })"
+          @submit.prevent="navigateTo({ name: 'auth-create-account', query: { t: token } })"
         >
           <div
             class="flex items-center gap-2 input"
