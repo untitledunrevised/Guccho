@@ -42,6 +42,7 @@ export default {
     'logs': 'Logs',
     'articles': 'Articles',
     'clans': 'Clans',
+    'account-recovery': 'Account Recovery',
   },
   global: {
     'logout': 'Sign out',
@@ -60,6 +61,10 @@ export default {
     'users': 'Users',
     'session': 'Session',
     'wip': 'WIP',
+    'password': 'Password',
+    'email': 'Email',
+    'otp': 'One time code',
+    'verify': 'Verify',
   },
   role: {
     [UserRole.Disabled]: 'Disabled',
@@ -393,6 +398,10 @@ To reset your password for {serverName}, please proceed with the following link:
 {link}
 
 Alternatively, you can use the following code: {otp}
+
+Verification is valid for {ttl} minutes.
+
+{serverName}
 `,
     },
     [Mail.Variant.ChangeMail]: {

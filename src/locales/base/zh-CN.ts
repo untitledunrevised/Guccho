@@ -1,14 +1,21 @@
-import type { DeepPartial } from '@trpc/server'
 import type { GlobalI18n } from '../@types'
 import { CountryCode } from '~/def/country-code'
 import { Rank } from '~/def'
 import { Scope, UserRole } from '~/def/user'
+import { Mail } from '~/def/mail'
+import { GucchoError } from '~/server/trpc/messages'
 
 export default {
+  // reuse en-GB
+  server: {} as any,
+  mode: {} as any,
+  ruleset: {} as any,
+
   footer: {
     about: '关于',
     resources: '资源',
   },
+
   rank: {
     [Rank.PPv2]: 'Performance(v2)',
     [Rank.PPv1]: 'Performance(v1)',
@@ -16,6 +23,7 @@ export default {
     [Rank.TotalScore]: '总分',
     [Rank.Score]: '分数',
   },
+
   titles: {
     'leaderboard': '排行榜',
     'status': '状态',
@@ -26,7 +34,9 @@ export default {
     'logs': '系统日志',
     'articles': '文章',
     'clans': '家人们',
+    'account-recovery': '找回账号',
   },
+
   global: {
     'logout': '登出',
     'login': '登录',
@@ -43,7 +53,13 @@ export default {
     'session': '会话',
     'accuracy': '准确度',
     'play-count': '游玩次数',
+    'wip': '开发中',
+    'password': '密码',
+    'email': '邮箱',
+    'otp': '验证码',
+    'verify': '验证',
   },
+
   role: {
     [UserRole.Disabled]: '被禁用',
     [UserRole.Restricted]: '已被封禁',
@@ -63,16 +79,45 @@ export default {
     [UserRole.Owner]: '服主',
     [UserRole.Bot]: '机器人',
   },
+
   scope: {
     [Scope.Self]: '自己',
     [Scope.Friends]: '仅好友',
     [Scope.Public]: '公开',
   },
+
   service: {
     logs: '日志系统',
     ranks: '排名系统',
     sessions: '网站登录',
   },
+
+  error: {
+    [GucchoError.UnknownError]: '未知错误',
+    [GucchoError.MissingServerAvatarConfig]: '头像配置缺失',
+    [GucchoError.ModeNotSupported]: '不支持的模式',
+    [GucchoError.UserNotFound]: '找不到用户',
+    [GucchoError.UserExists]: '已有此用户',
+    [GucchoError.ConflictEmail]: '邮箱已被使用',
+    [GucchoError.UpdateUserSettingsFailed]: '更新用户设置失败',
+    [GucchoError.UpdateUserpageFailed]: '更新Profile失败',
+    [GucchoError.MimeNotImage]: '文件不是图片',
+    [GucchoError.HackerTryingToDeleteAllAvatars]: '你是黑客？为什么要删所有人的头像！',
+    [GucchoError.DeletingMoreThanOneAvatars]: '尝试删除不止一张头像！请联系管理员协助您',
+    [GucchoError.IncorrectPassword]: '密码不正确',
+    [GucchoError.PasswordNotMatch]: '密码不一致',
+    [GucchoError.OldPasswordMismatch]: '旧密码不一致',
+    [GucchoError.EmailTokenNotFound]: '验证邮箱失败！',
+    [GucchoError.RelationTypeNotFound]: '找不到关系',
+    [GucchoError.ConflictRelation]: '您已经与此用户有其他关系了',
+    [GucchoError.AtLeastOneUserNotExists]: '至少有一个用户不存在',
+    [GucchoError.UnableToRetrieveSession]: '无法加载会话',
+    [GucchoError.UnableToRefreshToken]: '无法更新回话',
+    [GucchoError.YouNeedToLogin]: '你还未登录',
+    [GucchoError.SessionNotFound]: '找不到会话',
+    [GucchoError.RequireAdminPrivilege]: '需要管理员权限',
+  },
+
   country: {
     [CountryCode.Unknown]: '未知',
     [CountryCode.Afghanistan]: '阿富汗',
@@ -325,4 +370,51 @@ export default {
     [CountryCode.Zambia]: '赞比亚',
     [CountryCode.Zimbabwe]: '津巴布韦',
   },
-} satisfies DeepPartial<GlobalI18n>
+
+  mail: {
+    [Mail.Variant.Registration]: {
+      subject: '{serverName} - 注册账号',
+      content: `
+Hi,
+
+你可以通过以下链接验证你在 {serverName} 的邮箱:
+{link}
+
+或者，你也可以使用验证码: {otp}
+
+验证码 {ttl} 分钟以内有效。
+如果你有任何顾虑或建议请联系我们。
+
+{serverName}
+`,
+    },
+    [Mail.Variant.AccountRecovery]: {
+      subject: '{serverName} - 找回账户',
+      content: `
+Hi {name},
+
+你可以通过下面的链接继续重设你在 {serverName} 的密码:
+{link}
+
+或者，你可以使用验证码: {otp}
+
+验证码 {ttl} 分钟以内有效。
+
+{serverName}
+`,
+    },
+    [Mail.Variant.ChangeMail]: {
+      subject: '{serverName} - 更改邮箱',
+      content: `
+Hi {name},
+
+请使用下面的验证码继续更改你在 {serverName} 的邮箱:
+{otp}
+
+验证码 {ttl} 分钟以内有效。
+
+{serverName}
+`,
+    },
+  },
+} satisfies GlobalI18n

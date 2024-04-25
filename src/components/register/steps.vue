@@ -18,6 +18,17 @@ en-GB:
   verify-email: Verify email
   create-account: Create account
   login-with-client: Login
+
+zh-CN:
+  verify-email: 验证邮箱
+  create-account: 创建账号
+  login-with-client: 登录游戏
+
+# TODO fr translation
+fr-FR:
+  verify-email: Verify email
+  create-account: Create account
+  login-with-client: Login
 </i18n>
 
 <template>

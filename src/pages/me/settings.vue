@@ -450,7 +450,7 @@ zh-CN:
   password:
     change: 修改
     literal: 修改密码
-    new-password-mismatch: 新密码和确认密码不一致
+    new-password-mismatch: 两次输入的密码不一致
     same-password-as-old: 新密码和旧密码一致
     old-password: 旧密码
     new-password: 新密码

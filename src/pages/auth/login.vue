@@ -68,17 +68,17 @@ en-GB:
   have-no-account: Don't have an account?
   user-or-email: User / Email
   user-id-email: User / ID / Email
-  password: Password
-  persist-login: Remember me
   forgot-password: forgor password?
+  persist-login: Remember me
 
 zh-CN:
   have-no-account: 没有账号?
-  user-or-email: 用户名 或者 邮箱地址
-  user-id-email: 用户名 或者 用户ID 或者 邮箱地址
-  password: 密码
+  user-or-email: 用户名 / 邮箱
+  user-id-email: 用户名 / ID / 邮箱
+  forgot-password: 密码忘了？
   persist-login: 保持登录状态
 
+# TODO fr translation
 fr-FR:
   have-no-account: Vous n'avez pas de compte?
   user-or-email: Utilisateur / Email
@@ -106,23 +106,25 @@ fr-FR:
           >
         </div>
         <div class="form-control">
-          <label for="password" class="sr-only">{{ t('password') }}</label>
+          <label for="password" class="sr-only">{{ t(lGlobal.password.__path__) }}</label>
           <input
             id="password" v-model="login.password" name="password" type="password" autocomplete="off" required
             class="w-full shadow-sm input input-shadow" :class="{ 'input-error': error }"
-            :placeholder="t('password')"
+            :placeholder="t(lGlobal.password.__path__)"
           >
         </div>
-        <div class="mt-4" />
-        <nuxt-link-locale
-          class="link link-secondary m-1" @click.prevent="navigateTo({
-            name: 'auth-account-recovery',
-          })"
-        >
-          {{ t('forgot-password') }}
-        </nuxt-link-locale>
         <div class="form-control">
-          <label class="label cursor-pointer">
+          <nuxt-link-locale
+            class="m-1 link link-info" @click.prevent="navigateTo({
+              name: 'auth-account-recovery',
+            })"
+          >
+            {{ t('forgot-password') }}
+          </nuxt-link-locale>
+        </div>
+
+        <div class="form-control">
+          <label class="cursor-pointer label">
             <span class="label-text">{{ t('persist-login') }}</span>
             <input v-model="login.persist" type="checkbox" class="toggle">
           </label>

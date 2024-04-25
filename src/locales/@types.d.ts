@@ -17,6 +17,7 @@ type Titles =
 | 'logs'
 | 'articles'
 | 'clans'
+| 'account-recovery'
 
 type KGlobal =
 | 'logout'
@@ -35,7 +36,10 @@ type KGlobal =
 | 'users'
 | 'session'
 | 'wip'
-
+| 'password'
+| 'email'
+| 'otp'
+| 'verify'
 type KFooter =
 | 'about'
 | 'resources'

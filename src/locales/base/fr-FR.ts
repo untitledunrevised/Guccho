@@ -42,6 +42,10 @@ export default {
     'beatmaps': 'Beatmaps',
     'users': 'Utilisateur',
     'session': 'Session',
+    'password': 'Mot de passe',
+    'email': 'Email',
+    'otp': 'One time code',
+    'verify': 'Verify',
   },
   role: {
     [UserRole.Disabled]: 'Désactivé',

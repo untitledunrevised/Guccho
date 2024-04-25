@@ -21,6 +21,9 @@ const app = useNuxtApp()
 const { t } = useI18n()
 const params = useRoute<'auth-register'>().query
 
+const localeRoot = localeKey.root
+const gLocale = localeRoot.global
+
 const error = ref<Error>()
 const step = ref(params.token ? PageStep.VerifyToken : PageStep.InputEmail)
 const state = ref(State.Idle)
@@ -74,32 +77,24 @@ async function checkOTP() {
 <i18n lang="yaml">
 en-GB:
   have-account: Have account?
-  verify: Verify
-  email: Email
   lgtm: LGTM!
-  otp: One time code
   invalid-otp: Invalid OTP
+
 zh-CN:
   have-account: 已经有一个账号了?
-  verify: 发送验证码
-  email: 邮箱
   lgtm: 我觉得可以!
-  otp: 验证码
   invalid-otp: 验证码不正确
+
 fr-FR:
   have-account: Vous avez déjà un compte?
-  # TODO check translation
-  verify: Verify
-  email: Email
   lgtm: LGTM!
-  otp: One time code
   invalid-otp: Invalid OTP
 </i18n>
 
 <template>
   <div class="container max-w-screen-md mx-auto">
     <h2 class="pl-3 text-2xl text-gbase-800 dark:text-gbase-50">
-      {{ $t("global.register") }}
+      {{ $t(gLocale.register.__path__) }}
     </h2>
     <div class="grid w-full grid-cols-1 gap-6 mt-8 md:grid-cols-5 md:gap-10">
       <div class="md:col-span-2 md:order-2">
@@ -121,7 +116,7 @@ fr-FR:
               'input-error': error,
             }"
           >
-            {{ t("email") }}
+            {{ t(gLocale.email.__path__) }}
             <input
               id="email"
               v-model="email"
@@ -139,12 +134,12 @@ fr-FR:
               class="stack-btn btn btn-secondary"
               @click="navigateTo({ name: 'auth-login' })"
             >
-              <span class="reveal">{{ $t("global.login") }}</span>
+              <span class="reveal">{{ $t(gLocale.login.__path__) }}</span>
               <span class="surface">{{ t("have-account") }}</span>
             </button>
             <button type="submit" class="btn btn-primary">
               <span>
-                {{ t("verify") }}
+                {{ t(gLocale.verify.__path__) }}
               </span>
               <span
                 :class="{
@@ -164,7 +159,7 @@ fr-FR:
               'input-error': error,
             }"
           >
-            {{ t("otp") }}
+            {{ t(gLocale.otp.__path__) }}
             <input v-model="otp" type="number" class="grow" @input="checkOTP">
           </div>
           <button v-show="state === State.Succeed" class="w-full mt-4 btn btn-primary">

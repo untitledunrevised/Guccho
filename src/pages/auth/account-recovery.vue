@@ -29,6 +29,9 @@ const session = useSession()
 const { t } = useI18n()
 const route = useRoute()
 
+const localeRoot = localeKey.root
+const gLocale = localeRoot.global
+
 if (session.loggedIn) {
   await navigateTo({
     name: 'me-settings',
@@ -131,25 +134,28 @@ function _handleError(e: any) {
 
 <i18n lang="yaml">
 en-GB:
-  email: Email
   next: Next
-  otp: One time Code
   invalid-otp: Invalid OTP
+  repeat-password: Repeat password
+  done: Done
+  succeed-message: Done!
 
 zh-CN:
-  email: 邮箱
+  next: 下一步
   invalid-otp: 验证码不正确
+  repeat-password: 确认密码
+  done: 完成
+  succeed-message: 密码重置成功！
 
 # TODO check translation
 fr-FR:
-  email: Email
   invalid-otp: Invalid OTP
 </i18n>
 
 <template>
   <div class="container max-w-screen-sm mx-auto">
     <h1 class="mb-8 text-3xl">
-      Account Recovery
+      {{ t(localeRoot.titles['account-recovery'].__path__) }}
     </h1>
     <form
       v-if="step === Step.Handle"
@@ -164,7 +170,7 @@ fr-FR:
           'input-error': error,
         }"
       >
-        <span>{{ t("email") }}</span>
+        <span>{{ t(gLocale.email.__path__) }}</span>
         <input
           v-model="email"
           class="grow"
@@ -190,7 +196,7 @@ fr-FR:
           'input-error': error,
         }"
       >
-        <span>{{ t("otp") }}</span>
+        <span>{{ t(gLocale.otp.__path__) }}</span>
         <input v-model="otp" class="grow">
       </div>
       <span v-if="error" class="m-2 text-error">{{ formatGucchoErrorWithT(t, error) }}</span>
@@ -211,7 +217,7 @@ fr-FR:
           'input-error': error,
         }"
       >
-        <span>{{ t('password') }}</span>
+        <span>{{ t(gLocale.password.__path__) }}</span>
         <input
           v-model="password"
           type="password"
@@ -240,7 +246,7 @@ fr-FR:
     </form>
     <div v-if="step === Step.Succeed" class="space-y-4">
       <div class="text-2xl">
-        Done!
+        {{ t("succeed-message") }}
       </div>
       <nuxt-link-locale
         class="btn btn-primary"
@@ -254,5 +260,3 @@ fr-FR:
     </div>
   </div>
 </template>
-
-<style scoped></style>

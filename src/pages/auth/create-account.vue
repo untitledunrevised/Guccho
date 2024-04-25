@@ -37,6 +37,9 @@ const { t } = useI18n()
 
 const route = useRoute<'auth-create-account'>()
 
+const localeRoot = localeKey.root
+const gLocale = localeRoot.global
+
 const { query } = route
 
 if (!query.t) {
@@ -90,7 +93,7 @@ const validate: {
 
 useHead({
   title: () =>
-    `${app.$i18n.t('global.register')} - ${app.$i18n.t('server.name')}`,
+    `${app.$i18n.t(gLocale.register.__path__)} - ${app.$i18n.t(gLocale.register.__path__)}`,
 })
 
 async function userRegisterAction() {
@@ -152,9 +155,7 @@ en-GB:
   key-taken: '{key} is already taken.'
   name: Nickname (you can change it later)
   name-pattern: Must not includes uppercase letter, nor starts or ends with _, contains only number, a-z and _
-  link: Username (semi-permanent)
-  email: Email
-  password: Password
+  link: Username
   password-pattern: Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters
 
 zh-CN:
@@ -162,9 +163,7 @@ zh-CN:
   key-taken: '{key} 已经被占用了'
   name: 用户昵称(可以随时修改)
   name-pattern: 不包含大写字母,不能以 _ 作为开头和结尾,即只能包含 数字、小写字母a-z 以及 下划线 _
-  link: 用户名 (几乎不可修改)
-  email: 电子邮箱
-  password: 密码
+  link: 用户名
   password-pattern: 必须包含至少一个数字、一个大写字母和一个小写字母,并且密码长度至少为8。
 
 fr-FR:
@@ -172,16 +171,14 @@ fr-FR:
   key-taken: '{key} n''est pas disponible.'
   name: Pseudo (vous pourrez le changer plus tard)
   name-pattern: Ne doit pas contenir de lettre majuscule, ni commencer ou se terminer par _, doit contenir uniquement des chiffres, a-z et _
-  link: Nom d'utilisateur (semi-permanent)
-  email: Email
-  password: Mot de passe
+  link: Nom d'utilisateur
   password-pattern: Doit contenir au moins un chiffre et une lettre majuscule et minuscule, et au moins 8 caractères.
 </i18n>
 
 <template>
   <div class="container max-w-screen-md mx-auto">
     <h2 class="pl-3 text-2xl text-gbase-800 dark:text-gbase-50">
-      {{ $t("global.register") }}
+      {{ $t(gLocale.register.__path__) }}
     </h2>
     <div class="grid w-full grid-cols-1 gap-6 mt-8 md:grid-cols-5 md:gap-10">
       <div class="md:col-span-2 md:order-2">
@@ -260,7 +257,7 @@ fr-FR:
             </div>
           </div> -->
             <div>
-              <label for="password" class="sr-only">{{ t("password") }}</label>
+              <label for="password" class="sr-only">{{ t(gLocale.password.__path__) }}</label>
               <input
                 id="password"
                 v-model="reg.password"
@@ -272,7 +269,7 @@ fr-FR:
                 :title="t('password-pattern')"
                 class="w-full shadow-sm input input-shadow input-ghost"
                 :class="{ 'input-error': error.password }"
-                :placeholder="t('password')"
+                :placeholder="t(gLocale.password.__path__)"
                 @input="error.password = ''"
               >
               <div class="pl-4 text-sm text-error">
@@ -281,7 +278,7 @@ fr-FR:
             </div>
           </div>
           <button type="submit" class="w-full btn btn-shadow btn-primary">
-            {{ $t("global.register") }}
+            {{ $t(gLocale.register.__path__) }}
           </button>
         </form>
       </div>

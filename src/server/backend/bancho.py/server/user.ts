@@ -456,7 +456,8 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
           ),
           includeHidden ? undefined : userPriv(schema.users)
         )
-      ).limit(1)
+      )
+      .limit(1)
 
     const { user, clan } = result ?? throwGucchoError(GucchoError.UserNotFound)
 

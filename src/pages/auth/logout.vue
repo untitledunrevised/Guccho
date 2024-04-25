@@ -1,12 +1,20 @@
 <script lang="ts" setup>
 import { useSession } from '~/store/session'
 
+definePageMeta({
+  layout: 'centered',
+})
+
 const router = useRouter()
 const session = useSession()
 const { t } = useI18n()
+
 onMounted(async () => {
   await session.destroy()
-  setTimeout(() => router.push(router.currentRoute.value.query.redirect?.toString() || '/'), 1000)
+  setTimeout(
+    () => router.push(router.currentRoute.value.query.redirect?.toString() || '/'),
+    1000
+  )
 })
 </script>
 
@@ -22,7 +30,9 @@ fr-FR:
 </i18n>
 
 <template>
-  <div class="text-lg">
-    {{ t('logging-out') }}
+  <div class="mx-auto">
+    <div class="text-2xl">
+      {{ t('logging-out') }}
+    </div>
   </div>
 </template>
