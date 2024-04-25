@@ -13,6 +13,9 @@ import { Constant } from '~/server/common/constants'
 import { UserProvider, UserRelationProvider, mail, mailToken, sessions, userRelations, users } from '~/server/singleton/service'
 import { userProcedure as pUser } from '~/server/trpc/middleware/user'
 import ui from '~~/guccho.ui.config'
+import { Logger } from '$base/logger'
+
+const logger = Logger.child({ label: 'me' })
 
 // const verifiedEmail = new Map<string, Set<string>>()
 export const router = _router({
@@ -31,7 +34,11 @@ export const router = _router({
     get: pUser.query(({ ctx }) => {
       return users.getDynamicSettings(ctx.user)
     }),
-    update: pUser.input(extractSettingValidators(extractLocationSettings(DynamicSettingStore.Server, settings))).mutation(({ ctx, input }) => {
+    update: pUser.input(
+      extractSettingValidators(
+        extractLocationSettings(DynamicSettingStore.Server, settings)
+      )
+    ).mutation(({ ctx, input }) => {
       return users.setDynamicSettings(ctx.user, input)
     }),
   }),
@@ -62,8 +69,8 @@ export const router = _router({
         if (mailUser) {
           throwGucchoError(GucchoError.ConflictEmail)
         }
-
-        type Param = Mail.Param[Mail.Variant.ChangeMail]
+        const variant = Mail.Variant.ChangeMail
+        type Param = Mail.Param[typeof variant]
 
         const [t, { otp, token }] = await Promise.all([
           useTranslation(ctx.h3Event),
@@ -71,7 +78,7 @@ export const router = _router({
         ])
 
         const serverName = t(localeKey.root.server.name.__path__)
-        const mailVariant = localeKey.root.mail[Mail.Variant.ChangeMail]
+        const mailVariant = localeKey.root.mail[variant]
 
         await mail.send({
           to: email,
@@ -82,7 +89,7 @@ export const router = _router({
               name: ctx.user.name,
               serverName,
               otp,
-              link: host(`/mail/change?t=${token}`, ctx.h3Event, { fallbackURL: `osu.${ui.baseUrl}` }), // TODO WIP
+              link: host(`/mail/verify?t=${token}&a=${variant}`, ctx.h3Event, { fallbackURL: `osu.${ui.baseUrl}` }),
               ttl: Constant.EmailTokenTTLInMinutes as number,
             } satisfies Param['content']
           ),
@@ -98,7 +105,9 @@ export const router = _router({
     changeWithToken: pUser
       .input(zodEmailValidation).mutation(async ({ ctx, input }) => {
         const rec = await mailToken.get(input) ?? throwGucchoError(GucchoError.EmailTokenNotFound)
-        return await users.changeEmail(ctx.user, rec.email)
+        const result = await users.changeEmail(ctx.user, rec.email)
+        mailToken.deleteAll(rec.email).catch(e => logger.error(e))
+        return result
       }),
   }),
 

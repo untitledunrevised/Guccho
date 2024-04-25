@@ -95,7 +95,8 @@ export default {
     [GucchoError.UserNotFound]: 'User not found.',
     [GucchoError.UserExists]: 'User already exists.',
     [GucchoError.ConflictEmail]: 'This email address is already in use.',
-    [GucchoError.PasswordMismatch]: 'Incorrect password.',
+    [GucchoError.IncorrectPassword]: 'Incorrect password.',
+    [GucchoError.PasswordNotMatch]: 'Password not match.',
     [GucchoError.OldPasswordMismatch]: 'The old password provided is incorrect.',
     [GucchoError.RelationTypeNotFound]: 'Relation type unknown.',
     [GucchoError.AtLeastOneUserNotExists]: 'At least one user does not exist.',
@@ -388,9 +389,10 @@ Please let us know if you have any questions or concerns.
       content: `
 Hi {name},
 
-You can reset your password from the following link:
-
+To reset your password for {serverName}, please proceed with the following link:
 {link}
+
+Alternatively, you can use the following code: {otp}
 `,
     },
     [Mail.Variant.ChangeMail]: {

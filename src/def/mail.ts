@@ -17,18 +17,18 @@ export namespace Mail {
     ttl: number
   }
 
-  interface ChangeMail extends Template {
+  interface WithName extends Template {
     name: string
   }
 
   export interface Param {
     [Variant.ChangeMail]: {
       subject: Subject
-      content: Template
+      content: WithName
     }
     [Variant.AccountRecovery]: {
       subject: Subject
-      content: Template
+      content: WithName
     }
     [Variant.Registration]: {
       subject: Subject
@@ -36,4 +36,9 @@ export namespace Mail {
     }
   }
 
+}
+
+export interface VerifyRouterQuery {
+  t: string
+  a: Mail.Variant
 }

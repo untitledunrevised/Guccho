@@ -8,6 +8,8 @@ const router = useRouter()
 if (session.loggedIn) {
   router.back()
 }
+const localeRoot = localeKey.root
+const lGlobal = localeRoot.global
 
 definePageMeta({
   layout: 'centered',
@@ -18,7 +20,7 @@ const app = useNuxtApp()
 const { t } = useI18n()
 
 useHead({
-  title: () => `${app.$i18n.t('global.login')} - ${app.$i18n.t('server.name')}`,
+  title: () => `${app.$i18n.t(lGlobal.login.__path__)} - ${app.$i18n.t(localeRoot.server.name.__path__)}`,
 })
 
 const error = shallowRef('')
@@ -68,6 +70,7 @@ en-GB:
   user-id-email: User / ID / Email
   password: Password
   persist-login: Remember me
+  forgot-password: forgor password?
 
 zh-CN:
   have-no-account: 没有账号?
@@ -90,7 +93,7 @@ fr-FR:
       <fetch-overlay :fetching="fetching" />
       <div>
         <h2 class="pl-2 text-2xl text-gbase-800 dark:text-gbase-50">
-          {{ $t('global.login') }}
+          {{ $t(lGlobal.login.__path__) }}
         </h2>
       </div>
       <form class="mt-8 space-y-4" autocomplete="off" method="post" action="#" @submit.prevent="userLogin">
@@ -98,7 +101,7 @@ fr-FR:
           <label for="user" class="sr-only">{{ t('user-or-email') }}</label>
           <input
             id="user" v-model="login.user" name="user" type="user" autocomplete="off" required
-            class="w-full shadow-sm input input-shadow input-ghost" :class="{ 'input-error': error }"
+            class="w-full shadow-sm input" :class="{ 'input-error': error }"
             :placeholder="t('user-id-email')"
           >
         </div>
@@ -106,10 +109,18 @@ fr-FR:
           <label for="password" class="sr-only">{{ t('password') }}</label>
           <input
             id="password" v-model="login.password" name="password" type="password" autocomplete="off" required
-            class="w-full shadow-sm input input-shadow input-ghost" :class="{ 'input-error': error }"
+            class="w-full shadow-sm input input-shadow" :class="{ 'input-error': error }"
             :placeholder="t('password')"
           >
         </div>
+        <div class="mt-4" />
+        <nuxt-link-locale
+          class="link link-secondary m-1" @click.prevent="navigateTo({
+            name: 'auth-account-recovery',
+          })"
+        >
+          {{ t('forgot-password') }}
+        </nuxt-link-locale>
         <div class="form-control">
           <label class="label cursor-pointer">
             <span class="label-text">{{ t('persist-login') }}</span>
@@ -124,10 +135,10 @@ fr-FR:
             class="btn-shadow stack-btn" to="/auth/register" variant="accent"
           >
             <span class="surface">{{ t('have-no-account') }}</span>
-            <span class="reveal">{{ $t('global.register') }}</span>
+            <span class="reveal">{{ $t(lGlobal.register.__path__) }}</span>
           </t-nuxt-link-button>
           <button type="submit" class="btn btn-shadow btn-primary">
-            {{ $t('global.login') }}
+            {{ $t(lGlobal.login.__path__) }}
           </button>
         </div>
       </form>
@@ -142,11 +153,5 @@ fr-FR:
 
 .half-box {
   @apply relative w-full max-w-md p-6 overflow-hidden space-y-8 rounded-3xl;
-  /* &::before {
-    content: "";
-    @apply absolute left-0 top-0 right-0 bottom-0;
-    @apply bg-gradient-to-t from-gbase-500/5 to-transparent rounded-3xl;
-    @apply blur-sm -z-10;
-  } */
 }
 </style>

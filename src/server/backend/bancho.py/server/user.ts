@@ -142,8 +142,8 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     return toUserCompact(user, this.config)
   }
 
-  async getByEmail(email: MailTokenProvider.Email, opt: { scope: Scope }): Promise<UserCompact<number>> {
-    return this.getCompact({ handle: email, scope: opt.scope, keys: ['email'] })
+  async getByEmail(email: MailTokenProvider.Email, opt?: { scope: Scope }): Promise<UserCompact<number>> {
+    return this.getCompact({ handle: email, scope: opt?.scope, keys: ['email'] })
   }
 
   async getCompact(opt: Base.OptType & { scope?: Scope }) {
@@ -631,6 +631,17 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     catch (err) {
       logger.error(err)
       throwGucchoError(GucchoError.UpdateUserpageFailed)
+    }
+  }
+
+  async changePasswordNoCheck(user: { id: Id }, newPassword: string): Promise<void> {
+    const result = await this.drizzle.update(schema.users).set({
+      pwBcrypt: await encryptBanchoPassword(newPassword),
+    })
+      .where(eq(schema.users.id, user.id))
+
+    if (!result[0].affectedRows) {
+      throwGucchoError(GucchoError.UserNotFound)
     }
   }
 

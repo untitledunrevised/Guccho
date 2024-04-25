@@ -25,7 +25,7 @@ export const router = _router({
       try {
         const [ok, user] = await users.testPassword({ handle }, md5HashedPassword)
         if (!ok) {
-          throwGucchoError(GucchoError.PasswordMismatch)
+          throwGucchoError(GucchoError.IncorrectPassword)
         }
 
         const opt = {

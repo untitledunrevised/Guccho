@@ -17,7 +17,7 @@ export function createGucchoError(code: GucchoError): TRPCError {
     case GucchoError.YouNeedToLogin:
     case GucchoError.RequireAdminPrivilege:
     case GucchoError.OldPasswordMismatch:
-    case GucchoError.PasswordMismatch: {
+    case GucchoError.IncorrectPassword: {
       return new TRPCError(merge({ code: 'UNAUTHORIZED' }))
     }
 
@@ -36,24 +36,29 @@ export function createGucchoError(code: GucchoError): TRPCError {
 
     case GucchoError.ConflictRelation:
     case GucchoError.ConflictEmail:
+    case GucchoError.PasswordNotMatch:
     case GucchoError.UserExists: {
       return new TRPCError(merge({ code: 'CONFLICT' }))
     }
 
+    case GucchoError.ModeNotSupported:
+    case GucchoError.EmailTokenNotFound:
     case GucchoError.RelationTypeNotFound:
     case GucchoError.SessionNotFound:
     case GucchoError.UserNotFound:
     case GucchoError.AtLeastOneUserNotExists: {
       return new TRPCError(merge({ code: 'NOT_FOUND' }))
     }
-    case GucchoError.ModeNotSupported:
+
     case GucchoError.UnableToRefreshToken:
     case GucchoError.UnableToRetrieveSession:
     case GucchoError.UnknownError:
     case GucchoError.UpdateUserSettingsFailed:
-    case GucchoError.UpdateUserpageFailed:
-    default: {
+    case GucchoError.UpdateUserpageFailed:{
       return new TRPCError(merge({ code: 'INTERNAL_SERVER_ERROR' }))
+    }
+    default: {
+      assertNotReachable(code)
     }
   }
 }

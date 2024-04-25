@@ -8,7 +8,18 @@ export class MailTokenProvider extends MBase {
   drizzle = useDrizzle(schema)
 
   async getOrCreate(email: MBase.Email): Promise<{ otp: MBase.OTP; token: MBase.Token }> {
-    return await this.getByEmail(email) ?? await this.create(email)
+    const saved = await this.getByEmail(email)
+    if (!saved) {
+      return await this.create(email)
+    }
+
+    // extend ttl
+    await this.drizzle.update(schema.emailToken).set({
+      invalidAfter: this.offsetByMinutes(Constant.EmailTokenTTLInMinutes),
+    })
+      .where(eq(schema.emailToken.token, saved.token))
+
+    return saved
   }
 
   async get(input: MBase.Validation): Promise<{ email: MBase.Email; otp: MBase.OTP; token: MBase.Token } | undefined> {

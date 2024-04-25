@@ -153,6 +153,8 @@ export abstract class UserProvider<Id, ScoreId> extends IdTransformable {
     }
   ): PromiseLike<UserCompact<Id>>
 
+  abstract changePasswordNoCheck(user: { id: Id }, newPassword: string): PromiseLike<void>
+
   abstract changePassword(
     user: { id: Id },
     oldPasswordMD5: string,

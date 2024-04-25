@@ -5,6 +5,7 @@ import { GucchoError } from '../messages'
 import { optionalUserProcedure } from '../middleware/optional-user'
 import { sessionProcedure } from '../middleware/session'
 import {
+  zodEmailValidation,
   zodHandle,
   zodLeaderboardRankingSystem,
   zodMode,
@@ -13,7 +14,7 @@ import {
   zodRuleset,
 } from '../shapes'
 import { router as _router, publicProcedure as p } from '../trpc'
-import { type MailTokenProvider as MBase } from '$base/server'
+import { type MailTokenProvider as MBase, type MailTokenProvider } from '$base/server'
 import { type Mode } from '~/def'
 import { RankingStatus } from '~/def/beatmap'
 import { type LeaderboardRankingSystem } from '~/def/common'
@@ -229,13 +230,14 @@ export const router = _router({
         ) {
           throwGucchoError(GucchoError.ConflictEmail)
         }
+        const variant = Mail.Variant.Registration
 
         const { otp, token } = await mailToken.getOrCreate(input as MBase.Email)
         const t = await useTranslation(ctx.h3Event)
         const serverName = t(localeKey.root.server.name.__path__)
-        const mailVariant = localeKey.root.mail[Mail.Variant.Registration]
+        const mailVariant = localeKey.root.mail[variant]
 
-        type Param = Mail.Param[Mail.Variant.Registration]
+        type Param = Mail.Param[typeof variant]
 
         await mail.send({
           to: input,
@@ -246,11 +248,11 @@ export const router = _router({
           ),
 
           content: t(
-            localeKey.mail.content(Mail.Variant.Registration),
+            localeKey.mail.content(variant),
             {
               serverName,
               otp,
-              link: host(`/mail/verify?t=${token}`, ctx.h3Event, { fallbackURL: `osu.${ui.baseUrl}` }),
+              link: host(`/mail/verify?t=${token}&a=${variant}`, ctx.h3Event, { fallbackURL: `osu.${ui.baseUrl}` }),
               ttl: Constant.EmailTokenTTLInMinutes as number,
             } satisfies Param['content']
           ),
@@ -285,6 +287,84 @@ export const router = _router({
         return user
       }),
 
+  }),
+
+  accountRecovery: _router({
+    otp: p
+      .input(string().email())
+      .mutation(async ({ ctx, input }) => {
+        const variant = Mail.Variant.AccountRecovery
+
+        const user = await users.getByEmail(input as MailTokenProvider.Email)
+
+        const { otp, token } = await mailToken.getOrCreate(input as MailTokenProvider.Email)
+        const t = await useTranslation(ctx.h3Event)
+        const serverName = t(localeKey.root.server.name.__path__)
+        const mailVariant = localeKey.root.mail[variant]
+
+       type Param = Mail.Param[typeof variant]
+
+       await mail.send({
+         to: input,
+
+         subject: t(
+           mailVariant.subject.__path__,
+            { serverName } satisfies Param['subject']
+         ),
+
+         content: t(
+           localeKey.mail.content(variant),
+            {
+              serverName,
+              name: user.name,
+              otp,
+              link: host(`/mail/verify?t=${token}&a=${variant}`, ctx.h3Event, { fallbackURL: `osu.${ui.baseUrl}` }),
+              ttl: Constant.EmailTokenTTLInMinutes as number,
+            } satisfies Param['content']
+         ),
+       })
+      }),
+
+    changePassword: sessionProcedure
+      .input(object({
+        password: string(),
+        repeatPassword: string(),
+        token: zodEmailValidation,
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (!input.password) {
+          // TODO refine error message
+          throwGucchoError(GucchoError.UpdateUserSettingsFailed)
+        }
+        if (input.password !== input.repeatPassword) {
+          throwGucchoError(GucchoError.PasswordNotMatch)
+        }
+
+        const rec = await mailToken.get(input.token)
+
+        if (!rec) {
+          throwGucchoError(GucchoError.EmailTokenNotFound)
+        }
+
+        const user = await users.getByEmail(rec.email, { scope: Scope.Self })
+
+        await users.changePasswordNoCheck(user, input.password)
+
+        // background jobs
+        mailToken.deleteAll(rec.email).catch(e => logger.error({ message: `failed to delete mail token: ${e.message}` }))
+
+        // const refreshed = await ctx.session.update({ user })
+        // const opts = {
+        //   httpOnly: true,
+        //   maxAge: ctx.session.persist ? Constant.PersistDuration as number : undefined,
+        // }
+        // if (refreshed) {
+        //   setCookie(ctx.h3Event, Constant.SessionLabel, refreshed, opts)
+        // }
+        // if (ctx.session.persist) {
+        //   setCookie(ctx.h3Event, Constant.Persist, 'yes', opts)
+        // }
+      }),
   }),
 
 })

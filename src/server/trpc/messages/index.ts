@@ -15,7 +15,9 @@ export enum GucchoError {
   DeletingMoreThanOneAvatars,
 
   // auth
-  PasswordMismatch = 3000,
+  IncorrectPassword = 3000,
+
+  PasswordNotMatch,
   OldPasswordMismatch,
   EmailTokenNotFound,
 

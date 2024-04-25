@@ -47,7 +47,7 @@ const enum ChangePasswordState {
   Succeed,
 }
 
-// eslint-disable-next-line antfu/no-const-enum
+// eslint-disable-next-line antfu/no-const-enum, unused-imports/no-unused-vars
 const enum ProfileState {
   Errored,
   Idle,
@@ -532,7 +532,7 @@ fr-FR:
       class="my-auto"
     >
       <div
-        class="space-x-2 p-4 shadow-xl rounded-xl bg-gbase-50 dark:bg-gbase-700"
+        class="p-4 space-x-2 shadow-xl rounded-xl bg-gbase-50 dark:bg-gbase-700"
       >
         <div class="flex items-center justify-center w-full">
           <label v-if="!newAvatar" for="dropzone-file" class="dropzone">
@@ -736,7 +736,7 @@ fr-FR:
             <span class="px-2 text-error">{{ changeEmailError }}</span>
           </div>
           <div class="flex gap-2 p-4">
-            <t-button class="btn-shadow grow transition-colors" size="sm" variant="accent" :disabled="user.email === unchanged.email">
+            <t-button class="transition-colors btn-shadow grow" size="sm" variant="accent" :disabled="user.email === unchanged.email">
               <span v-if="changeEmailState[1] === ChangeEmailState.Posting" class="loading loading-sm" />
               <icon v-else name="ic:round-check" class="w-5 h-5" size="100%" />
               {{ t("password.ok") }}
@@ -875,7 +875,7 @@ fr-FR:
                   </tr>
                 </thead>
                 <tbody
-                  class="origin-center transition-filter transition-opacity"
+                  class="transition-opacity origin-center transition-filter"
                   :class="{
                     'opacity-30 saturate-50 blur-md': pendingSession,
                   }"
@@ -947,7 +947,7 @@ fr-FR:
                     </td>
                     <th scope="row">
                       <button
-                        class="btn btn-ghost btn-xs inline whitespace-nowrap"
+                        class="inline btn btn-ghost btn-xs whitespace-nowrap"
                         :disabled="pendingSession || session.current"
                         @click="kickSession(id)"
                       >
@@ -1097,7 +1097,7 @@ fr-FR:
           </label>
           <app-mode-switcher
             v-model="user.preferredMode"
-            class="min-w-min w-1/2 mx-auto"
+            class="w-1/2 mx-auto min-w-min"
           />
         </div>
         <div>
