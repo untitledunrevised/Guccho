@@ -5,6 +5,7 @@ import { type UserCompact, type UserOptional, UserRole } from '~/def/user'
 
 const { t, locale } = useI18n()
 const route = useRoute('admin-users')
+
 const validator = object({
   page: coerce.number().default(0),
   perPage: coerce.number().default(10),

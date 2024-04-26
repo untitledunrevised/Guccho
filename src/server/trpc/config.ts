@@ -6,4 +6,5 @@ export {
   rulesets,
   rankingSystems,
   leaderboardRankingSystems,
+  userRoles,
 } from '$active'

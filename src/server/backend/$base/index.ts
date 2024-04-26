@@ -46,5 +46,6 @@ export const hasRuleset: HasRuleset = <M extends ActiveMode>(
 ): ruleset is AvailableRuleset<M> => false
 
 export { modes, rulesets } from '~/def'
+export { userRoles } from '~/def/user'
 
 export const features = new Set<Feature>([])

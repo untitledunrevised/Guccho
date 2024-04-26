@@ -1,15 +1,26 @@
 <script setup lang="ts">
 import md5 from 'md5'
+import type { HTMLAttributes, InputHTMLAttributes } from 'vue'
 import { CountryCode } from '~/def/country-code'
-import { roles as options } from '~/common/options'
+import { UserRole } from '~/def/user'
+import { useSession } from '~/store/session'
 
 const app = useNuxtApp()
 const { t } = useI18n()
 const route = useRoute('admin-users-id')
+const adapter = useAdapterConfig()
+const session = useSession()
+
+const disallowUserEditItselfRole = new Set([
+  UserRole.Owner,
+  UserRole.Admin,
+  UserRole.Staff,
+])
 
 const error = ref<Error>()
 const f = await app.$client.admin.userManagement.detail.query(route.params.id)
 const detail = ref(f as typeof f & { password?: string })
+
 // eslint-disable-next-line antfu/no-const-enum
 const enum Status {
   Idle,
@@ -23,6 +34,22 @@ const icon = {
   [Status.Errored]: 'line-md:cancel',
 } as const
 const status = ref(Status.Idle)
+
+const opts = computed(() =>
+  createOptions(UserRole, (_, v) => t(localeKey.role(v)))
+    .map((item) => {
+      const attrs: HTMLAttributes & InputHTMLAttributes = {}
+      if (
+        (session.user?.id === detail.value.id && disallowUserEditItselfRole.has(item.value)) // prevent self from removing its priv
+        || !isEditable(session.role, item.value)
+      ) {
+        attrs.disabled = true
+      }
+
+      return { ...item, attrs }
+    })
+    .filter(i => adapter.supportedRoles.includes(i.value))
+)
 
 async function save() {
   error.value = undefined
@@ -38,6 +65,23 @@ async function save() {
     if (e instanceof Error) {
       error.value = e
     }
+  }
+}
+
+// TODO server validation impl same logic
+function isEditable(stat: Record<'admin' | 'owner' | 'staff', boolean>, role: UserRole) {
+  switch (role) {
+    case UserRole.Admin: {
+      return stat.owner
+    }
+    case UserRole.Staff: {
+      return stat.admin || stat.owner
+    }
+    case UserRole.Owner: {
+      return stat.owner
+    }
+    default:
+      return true
   }
 }
 </script>
@@ -78,7 +122,12 @@ fr-FR:
 <template>
   <div v-if="detail" class="container custom-container">
     <div v-if="error" class="overflow-x-auto text-left alert alert-error">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 stroke-current shrink-0" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 stroke-current shrink-0" fill="none" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
       <pre>{{ formatGucchoError(error) }}</pre>
     </div>
     <dl>
@@ -143,11 +192,8 @@ fr-FR:
           <img :alt="detail.flag" :src="getFlagURL(detail.flag)" class="w-6">
           <select v-model="detail.flag" class="w-full select select-sm">
             <option
-              v-for="countryCode in CountryCode"
-              :key="countryCode"
-              :disabled="countryCode === detail.flag"
-              :selected="countryCode === detail.flag"
-              :value="countryCode"
+              v-for="countryCode in CountryCode" :key="countryCode" :disabled="countryCode === detail.flag"
+              :selected="countryCode === detail.flag" :value="countryCode"
             >
               <template v-if="countryCode === CountryCode.Unknown">
                 ❓
@@ -169,7 +215,7 @@ fr-FR:
           {{ t('roles') }}
         </dt>
         <dd class="striped-text">
-          <t-multi-select v-model="detail.roles" class="w-full" size="sm" :options="options($t)" />
+          <t-multi-checkbox v-model="detail.roles" size="sm" :options="opts" />
         </dd>
       </div>
     </dl>

@@ -9,6 +9,7 @@ export {
   rulesets,
   rankingSystems,
   leaderboardRankingSystems,
+  userRoles,
 } from '../bancho.py'
 export type { Id, ScoreId } from '../bancho.py'
 

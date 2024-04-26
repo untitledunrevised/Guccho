@@ -10,6 +10,8 @@ export const useSession = defineStore('session', {
     userId?: string
     user?: Omit<UserFull<string>, 'statistics'>
     role: {
+      admin: boolean
+      owner: boolean
       staff: boolean
     }
   } => ({
@@ -17,6 +19,8 @@ export const useSession = defineStore('session', {
     user: undefined,
     userId: undefined,
     role: {
+      admin: false,
+      owner: false,
       staff: false,
     },
   }),

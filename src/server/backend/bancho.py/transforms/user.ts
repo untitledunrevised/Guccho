@@ -25,9 +25,6 @@ export function toRoles(priv: number): UserRole[] {
   if ((priv & BanchoPyPrivilege.Normal) !== BanchoPyPrivilege.Normal) {
     roles.push(UserRole.Restricted)
   }
-  else if (priv & (BanchoPyPrivilege.Verified | BanchoPyPrivilege.Normal)) {
-    roles.push(UserRole.Normal)
-  }
 
   if (priv & BanchoPyPrivilege.Whitelisted) {
     roles.push(UserRole.Verified)
@@ -73,7 +70,10 @@ export function toRoles(priv: number): UserRole[] {
 }
 
 export function toBanchoPyPriv(input: UserRole[]): number {
-  let curr = 0
+  let curr = input.includes(UserRole.Restricted)
+    ? BanchoPyPrivilege.Any
+    : BanchoPyPrivilege.Normal
+
   for (const role of input) {
     curr |= toOneBanchoPyPriv(role)
   }
@@ -84,10 +84,6 @@ export function toOneBanchoPyPriv(role: UserRole): number {
   switch (role) {
     case UserRole.Restricted:
       return BanchoPyPrivilege.Any
-    // case UserRole.Registered:
-    //   return BanchoPyPrivilege.Normal
-    case UserRole.Normal:
-      return BanchoPyPrivilege.Verified | BanchoPyPrivilege.Normal
     case UserRole.Verified:
       return BanchoPyPrivilege.Whitelisted
     case UserRole.Supporter:
@@ -100,8 +96,8 @@ export function toOneBanchoPyPriv(role: UserRole): number {
       return BanchoPyPrivilege.Nominator
     case UserRole.Moderator:
       return BanchoPyPrivilege.Mod
-    case UserRole.Staff:
-      return BanchoPyPrivilege.Staff
+    // case UserRole.Staff:
+    //   return BanchoPyPrivilege.Staff
     case UserRole.Admin:
       return BanchoPyPrivilege.Admin
     case UserRole.Owner:

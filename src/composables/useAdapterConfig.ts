@@ -6,6 +6,7 @@ import {
   leaderboardRankingSystems as supportedLeaderboardRankingSystems,
   modes as supportedModes,
   rankingSystems as supportedRankingSystems,
+  userRoles as supportedRoles,
   rulesets as supportedRulesets,
 } from '~/server/trpc/config'
 
@@ -19,5 +20,6 @@ export default () => {
     hasRuleset,
     hasLeaderboardRankingSystem,
     hasRankingSystem,
+    supportedRoles,
   }
 }

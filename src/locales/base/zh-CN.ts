@@ -65,7 +65,6 @@ export default {
     [UserRole.Restricted]: '已被封禁',
     // [UserRole.Registered]: '已注册',
     [UserRole.Inactive]: '不活跃的',
-    [UserRole.Normal]: '普通',
     [UserRole.Supported]: '赞助过',
     [UserRole.Supporter]: '赞助者',
     [UserRole.Verified]: '已认证',

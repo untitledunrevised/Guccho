@@ -4,7 +4,6 @@ export const variant: Record<UserRole, { class: string }> = {
   [UserRole.Disabled]: { class: 'badge-ghost' },
   [UserRole.Restricted]: { class: 'badge-error' },
   [UserRole.Inactive]: { class: 'badge-ghost' },
-  [UserRole.Normal]: { class: 'badge-neutral' },
   [UserRole.Supported]: { class: 'badge-neutral' },
   [UserRole.Supporter]: { class: 'badge-primary' },
   [UserRole.Verified]: { class: 'badge-outline' },

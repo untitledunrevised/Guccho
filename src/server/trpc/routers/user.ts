@@ -21,7 +21,6 @@ import { type LeaderboardRankingSystem } from '~/def/common'
 import { Mail } from '~/def/mail'
 import { type RankingSystemScore } from '~/def/score'
 import { Scope, type UserCompact, UserRole } from '~/def/user'
-import type { GlobalI18n } from '~/locales/@types'
 import { Constant } from '~/server/common/constants'
 import { MapProvider, ScoreProvider, UserProvider, mail, mailToken, sessions, userRelations, users } from '~/server/singleton/service'
 import ui from '~~/guccho.ui.config'
@@ -29,11 +28,12 @@ import { Logger } from '$base/logger'
 
 const logger = Logger.child({ label: 'user' })
 
-export const map = getPath<GlobalI18n>()()
+export const map = localeKey.root
 
-function visible(user: Pick<UserCompact<any>, 'id' | 'roles'>, viewer?: Pick<UserCompact<any>, 'id' | 'roles'>) {
-  const isSelf = user.id === viewer?.id
-  return user.roles.includes(UserRole.Normal) || isSelf || viewer?.roles.includes(UserRole.Staff)
+function userIsVisible(user: Pick<UserCompact<any>, 'id' | 'roles'>, viewer?: Pick<UserCompact<any>, 'id' | 'roles'>) {
+  return user.id === viewer?.id
+  || viewer?.roles.includes(UserRole.Staff)
+  || (!user.roles.includes(UserRole.Restricted))
 }
 
 const userNotFoundError = createGucchoError(GucchoError.UserNotFound)
@@ -58,7 +58,7 @@ export const router = _router({
         scope: Scope.Self,
       })
 
-      if (!visible(user, ctx.user)) {
+      if (!userIsVisible(user, ctx.user)) {
         throw userNotFoundError
       }
       return mapId(user, UserProvider.idToString)
@@ -90,7 +90,7 @@ export const router = _router({
       }
       const user = await users.getCompact({ handle: input.handle, scope: Scope.Self })
 
-      if (!visible(user, ctx.user)) {
+      if (!userIsVisible(user, ctx.user)) {
         throw userNotFoundError
       }
 
@@ -149,7 +149,7 @@ export const router = _router({
 
       const user = await users.getCompact({ handle: input.handle, scope: Scope.Self })
 
-      if (!visible(user, ctx.user)) {
+      if (!userIsVisible(user, ctx.user)) {
         throw userNotFoundError
       }
 
@@ -203,7 +203,7 @@ export const router = _router({
     .query(async ({ input: { handle, type }, ctx }) => {
       const user = await users.getCompact({ handle, scope: Scope.Self })
 
-      if (!visible(user, ctx.user)) {
+      if (!userIsVisible(user, ctx.user)) {
         raiseError(userNotFoundError)
       }
 
@@ -248,7 +248,7 @@ export const router = _router({
           ),
 
           content: t(
-            localeKey.mail.content(variant),
+            mailVariant.content.__path__,
             {
               serverName,
               otp,
@@ -313,7 +313,7 @@ export const router = _router({
          ),
 
          content: t(
-           localeKey.mail.content(variant),
+           mailVariant.content.__path__,
             {
               serverName,
               name: user.name,

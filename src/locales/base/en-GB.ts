@@ -71,7 +71,6 @@ export default {
     [UserRole.Restricted]: 'Restricted',
     // [UserRole.Registered]: 'Registered',
     [UserRole.Inactive]: 'Inactive',
-    [UserRole.Normal]: 'Normal',
     [UserRole.Supported]: 'Supported',
     [UserRole.Supporter]: 'Supporter',
     [UserRole.Verified]: 'Verified',

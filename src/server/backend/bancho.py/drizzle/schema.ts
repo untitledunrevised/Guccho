@@ -1,6 +1,5 @@
 import { bigint, boolean, char, date, datetime, index, int, mysqlEnum, mysqlTable, primaryKey, timestamp, tinyint, unique, varchar } from 'drizzle-orm/mysql-core'
 import { relations, sql } from 'drizzle-orm'
-import { userRelations } from '../../../singleton/service'
 import { decimal } from './fixed-point'
 
 const bpyServerEnum = mysqlEnum('server', ['osu!', 'private'])

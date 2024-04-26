@@ -39,16 +39,11 @@ export enum UserRole {
   // restricted type
   Disabled = 'disabled',
   Restricted = 'restricted',
-
-  // // registered without login
-  // Registered = 'registered',
   Inactive = 'inactive',
-  Normal = 'normal',
   Supported = 'supported',
   Supporter = 'supporter',
 
-  // bancho.py privileges
-  Verified = 'whitelisted',
+  Verified = 'verified',
 
   // bancho privileges
   Alumni = 'alumni',
@@ -67,6 +62,8 @@ export enum UserRole {
   // misc
   Bot = 'bot',
 }
+
+export const userRoles = Object.values(UserRole).filter((value): value is UserRole => typeof value === 'number') as readonly UserRole[]
 
 export interface UserOldName {
   from: Date
