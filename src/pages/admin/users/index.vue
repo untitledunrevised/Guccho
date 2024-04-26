@@ -44,9 +44,6 @@ const { data: result, refresh, pending } = await useAsyncData(async () => {
 
 const pages = computed(() => Math.ceil((result.value?.count || 0) / (result.value?.perPage ?? 10)))
 
-function options<T extends Record<string, string>, TTr extends (key: keyof T, value: T[keyof T]) => string>(priv: T, translate: TTr = ((a: keyof T, b: T[keyof T]) => a) as TTr) {
-  return Object.entries(priv).map(([label, value]) => ({ label: translate(label, value as T[keyof T]), value }) as { label: ReturnType<TTr>; value: T[keyof T] })
-}
 function rewrite() {
   const newURL = location.href.replace(location.search, '')
   const searchParams = new URLSearchParams(search.value as any)
@@ -173,7 +170,7 @@ fr-FR:
             </label>
             <t-multi-select
               v-model="search.roles" size="sm"
-              :options="options(UserRole, (_, value) => $t(localeKey.role(value)))"
+              :options="createOptions(UserRole, (_, value) => $t(localeKey.role(value)))"
             />
           </div>
           <div class="col-span-2 form-control disbaled">

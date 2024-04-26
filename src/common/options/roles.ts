@@ -1,4 +1,3 @@
-import { createOptions } from '~/common/utils'
 import { UserRole } from '~/def/user'
 
 export const variant: Record<UserRole, { class: string }> = {

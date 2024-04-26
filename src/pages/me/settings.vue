@@ -47,6 +47,7 @@ const enum ChangePasswordState {
   Succeed,
 }
 
+// @ts-expect-error I'll use it later
 // eslint-disable-next-line antfu/no-const-enum, unused-imports/no-unused-vars
 const enum ProfileState {
   Errored,
