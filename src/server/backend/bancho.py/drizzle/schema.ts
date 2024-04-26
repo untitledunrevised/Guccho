@@ -1,5 +1,6 @@
 import { bigint, boolean, char, date, datetime, index, int, mysqlEnum, mysqlTable, primaryKey, timestamp, tinyint, unique, varchar } from 'drizzle-orm/mysql-core'
 import { relations, sql } from 'drizzle-orm'
+import { userRelations } from '../../../singleton/service'
 import { decimal } from './fixed-point'
 
 const bpyServerEnum = mysqlEnum('server', ['osu!', 'private'])
@@ -376,6 +377,7 @@ export const userAchievements = mysqlTable('user_achievements', {
   }
 })
 
+// export const _userRelations =
 export const users = mysqlTable('users', {
   id: int('id').autoincrement().notNull(),
   name: varchar('name', { length: 32 }).notNull(),
@@ -444,6 +446,7 @@ export const clansRelations = relations(clans, ({ one }) => ({
 export const usersRelations = relations(users, ({ one }) => ({
   clan: one(clans, { fields: [users.clanId], references: [clans.id] }),
 }))
+
 export const usersAchievementsRelations = relations(userAchievements, ({ one }) => ({
   user: one(users, { fields: [userAchievements.userId], references: [users.id] }),
   achievement: one(achievements, { fields: [userAchievements.achievementId], references: [achievements.id] }),

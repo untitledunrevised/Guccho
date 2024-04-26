@@ -93,6 +93,7 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
   async getFull<Excludes extends Partial<Record<keyof Base.ComposableProperties<Id>, boolean>>>({ handle, excludes, includeHidden, scope }: { handle: string; excludes?: Excludes; includeHidden?: boolean; scope?: Scope }) {
     const userId = +handle
     const isNumber = !Number.isNaN(userId)
+
     const [{ user, clan, profile }] = await this.drizzle.select({
       user: schema.users,
       clan: schema.clans,

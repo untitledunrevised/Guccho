@@ -1,10 +1,10 @@
 import { relations } from 'drizzle-orm'
 import { bigint, date, datetime, index, int, json, mysqlEnum, mysqlTable, primaryKey, text, tinyint, varchar } from 'drizzle-orm/mysql-core'
-import { users } from '../../bancho.py/drizzle/schema'
+import { clans, users } from '../../bancho.py/drizzle/schema'
 
 export {
   achievements, beatmaps, channels,
-  clans, clansRelations, clientHashes, clientHashesRelations, comments, commentsRelations, emailTokens as emailToken, favourites, favouritesRelations,
+  clans, clansRelations, clientHashes, clientHashesRelations, comments, commentsRelations, emailTokens, favourites, favouritesRelations,
   ingameLoginsRelations,
   // ingameLogins,
   logs,
@@ -12,7 +12,7 @@ export {
   ratings, relationships,
   scores, scoresRelations, sources, sourcesRelations, startups,
   stats, statsRelations, tourneyPoolMaps, tourneyPools, userAchievements,
-  users, usersAchievementsRelations, usersRelations,
+  users, usersAchievementsRelations,
 } from '../../bancho.py/drizzle/schema'
 
 export const ingameLogins = mysqlTable('ingame_logins', {
@@ -31,7 +31,7 @@ export const ingameLogins = mysqlTable('ingame_logins', {
 })
 export const userpages = mysqlTable('userpages', {
   id: int('id').primaryKey().autoincrement().notNull(),
-  userId: int('user_id').notNull(),
+  userId: int('user_id').notNull().references(() => users.id),
   html: text('html'),
   raw: text('raw'),
   rawType: mysqlEnum('raw_type', ['tiptap']),
@@ -74,4 +74,9 @@ export const scoresSuspicion = mysqlTable('scores_suspicion', {
 
 export const userpagesRelations = relations(userpages, ({ one }) => ({
   user: one(users, { fields: [userpages.userId], references: [users.id] }),
+}))
+
+export const usersRelations = relations(users, ({ one }) => ({
+  clan: one(clans, { fields: [users.clanId], references: [clans.id] }),
+  userpages: one(userpages, { fields: [users.id], references: [userpages.userId] }),
 }))
