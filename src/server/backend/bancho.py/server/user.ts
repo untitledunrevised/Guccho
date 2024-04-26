@@ -441,11 +441,11 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
   }) {
     const userId = +handle
     const isNumber = !Number.isNaN(userId)
-    const [result] = await this.drizzle.select({
+    const [{ user, clan } = throwGucchoError(GucchoError.UserNotFound)] = await this.drizzle.select({
       user: schema.users,
       clan: schema.clans,
     }).from(schema.users)
-      .innerJoin(schema.clans, eq(schema.users.clanId, schema.clans.id))
+      .leftJoin(schema.clans, eq(schema.users.clanId, schema.clans.id))
       .where(
         and(
           or(
@@ -458,8 +458,6 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
         )
       )
       .limit(1)
-
-    const { user, clan } = result ?? throwGucchoError(GucchoError.UserNotFound)
 
     const returnValue = toFullUser(user, this.config) as NonNullable<Awaited<ReturnType<Base<Id, ScoreId>['getFull']>>>
     const [mode, ruleset] = fromBanchoPyMode(user.preferredMode)
@@ -727,7 +725,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
         contains: like(schema.users.name, _user_),
       },
     }).from(schema.users)
-      .innerJoin(schema.clans, schema => eq(schema.user.clanId, schema.clan.id))
+      .leftJoin(schema.clans, schema => eq(schema.user.clanId, schema.clan.id))
       .where(schema => and(
         or(
           schema.tag.exactId,

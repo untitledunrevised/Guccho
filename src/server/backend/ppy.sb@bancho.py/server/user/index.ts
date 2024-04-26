@@ -5,6 +5,7 @@ import { useDrizzle, userPriv } from '../../../bancho.py/server/source/drizzle'
 import { FilterType } from '../../../bancho.py/server/user'
 import * as schema from '../../drizzle/schema'
 import { Logger } from '../../log'
+import { GucchoError } from '../../../../trpc/messages'
 import { controlChars } from './reg-exps'
 import type { Mode, Ruleset } from '~/def'
 import type { CountryCode } from '~/def/country-code'
@@ -94,12 +95,12 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
     const userId = +handle
     const isNumber = !Number.isNaN(userId)
 
-    const [{ user, clan, profile }] = await this.drizzle.select({
+    const [_res] = await this.drizzle.select({
       user: schema.users,
       clan: schema.clans,
       profile: schema.userpages,
     }).from(schema.users)
-      .innerJoin(schema.clans, eq(schema.users.clanId, schema.clans.id))
+      .leftJoin(schema.clans, eq(schema.users.clanId, schema.clans.id))
       .leftJoin(schema.userpages, eq(schema.users.id, schema.userpages.userId))
       .where(
         and(
@@ -112,6 +113,8 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
           (includeHidden || scope === Scope.Self) ? undefined : userPriv(schema.users)
         )
       ).limit(1)
+
+    const { user, clan, profile } = _res ?? throwGucchoError(GucchoError.UserNotFound)
 
     const fullUser = toFullUser(user, this.config)
     const [mode, ruleset] = fromBanchoPyMode(user.preferredMode)
