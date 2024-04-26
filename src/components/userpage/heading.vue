@@ -153,7 +153,7 @@ fr-FR:
             <icon name="ic:round-verified" class="w-5 h-5" />
             {{ $t(localeKey.role(UserRole.Verified)) }}
           </span>
-          <span v-if="page.user.roles.includes(UserRole.Staff)" class="flex items-center gap-1">
+          <span v-if="isStaff(page.user)" class="flex items-center gap-1">
             <icon name="healthicons:social-work" class="w-5 h-5" />
             {{ t('staff', { server: $t('server.name') }) }}
           </span>

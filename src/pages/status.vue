@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { Monitored } from '$base/server/@extends'
 import { useSession } from '~/store/session'
-import { UserRole } from '~/def/user'
 
 const session = useSession()
 const app = useNuxtApp()
 const { t } = useI18n()
 
-const showAdminStatus = session.user?.roles.includes(UserRole.Staff)
+const showAdminStatus = session.role.staff
 
 const serverConfig = showAdminStatus
   ? await app.$client.status.config.query()
