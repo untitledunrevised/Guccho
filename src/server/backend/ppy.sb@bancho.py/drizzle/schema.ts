@@ -4,7 +4,7 @@ import { users } from '../../bancho.py/drizzle/schema'
 
 export {
   achievements, beatmaps, channels,
-  clans, clansRelations, clientHashes, clientHashesRelations, comments, commentsRelations, emailToken, favourites, favouritesRelations,
+  clans, clansRelations, clientHashes, clientHashesRelations, comments, commentsRelations, emailTokens as emailToken, favourites, favouritesRelations,
   ingameLoginsRelations,
   // ingameLogins,
   logs,

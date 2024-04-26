@@ -241,7 +241,7 @@ export const ratings = mysqlTable('ratings', {
   }
 })
 
-export const emailToken = mysqlTable('email_tokens', {
+export const emailTokens = mysqlTable('email_tokens', {
   email: varchar('email', { length: 100 }).notNull(),
   otp: char('otp', { length: 6 }).notNull(),
   token: varchar('token', { length: 100 }).notNull(),

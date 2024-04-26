@@ -14,10 +14,10 @@ export class MailTokenProvider extends MBase {
     }
 
     // extend ttl
-    await this.drizzle.update(schema.emailToken).set({
+    await this.drizzle.update(schema.emailTokens).set({
       invalidAfter: this.offsetByMinutes(Constant.EmailTokenTTLInMinutes),
     })
-      .where(eq(schema.emailToken.token, saved.token))
+      .where(eq(schema.emailTokens.token, saved.token))
 
     return saved
   }
@@ -29,37 +29,37 @@ export class MailTokenProvider extends MBase {
   }
 
   async deleteAll(email: MBase.Email) {
-    await this.drizzle.delete(schema.emailToken).where(eq(schema.emailToken.email, email))
+    await this.drizzle.delete(schema.emailTokens).where(eq(schema.emailTokens.email, email))
   }
 
   async delete(input: MBase.Validation) {
     const date = new Date()
-    await this.drizzle.delete(schema.emailToken).where(and(
+    await this.drizzle.delete(schema.emailTokens).where(and(
       or(
         'email' in input && 'otp' in input
           ? and(
-            eq(schema.emailToken.email, input.email),
-            eq(schema.emailToken.otp, input.otp)
+            eq(schema.emailTokens.email, input.email),
+            eq(schema.emailTokens.otp, input.otp)
           )
           : undefined,
 
         'token' in input
-          ? eq(schema.emailToken.token, input.token)
+          ? eq(schema.emailTokens.token, input.token)
           : undefined
       ),
 
-      lte(schema.emailToken.invalidAfter, date),
+      lte(schema.emailTokens.invalidAfter, date),
     ))
   }
 
   async getByEmail(email: MBase.Email): Promise<{ otp: MBase.OTP; token: MBase.Token } | undefined> {
     const date = new Date()
-    const tokens = await this.drizzle.query.emailToken.findMany({
+    const tokens = await this.drizzle.query.emailTokens.findMany({
       where: and(
-        eq(schema.emailToken.email, email),
+        eq(schema.emailTokens.email, email),
 
-        gte(schema.emailToken.invalidAfter, date),
-        lte(schema.emailToken.invalidAfter, this.offsetByMinutes(Constant.EmailTokenTTLInMinutes, date))
+        gte(schema.emailTokens.invalidAfter, date),
+        lte(schema.emailTokens.invalidAfter, this.offsetByMinutes(Constant.EmailTokenTTLInMinutes, date))
       ),
     })
 
@@ -75,7 +75,7 @@ export class MailTokenProvider extends MBase {
     const otp = this.generateOTP()
     const token = this.generateToken()
 
-    await this.drizzle.insert(schema.emailToken).values({
+    await this.drizzle.insert(schema.emailTokens).values({
       email,
       otp,
       token,
@@ -93,23 +93,23 @@ export class MailTokenProvider extends MBase {
 
   protected async getTokens(input: MBase.Validation): Promise<{ email: MBase.Email; otp: MBase.OTP; token: MBase.Token }[]> {
     const date = new Date()
-    return await this.drizzle.query.emailToken.findMany({
+    return await this.drizzle.query.emailTokens.findMany({
       where: and(
         or(
           'email' in input && 'otp' in input
             ? and(
-              eq(schema.emailToken.email, input.email),
-              eq(schema.emailToken.otp, input.otp)
+              eq(schema.emailTokens.email, input.email),
+              eq(schema.emailTokens.otp, input.otp)
             )
             : undefined,
 
           'token' in input
-            ? eq(schema.emailToken.token, input.token)
+            ? eq(schema.emailTokens.token, input.token)
             : undefined
         ),
 
-        gte(schema.emailToken.invalidAfter, date),
-        lte(schema.emailToken.invalidAfter, this.offsetByMinutes(Constant.EmailTokenTTLInMinutes, date))
+        gte(schema.emailTokens.invalidAfter, date),
+        lte(schema.emailTokens.invalidAfter, this.offsetByMinutes(Constant.EmailTokenTTLInMinutes, date))
       ),
       columns: {
         email: true,
