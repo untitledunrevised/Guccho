@@ -4,6 +4,7 @@ import { Scope, UserRole } from '~/def/user'
 import { Mail } from '~/def/mail'
 import { Mode, Rank, Ruleset } from '~/def'
 import { GucchoError } from '~/server/trpc/messages'
+import { RankingStatus } from '~/def/beatmap'
 
 export default {
   server: {
@@ -94,6 +95,22 @@ export default {
     ranks: 'Leaderboard',
     sessions: 'Web Login',
   },
+
+  beatmap: {
+    status: {
+      [RankingStatus.Graveyard]: 'Graveyard',
+      [RankingStatus.WIP]: 'WIP',
+      [RankingStatus.Pending]: 'Pending',
+      [RankingStatus.Ranked]: 'Ranked',
+      [RankingStatus.Approved]: 'Approved',
+      [RankingStatus.Qualified]: 'Qualified',
+      [RankingStatus.Loved]: 'Loved',
+      [RankingStatus.Deleted]: 'Deleted',
+      [RankingStatus.NotFound]: 'Not Found',
+      [RankingStatus.Unknown]: 'Unknown',
+    },
+  },
+
   error: {
     [GucchoError.UnknownError]: 'An unknown error occurred.',
     [GucchoError.UserNotFound]: 'User not found.',

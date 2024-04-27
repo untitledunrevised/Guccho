@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BeatmapSource } from '~/def/beatmap'
+import { BeatmapSource, RankingStatus } from '~/def/beatmap'
 import { Mode } from '~/def'
 import { type AppScoresRankingSystemSwitcher } from '#components'
 import type { Label } from '~/composables/useLinks'
@@ -7,6 +7,7 @@ import type { Label } from '~/composables/useLinks'
 definePageMeta({
   alias: ['/s/:id', '/beatmapsets/:id'],
 })
+
 const app = useNuxtApp()
 const route = useRoute('beatmapset-id')
 const { supportedModes, supportedRulesets, hasRankingSystem, hasRuleset }
@@ -365,7 +366,7 @@ fr-FR:
                   {{ t("beatmapset.status") }}
                 </dt>
                 <dd class="flex gap-1 striped-text">
-                  {{ selectedMap.status }}
+                  {{ RankingStatus[selectedMap.status as any] }}
                 </dd>
               </div>
               <div class="striped">

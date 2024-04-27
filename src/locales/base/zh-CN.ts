@@ -1,8 +1,9 @@
 import type { GlobalI18n } from '../@types'
-import { CountryCode } from '~/def/country-code'
 import { Rank } from '~/def'
-import { Scope, UserRole } from '~/def/user'
+import { RankingStatus } from '~/def/beatmap'
+import { CountryCode } from '~/def/country-code'
 import { Mail } from '~/def/mail'
+import { Scope, UserRole } from '~/def/user'
 import { GucchoError } from '~/server/trpc/messages'
 
 export default {
@@ -89,6 +90,21 @@ export default {
     logs: '日志系统',
     ranks: '排名系统',
     sessions: '网站登录',
+  },
+
+  beatmap: {
+    status: {
+      [RankingStatus.Graveyard]: '坟图',
+      [RankingStatus.WIP]: '未完成',
+      [RankingStatus.Pending]: 'Pending',
+      [RankingStatus.Ranked]: 'Ranked',
+      [RankingStatus.Approved]: 'Approved',
+      [RankingStatus.Qualified]: 'Qualified',
+      [RankingStatus.Loved]: 'Loved',
+      [RankingStatus.Deleted]: '已被删除',
+      [RankingStatus.NotFound]: '找不到',
+      [RankingStatus.Unknown]: '未知',
+    },
   },
 
   error: {

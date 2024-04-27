@@ -3,6 +3,7 @@ import type { DeepPartial } from '@trpc/server'
 import type { CountryCode } from '../def/country-code'
 import type { GucchoError } from '../server/trpc/messages'
 import type { Mail } from '../def/mail'
+import type { RankingStatus } from '../def/beatmap'
 import type { Scope, UserRole } from '~/def/user'
 import { Lang, type Rank } from '~/def'
 import type { ActiveMode, ActiveRuleset } from '~/def/common'
@@ -53,6 +54,10 @@ export interface GlobalI18n extends PathAccessibleObject {
   mode: Record<ActiveMode, string>
   ruleset: Record<ActiveRuleset, string>
   rank: Record<Rank, string>
+
+  beatmap: {
+    status: Record<RankingStatus, string>
+  }
   role: Record<UserRole, string>
   scope: Record<Scope, string>
   titles: Record<
