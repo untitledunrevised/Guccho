@@ -9,4 +9,4 @@ export function useDrizzle<T extends Record<string, unknown>>(schema: T, opt?: P
   return drizzle(mysql2, { mode: 'default', schema, logger: process.dev, ...opt })
 }
 
-export const userPriv = (schema: typeof _schema['users']) => sql`${schema.priv} & ${sql.raw(`${BanchoPyPrivilege.Normal | BanchoPyPrivilege.Verified} = ${BanchoPyPrivilege.Normal | BanchoPyPrivilege.Verified}`)}`
+export const userPriv = (schema: typeof _schema['users']) => sql`${schema.priv} & ${sql.raw(`${BanchoPyPrivilege.Registered | BanchoPyPrivilege.Verified} = ${BanchoPyPrivilege.Registered | BanchoPyPrivilege.Verified}`)}`

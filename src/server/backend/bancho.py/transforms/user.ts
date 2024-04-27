@@ -22,7 +22,7 @@ import type { UserRelationship } from '~/def/user-relationship'
 export function toRoles(priv: number): UserRole[] {
   const roles: UserRole[] = []
 
-  if ((priv & BanchoPyPrivilege.Normal) !== BanchoPyPrivilege.Normal) {
+  if ((priv & BanchoPyPrivilege.Registered) !== BanchoPyPrivilege.Registered) {
     roles.push(UserRole.Restricted)
   }
 
@@ -69,11 +69,14 @@ export function toRoles(priv: number): UserRole[] {
   return roles
 }
 
-export function toBanchoPyPriv(input: UserRole[]): number {
-  let curr = input.includes(UserRole.Restricted)
+export function toBanchoPyPrivWithBasePriv(input: UserRole[]): number {
+  const curr = input.includes(UserRole.Restricted)
     ? BanchoPyPrivilege.Any
-    : BanchoPyPrivilege.Normal
+    : BanchoPyPrivilege.Registered | BanchoPyPrivilege.Verified
+  return toBanchoPyPriv(input, curr)
+}
 
+export function toBanchoPyPriv(input: UserRole[], curr: number): number {
   for (const role of input) {
     curr |= toOneBanchoPyPriv(role)
   }

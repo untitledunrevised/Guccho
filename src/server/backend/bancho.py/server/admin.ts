@@ -5,6 +5,7 @@ import * as schema from '../drizzle/schema'
 import { config } from '../env'
 import { Logger } from '../log'
 import { type DatabaseUserCompactFields, type DatabaseUserOptionalFields, fromCountryCode, toBanchoPyPriv, toSafeName, toUserCompact, toUserOptional } from '../transforms'
+import { BanchoPyPrivilege } from '../enums'
 import { useDrizzle } from './source/drizzle'
 import { GucchoError } from '~/server/trpc/messages'
 import { type UserClan, type UserCompact, type UserOptional, UserRole, type UserSecrets } from '~/def/user'
@@ -23,13 +24,15 @@ export class AdminProvider extends Base<Id> implements Base<Id> {
     page: number
     perPage: number
   }) {
+    const rolesPriv = toBanchoPyPriv(query.roles || [], 0)
+
     const cond = [
       query.id ? eq(schema.users.id, query.id) : undefined,
       query.name ? eq(schema.users.name, query.name) : undefined,
       query.safeName ? eq(schema.users.safeName, query.safeName) : undefined,
       query.email ? eq(schema.users.email, query.email) : undefined,
       query.flag ? eq(schema.users.country, query.flag) : undefined,
-      query.roles?.length ? sql`${schema.users.priv} & ${toBanchoPyPriv(query.roles)} = ${toBanchoPyPriv(query.roles)}` : undefined,
+      query.roles?.length ? sql`${schema.users.priv} & ${rolesPriv} = ${rolesPriv}` : undefined,
       query.roles?.includes(UserRole.Restricted) ? sql`${schema.users.priv} & 1 = 0` : undefined,
     ]
 
@@ -93,6 +96,17 @@ export class AdminProvider extends Base<Id> implements Base<Id> {
   }
 
   async updateUserDetail(query: { id: Id }, updateFields: Partial<UserCompact<Id> & UserOptional & UserSecrets>): Promise<UserCompact<Id> & UserOptional> {
+    const { priv } = await this.drizzle.query.users.findFirst({
+      where: eq(schema.users.id, query.id),
+      columns: {
+        priv: true,
+      },
+    }) ?? throwGucchoError(GucchoError.UserNotFound)
+
+    const basePriv = updateFields.roles?.includes(UserRole.Restricted)
+      ? BanchoPyPrivilege.Any | (priv & BanchoPyPrivilege.Verified)
+      : BanchoPyPrivilege.Registered | (priv & BanchoPyPrivilege.Verified)
+
     await this.drizzle.update(schema.users)
       .set({
         id: updateFields.id,
@@ -101,7 +115,7 @@ export class AdminProvider extends Base<Id> implements Base<Id> {
         pwBcrypt: updateFields.password ? await encryptBanchoPassword(updateFields.password) : undefined,
         email: updateFields.email,
         country: updateFields.flag ? fromCountryCode(updateFields.flag) : undefined,
-        priv: updateFields.roles ? toBanchoPyPriv(updateFields.roles) : undefined,
+        priv: updateFields.roles ? toBanchoPyPriv(updateFields.roles, basePriv) : undefined,
       })
       .where(eq(schema.users.id, query.id))
 
