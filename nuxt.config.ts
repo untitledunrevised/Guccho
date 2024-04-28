@@ -36,7 +36,6 @@ export default defineNuxtConfig({
     '@pinia-plugin-persistedstate/nuxt',
     '@nuxtjs/i18n',
     'nuxt-icon',
-    'floating-vue/nuxt',
   ],
 
   alias: {
@@ -57,7 +56,6 @@ export default defineNuxtConfig({
     '~/components/content/styles/typography.scss',
     '~/assets/styles/transitions.scss',
     '~/assets/styles/daisyui.scss',
-    '~/assets/styles/popper.scss',
   ],
 
   app: {

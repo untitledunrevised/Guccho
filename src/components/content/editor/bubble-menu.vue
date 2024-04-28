@@ -1,4 +1,4 @@
-<script setup  lang="ts">
+<script setup lang="ts">
 import { BubbleMenu, type Editor } from '@tiptap/vue-3'
 import remixiconUrl from 'remixicon/fonts/remixicon.symbol.svg'
 
@@ -16,12 +16,7 @@ function setLink() {
   const url = link.value
   // empty
   if (!url) {
-    props.editor
-      .chain()
-      .focus()
-      .extendMarkRange('link')
-      .unsetLink()
-      .run()
+    props.editor.chain().focus().extendMarkRange('link').unsetLink().run()
 
     return
   }
@@ -44,35 +39,30 @@ function setLink() {
     :tippy-options="{ duration: 100 }"
     :editor="editor"
   >
-    <v-dropdown
-      theme="guccho-dropdown"
-      :distance="10"
-      strategy="absolute"
-    >
-      <button class="h-full" @click="prevLink">
-        <svg class="remix w-5 h-5">
+    <div class="dropdown">
+      <div role="button" class="h-full" tabindex="0" @click="prevLink">
+        <svg class="w-5 h-5 remix">
           <use :xlink:href="`${remixiconUrl}#ri-link`" fill="white" />
         </svg>
-      </button>
-      <template #popper="{ hide }">
-        <div class="card bg-gbase-100/70">
-          <div class="card-body p-2">
-            <div class="input-group input-group-sm">
-              <span>URL</span>
-              <input id="url" v-model="link" type="url" class="input input-shadow input-sm shadow-sm">
-              <button
-                class="btn btn-shadow btn-sm btn-success" @click="() => {
-                  setLink()
-                  hide()
-                }"
-              >
-                apply
-              </button>
-            </div>
-          </div>
+      </div>
+      <div class="mt-2 dropdown-content menu rounded-xl bg-base-200">
+        <span>URL</span>
+        <div class="join">
+          <input
+            id="url"
+            v-model="link"
+            type="url"
+            class="shadow-sm join-item input input-shadow input-sm"
+          >
+          <button
+            class="join-item btn btn-shadow btn-sm btn-success"
+            @click="setLink()"
+          >
+            apply
+          </button>
         </div>
-      </template>
-    </v-dropdown>
+      </div>
+    </div>
   </BubbleMenu>
 </template>
 
@@ -83,7 +73,7 @@ function setLink() {
   padding: 0.2rem;
   border-radius: 0.5rem;
 
-  button {
+  div[role="button"] {
     border: none;
     background: none;
     color: #fff;

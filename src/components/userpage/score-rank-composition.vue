@@ -25,72 +25,71 @@ function createStyleObject(count: number) {
 </script>
 
 <template>
-  <!-- https://github.com/Akryum/floating-vue/issues/1006#issuecomment-1882647191 -->
-  <VDropdown v-if="composition" :triggers="['hover', 'focus', 'click']" aria-id="score-composition">
-    <div v-if="totalCount" class="relative">
-      <div class="multi-progress-bar-container bg-emerald-200">
-        <div
-          v-if="composition.ssh"
-          :style="createStyleObject(composition.ssh)"
-          class="multi-progress-bar bg-gray-500"
-        />
-        <div
-          v-if="composition.ss"
-          :style="createStyleObject(composition.ss)"
-          class="multi-progress-bar bg-yellow-500"
-        />
-        <div
-          v-if="composition.sh"
-          :style="createStyleObject(composition.sh)"
-          class="multi-progress-bar bg-gray-400"
-        />
-        <div
-          v-if="composition.s"
-          :style="createStyleObject(composition.s)"
-          class="multi-progress-bar bg-orange-400"
-        />
-        <div
-          v-if="composition.a"
-          :style="createStyleObject(composition.a)"
-          class="multi-progress-bar bg-lime-500"
-        />
-        <div
-          v-if="composition.b"
-          :style="createStyleObject(composition.b)"
-          class="multi-progress-bar bg-blue-500"
-        />
-        <div style="width: 25%" class="multi-progress-bar bg-emerald-500" />
+  <div v-if="composition" class="dropdown dropdown-hover block">
+    <div
+      class="multi-progress-bar-container bg-emerald-200"
+      tabindex="0"
+      role="button"
+    >
+      <div
+        v-if="composition.ssh"
+        :style="createStyleObject(composition.ssh)"
+        class="multi-progress-bar bg-gray-500"
+      />
+      <div
+        v-if="composition.ss"
+        :style="createStyleObject(composition.ss)"
+        class="multi-progress-bar bg-yellow-500"
+      />
+      <div
+        v-if="composition.sh"
+        :style="createStyleObject(composition.sh)"
+        class="multi-progress-bar bg-gray-400"
+      />
+      <div
+        v-if="composition.s"
+        :style="createStyleObject(composition.s)"
+        class="multi-progress-bar bg-orange-400"
+      />
+      <div
+        v-if="composition.a"
+        :style="createStyleObject(composition.a)"
+        class="multi-progress-bar bg-lime-500"
+      />
+      <div
+        v-if="composition.b"
+        :style="createStyleObject(composition.b)"
+        class="multi-progress-bar bg-blue-500"
+      />
+      <div style="width: 25%" class="multi-progress-bar bg-emerald-500" />
+    </div>
+    <div v-if="totalCount" class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52">
+      <div v-if="composition.ssh">
+        SSH x {{ composition.ssh }}
+      </div>
+      <div v-if="composition.ss">
+        SS x {{ composition.ss }}
+      </div>
+      <div v-if="composition.sh">
+        SH x {{ composition.sh }}
+      </div>
+      <div v-if="composition.s">
+        S x {{ composition.s }}
+      </div>
+      <div v-if="composition.a">
+        A x {{ composition.a }}
+      </div>
+      <div v-if="composition.b">
+        B x {{ composition.b }}
+      </div>
+      <div v-if="composition.c">
+        C x {{ composition.c }}
+      </div>
+      <div v-if="composition.d">
+        D x {{ composition.d }}
       </div>
     </div>
-    <template #popper>
-      <div class="flex gap-2 p-2">
-        <div v-if="composition.ssh">
-          SSH x {{ composition.ssh }}
-        </div>
-        <div v-if="composition.ss">
-          SS x {{ composition.ss }}
-        </div>
-        <div v-if="composition.sh">
-          SH x {{ composition.sh }}
-        </div>
-        <div v-if="composition.s">
-          S x {{ composition.s }}
-        </div>
-        <div v-if="composition.a">
-          A x {{ composition.a }}
-        </div>
-        <div v-if="composition.b">
-          B x {{ composition.b }}
-        </div>
-        <div v-if="composition.c">
-          C x {{ composition.c }}
-        </div>
-        <div v-if="composition.d">
-          D x {{ composition.d }}
-        </div>
-      </div>
-    </template>
-  </VDropdown>
+  </div>
 </template>
 
 <style scoped lang="postcss">

@@ -1,6 +1,6 @@
 <script setup lang="ts" async>
 // TODO https://github.com/victorgarciaesgi/nuxt-typed-router/issues/110
-const { id } = useRoute<'beatmap-id.server'>().params
+const { id } = useRoute<'beatmap-id'>().params
 const { t } = useI18n()
 if (!id || Array.isArray(id)) {
   throw createError(t('err-id-invalid'))
