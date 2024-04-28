@@ -4,7 +4,7 @@ import { RankingStatus } from '~/def/beatmap'
 import { CountryCode } from '~/def/country-code'
 import { Mail } from '~/def/mail'
 import { Scope, UserRole } from '~/def/user'
-import { GucchoError } from '~/server/trpc/messages'
+import { GucchoError } from '~/def/messages'
 
 export default {
   // reuse en-GB
@@ -131,6 +131,8 @@ export default {
     [GucchoError.YouNeedToLogin]: '你还未登录',
     [GucchoError.SessionNotFound]: '找不到会话',
     [GucchoError.RequireAdminPrivilege]: '需要管理员权限',
+    [GucchoError.InvalidId]: 'ID不合法',
+    [GucchoError.BeatmapNotFound]: '找不到图',
   },
 
   country: {

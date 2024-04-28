@@ -11,7 +11,7 @@ type RetrievablePath<T, Delimiter extends string, Path extends string = ''> =
         T[K],
         Delimiter,
         Path extends ''
-          ? `${K &(string |number)}`
+          ? `${K &(string | number)}`
           : `${Path}${Delimiter}${K & (string | number)}`
       >
         }

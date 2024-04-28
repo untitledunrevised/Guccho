@@ -7,7 +7,7 @@ import { Logger } from '../log'
 import { type DatabaseUserCompactFields, type DatabaseUserOptionalFields, fromCountryCode, toBanchoPyPriv, toSafeName, toUserCompact, toUserOptional } from '../transforms'
 import { BanchoPyPrivilege } from '../enums'
 import { useDrizzle } from './source/drizzle'
-import { GucchoError } from '~/server/trpc/messages'
+import { GucchoError } from '~/def/messages'
 import { type UserClan, type UserCompact, type UserOptional, UserRole, type UserSecrets } from '~/def/user'
 import { AdminProvider as Base } from '$base/server'
 

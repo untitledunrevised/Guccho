@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import md5 from 'md5'
-import { GucchoError } from '~/server/trpc/messages'
+import { GucchoError } from '~/def/messages'
 import type { MailTokenProvider } from '$base/server'
 import { useSession } from '~/store/session'
 

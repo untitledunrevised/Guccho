@@ -1,4 +1,4 @@
-import { Rank, modes, rulesets } from '../def'
+import { Rank, modes, rulesets } from '~/def'
 
 const ranks = [Rank.PPv1, Rank.PPv2, Rank.Score, Rank.RankedScore, Rank.TotalScore]
 

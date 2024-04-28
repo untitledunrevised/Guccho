@@ -3,7 +3,7 @@ import { CountryCode } from '~/def/country-code'
 import { Scope, UserRole } from '~/def/user'
 import { Mail } from '~/def/mail'
 import { Mode, Rank, Ruleset } from '~/def'
-import { GucchoError } from '~/server/trpc/messages'
+import { GucchoError } from '~/def/messages'
 import { RankingStatus } from '~/def/beatmap'
 
 export default {
@@ -135,6 +135,8 @@ export default {
     [GucchoError.DeletingMoreThanOneAvatars]: 'Attempting to delete more than 2 files. Please contact support to clean your old avatars.',
     [GucchoError.RequireAdminPrivilege]: 'Requires staff roles.',
     [GucchoError.EmailTokenNotFound]: 'Email verification token has expired.',
+    [GucchoError.InvalidId]: 'ID Invalid',
+    [GucchoError.BeatmapNotFound]: 'Beatmap not found',
   },
   country: {
     [CountryCode.Unknown]: 'Unknown',

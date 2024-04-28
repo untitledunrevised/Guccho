@@ -1,5 +1,5 @@
-import { GucchoError } from '../messages'
 import { userProcedure } from './user'
+import { GucchoError } from '~/def/messages'
 
 export const roleProcedure = userProcedure.use(async ({ ctx, next }) => {
   const role = computeUserRoles(ctx.user)

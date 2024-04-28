@@ -1,5 +1,5 @@
-import { GucchoError } from '../messages'
 import { sessionProcedure } from './session'
+import { GucchoError } from '~/def/messages'
 import { UserProvider, users } from '~/server/singleton/service'
 
 export const userProcedure = sessionProcedure.use(async ({ ctx, next }) => {

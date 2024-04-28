@@ -3,7 +3,7 @@ import { assertHaveSession } from '../../middleware/0.session'
 import { assertLoggedIn } from '../../middleware/1.user'
 import { assertIsAdmin } from '../../middleware/2.admin'
 import { mail } from '../../singleton/service'
-import { GucchoError } from '../../trpc/messages'
+import { GucchoError } from '~/def/messages'
 
 const vQ = object({
   to: string().email(),

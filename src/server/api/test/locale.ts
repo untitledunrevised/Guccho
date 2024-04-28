@@ -1,5 +1,5 @@
 import { object, record, string, unknown } from 'zod'
-import { GucchoError } from '../../trpc/messages'
+import { GucchoError } from '~/def/messages'
 
 const vQ = object({
   key: string(),

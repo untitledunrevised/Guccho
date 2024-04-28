@@ -1,7 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { array, number, object, string } from 'zod'
 import { hasLeaderboardRankingSystem, hasRuleset } from '../config'
-import { GucchoError } from '../messages'
 import { optionalUserProcedure } from '../middleware/optional-user'
 import { sessionProcedure } from '../middleware/session'
 import {
@@ -14,17 +13,18 @@ import {
   zodRuleset,
 } from '../shapes'
 import { router as _router, publicProcedure as p } from '../trpc'
+import { Logger } from '$base/logger'
 import { type MailTokenProvider as MBase, type MailTokenProvider } from '$base/server'
 import { type Mode } from '~/def'
 import { RankingStatus } from '~/def/beatmap'
 import { type LeaderboardRankingSystem } from '~/def/common'
 import { Mail } from '~/def/mail'
+import { GucchoError } from '~/def/messages'
 import { type RankingSystemScore } from '~/def/score'
 import { Scope, type UserCompact, UserRole } from '~/def/user'
 import { Constant } from '~/server/common/constants'
 import { MapProvider, ScoreProvider, UserProvider, mail, mailToken, sessions, userRelations, users } from '~/server/singleton/service'
 import ui from '~~/guccho.ui.config'
-import { Logger } from '$base/logger'
 
 const logger = Logger.child({ label: 'user' })
 

@@ -40,12 +40,12 @@ import {
   toUserOptional,
 } from '../transforms'
 import * as schema from '../drizzle/schema'
-import { GucchoError } from '../../../trpc/messages'
 import { ArticleProvider } from './article'
 import { prismaClient } from './source/prisma'
 import { client as redisClient } from './source/redis'
 import { UserRelationProvider } from './user-relations'
 import { useDrizzle, userPriv } from './source/drizzle'
+import { GucchoError } from '~/def/messages'
 import { type DynamicSettingStore, Scope, type UserCompact, type UserOptional, UserRole, type UserStatistic, UserStatus } from '~/def/user'
 import type { CountryCode } from '~/def/country-code'
 import type { ActiveMode, ActiveRuleset, LeaderboardRankingSystem } from '~/def/common'

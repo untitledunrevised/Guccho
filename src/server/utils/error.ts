@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { GucchoError } from '../trpc/messages'
+import { GucchoError } from '~/def/messages'
 
 export function throwGucchoError(code: GucchoError): never {
   throw createGucchoError(code)
@@ -30,6 +30,7 @@ export function createGucchoError(code: GucchoError): TRPCError {
     }
 
     case GucchoError.DeletingMoreThanOneAvatars:
+    case GucchoError.InvalidId:
     case GucchoError.HackerTryingToDeleteAllAvatars: {
       return new TRPCError(merge({ code: 'BAD_REQUEST' }))
     }
@@ -46,6 +47,7 @@ export function createGucchoError(code: GucchoError): TRPCError {
     case GucchoError.RelationTypeNotFound:
     case GucchoError.SessionNotFound:
     case GucchoError.UserNotFound:
+    case GucchoError.BeatmapNotFound:
     case GucchoError.AtLeastOneUserNotExists: {
       return new TRPCError(merge({ code: 'NOT_FOUND' }))
     }

@@ -1,7 +1,7 @@
 import { type ZodSchema, instanceof as instanceof_, nativeEnum, object, string } from 'zod'
-import { GucchoError } from '../messages'
 import { zodEmailValidation, zodHandle, zodRelationType, zodTipTapJSONContent } from '../shapes'
 import { router as _router } from '../trpc'
+import { GucchoError } from '~/def/messages'
 import { settings } from '$active/dynamic-settings'
 import { extractLocationSettings, extractSettingValidators } from '$base/@define-setting'
 import { type MailTokenProvider } from '$base/server'

@@ -1,4 +1,4 @@
-import type { GucchoError } from '~/server/trpc/messages'
+import type { GucchoError } from '~/def/messages'
 
 export function fromGucchoErrorCode<T extends GucchoError>(err: T): `G:${T}` {
   return `G:${err}`

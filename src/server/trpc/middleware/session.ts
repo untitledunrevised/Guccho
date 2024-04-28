@@ -1,5 +1,5 @@
-import { GucchoError } from '../messages'
 import { publicProcedure } from '../trpc'
+import { GucchoError } from '~/def/messages'
 import { Constant } from '~/server/common/constants'
 import { haveSession } from '~/server/middleware/0.session'
 import { sessions } from '~/server/singleton/service'
