@@ -331,10 +331,10 @@ export const router = _router({
         repeatPassword: string(),
         token: zodEmailValidation,
       }))
-      .mutation(async ({ ctx, input }) => {
+      .mutation(async ({ input }) => {
         if (!input.password) {
           // TODO refine error message
-          throwGucchoError(GucchoError.UpdateUserSettingsFailed)
+          throwGucchoError(GucchoError.EmptyPassword)
         }
         if (input.password !== input.repeatPassword) {
           throwGucchoError(GucchoError.PasswordNotMatch)

@@ -10,6 +10,7 @@ export enum GucchoError {
   UserNotFound = 2000,
   UserExists,
   ConflictEmail,
+  EmptyPassword,
   UpdateUserSettingsFailed,
   UpdateUserpageFailed,
   MimeNotImage,

@@ -137,6 +137,7 @@ export default {
     [GucchoError.EmailTokenNotFound]: 'Email verification token has expired.',
     [GucchoError.InvalidId]: 'ID Invalid',
     [GucchoError.BeatmapNotFound]: 'Beatmap not found',
+    [GucchoError.EmptyPassword]: 'Password cannot be empty',
   },
   country: {
     [CountryCode.Unknown]: 'Unknown',

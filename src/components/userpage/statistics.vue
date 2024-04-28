@@ -98,7 +98,6 @@ const ScoreToNextLevel = computed(
                 : "Score"
             }}
           </div>
-          <!-- TODO add popover -->
           <div class="stat-value font-mono">
             <!-- <Roller
               :char-set="chars"

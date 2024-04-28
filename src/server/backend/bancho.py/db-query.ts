@@ -42,12 +42,6 @@ export function createUserLikeQuery(keyword: string) {
           : {
               id: idKw,
             },
-        // TODO: search by email after preferences implemented
-        // {
-        //   email: {
-        //     contains: keyword,
-        //   },
-        // },
       ].filter(TSFilter),
     },
   }

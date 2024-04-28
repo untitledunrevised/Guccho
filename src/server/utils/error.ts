@@ -30,6 +30,7 @@ export function createGucchoError(code: GucchoError): TRPCError {
     }
 
     case GucchoError.DeletingMoreThanOneAvatars:
+    case GucchoError.EmptyPassword:
     case GucchoError.InvalidId:
     case GucchoError.HackerTryingToDeleteAllAvatars: {
       return new TRPCError(merge({ code: 'BAD_REQUEST' }))

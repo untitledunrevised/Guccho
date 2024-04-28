@@ -133,6 +133,7 @@ export default {
     [GucchoError.RequireAdminPrivilege]: '需要管理员权限',
     [GucchoError.InvalidId]: 'ID不合法',
     [GucchoError.BeatmapNotFound]: '找不到图',
+    [GucchoError.EmptyPassword]: '密码不能为空',
   },
 
   country: {

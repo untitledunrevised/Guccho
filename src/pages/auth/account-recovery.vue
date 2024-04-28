@@ -147,7 +147,7 @@ zh-CN:
   done: 完成
   succeed-message: 密码重置成功！
 
-# TODO check translation
+# TODO fr translation
 fr-FR:
   invalid-otp: Invalid OTP
 </i18n>

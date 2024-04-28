@@ -50,7 +50,6 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
       user.roles.push(UserRole.Supporter)
     }
 
-    // TODO: check email(should verified by frontend with another request (not impl'd yet ))
     const updatedUser = await super.changeSettings(user, input)
     return updatedUser
   }
