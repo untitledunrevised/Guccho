@@ -19,13 +19,6 @@ useSeoMeta({
 
 useHead({
   title: () => app.$i18n.t('server.name'),
-  link: [
-    {
-      rel: 'icon',
-      type: 'image/png',
-      href: '/favicon.png',
-    },
-  ],
 })
 </script>
 
