@@ -17,14 +17,14 @@ function clearFocus() {
   <slot name="start" />
   <li>
     <nuxt-link-locale :to="{ name: 'leaderboard-mode' }" @click="clearFocus">
-      <icon name="material-symbols:leaderboard-rounded" class="w-5 h-5" size="100%" />
-      {{ t('titles.leaderboard') }}
+      <icon name="ph:ranking-fill" class="w-5 h-5" size="100%" />
+      {{ t('title.leaderboard') }}
     </nuxt-link-locale>
   </li>
   <li>
     <nuxt-link-locale :to="{ name: 'clans' }" @click="clearFocus">
-      <icon name="material-symbols:leaderboard-rounded" class="w-5 h-5" size="100%" />
-      [{{ t('global.wip') }}] {{ t('titles.clans') }}
+      <icon name="ic:outline-group-work" class="w-5 h-5" size="100%" />
+      [{{ t('global.wip') }}] {{ t('title.clans') }}
     </nuxt-link-locale>
   </li>
   <li v-if="session.role.staff">

@@ -77,9 +77,6 @@ export const useSession = defineStore('session', {
         return true
       }
       catch (err) {
-        // if (err instanceof TRPCClientError) {
-        //   console.log(err.shape.code === TRPC_ERROR_CODES_BY_KEY.NOT_FOUND)
-        // }
         this.$reset()
         return false
       }
