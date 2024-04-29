@@ -1,15 +1,10 @@
-<script setup lang="ts">
-const { t } = useI18n()
+<script lang="ts" setup>
+const app = useNuxtApp()
+useHead({
+  title: () => app.$i18n.t(localeKey.title['admin-panel'].__path__),
+  titleTemplate: title => `${title} - ${app.$i18n.t(localeKey.server.name.__path__)}`,
+})
 </script>
-
-<i18n lang="yaml">
-en-GB:
-  user-management: User Management
-zh-CN:
-  user-management: 用户管理
-fr-FR:
-  user-management: Gestion d'utilisateur
-</i18n>
 
 <template>
   <div class="join drop-shadow-lg">
@@ -19,7 +14,7 @@ fr-FR:
       }"
       class="join-item"
     >
-      {{ t('titles.articles') }}
+      {{ $t(localeKey.title.articles.__path__) }}
     </t-nuxt-link-button>
     <t-nuxt-link-button
       :to="{
@@ -27,7 +22,7 @@ fr-FR:
       }"
       class="join-item"
     >
-      {{ t('titles.logs') }}
+      {{ $t(localeKey.title.logs.__path__) }}
     </t-nuxt-link-button>
     <t-nuxt-link-button
       :to="{
@@ -35,11 +30,7 @@ fr-FR:
       }"
       class="join-item"
     >
-      {{ t('user-management') }}
+      {{ $t(localeKey.title['user-management'].__path__) }}
     </t-nuxt-link-button>
   </div>
 </template>
-
-<style scoped>
-
-</style>

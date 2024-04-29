@@ -50,6 +50,11 @@ const fmtCompact = new Intl.NumberFormat('en-US', {
   unit: 'megabyte',
   unitDisplay: 'narrow',
 })
+
+useHead({
+  title: () => t(localeKey.title.status.__path__),
+  titleTemplate: title => `${title} - ${t(localeKey.server.name.__path__)}`,
+})
 </script>
 
 <i18n lang="yaml">

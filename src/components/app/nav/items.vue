@@ -30,7 +30,7 @@ function clearFocus() {
   <li v-if="session.role.staff">
     <nuxt-link-locale :to="{ name: 'status' }" @click="clearFocus">
       <icon name="material-symbols:signal-cellular-alt-rounded" class="w-5 h-5" size="100%" />
-      {{ t('titles.status') }}
+      {{ t('title.status') }}
     </nuxt-link-locale>
   </li>
   <li tabindex="0">

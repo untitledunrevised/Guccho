@@ -73,6 +73,11 @@ const allowToLeave = [
   ClanRelation.JoinPendingVerification,
 ]
 
+useHead({
+  title: t(localeKey.title.clans.__path__),
+  titleTemplate: title => `${title} - ${t(localeKey.server.name.__path__)}`,
+})
+
 async function requestJoin() {
   if (!clan.value) {
     return

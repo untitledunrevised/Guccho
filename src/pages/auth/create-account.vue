@@ -92,8 +92,8 @@ const validate: {
 }
 
 useHead({
-  title: () =>
-    `${app.$i18n.t(gLocale.register.__path__)} - ${app.$i18n.t(gLocale.register.__path__)}`,
+  title: () => `${app.$i18n.t(gLocale.register.__path__)}`,
+  titleTemplate: title => `${title} - ${app.$i18n.t(gLocale.register.__path__)}`,
 })
 
 async function userRegisterAction() {

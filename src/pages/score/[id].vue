@@ -7,6 +7,21 @@ const id = route.params.id
 
 const app$ = useNuxtApp()
 const data = await app$.$client.score.id.query({ id })
+
+useHead({
+
+  title() {
+    const uName = data.user.name
+    const bm = beatmapIsVisible(data.beatmap)
+      ? `${data.beatmap.beatmapset.meta.intl.artist} - ${data.beatmap.beatmapset.meta.intl.title}`
+      : 'unknown beatmap'
+
+    return `${uName} | ${bm}`
+  },
+
+  titleTemplate: title => `${title} - ${app$.$i18n.t(localeKey.server.name.__path__)}`,
+
+})
 </script>
 
 <template>

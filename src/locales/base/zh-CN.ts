@@ -9,13 +9,12 @@ import { GucchoError } from '~/def/messages'
 export default {
   // reuse en-GB
   server: {} as any,
-  mode: {} as any,
-  ruleset: {} as any,
-
   footer: {
     about: '关于',
     resources: '资源',
   },
+  mode: {} as any,
+  ruleset: {} as any,
 
   rank: {
     [Rank.PPv2]: 'Performance(v2)',
@@ -25,7 +24,7 @@ export default {
     [Rank.Score]: '分数',
   },
 
-  titles: {
+  title: {
     'leaderboard': '排行榜',
     'status': '状态',
     'settings': '设置',
@@ -36,6 +35,7 @@ export default {
     'articles': '文章',
     'clans': '家人们',
     'account-recovery': '找回账号',
+    'user-management': '用户管理',
   },
 
   global: {

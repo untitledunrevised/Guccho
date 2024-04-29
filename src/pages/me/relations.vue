@@ -27,23 +27,26 @@ const {
 
 const { t } = useI18n()
 
-useHead({
-  title: () => `Friends & Blocks - ${app$.$i18n.t('server.name')}`,
-})
 if (!relations.value) {
   throw new Error(t('user-not-found'))
 }
 
 const errorMessage = shallowRef('')
+const pendingUser = reactive(new Set<string>())
 
 onErrorCaptured((err) => {
   errorMessage.value = formatGucchoErrorWithT(t, err) || t('err-message')
 })
+
+useHead({
+  titleTemplate: title => `${title} - ${app$.$i18n.t(localeKey.server.name.__path__)}`,
+  title: () => `${app$.$i18n.t(localeKey.root.title.relations.__path__)}`,
+})
+
 function haveRelation(relation: Relationship, user: UserCompact<string> & UserRelationship) {
   return user.relationship.includes(relation)
 }
 
-const pendingUser = reactive(new Set<string>())
 async function toggleRelation(type: Relationship, user: UserCompact<string> & UserRelationship) {
   pendingUser.add(user.id)
   try {

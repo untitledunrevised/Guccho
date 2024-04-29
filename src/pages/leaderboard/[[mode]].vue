@@ -57,7 +57,10 @@ const queryLeaderboardValue = computed(() => ({
 const { pending, data: table } = await app.$client.rank.leaderboard.useQuery(queryLeaderboardValue)
 
 useHead({
-  title: () => ` ${selected.value.mode} | ${selected.value.ruleset} | ${selected.value.rankingSystem} - Leaderboard - ${app.$i18n.t('server.name')}`,
+  titleTemplate(title) {
+    return `${title} - ${app.$i18n.t(localeKey.server.name.__path__)}`
+  },
+  title: () => `${t(localeKey.mode(selected.value.mode))} | ${t(localeKey.ruleset(selected.value.ruleset))} | ${t(localeKey.rankingSystem(selected.value.rankingSystem))} - ${t(localeKey.title.leaderboard.__path__)}`,
 })
 
 function boundaryPage() {
@@ -112,7 +115,7 @@ fr-FR:
   <div class="flex flex-col h-full leaderboard custom-container mx-auto !max-w-4xl w-full">
     <header-simple-title-with-sub
       id="desc"
-      :title="$t('titles.leaderboard')"
+      :title="$t('title.leaderboard')"
       :subtitle="
         selected.mode
           && selected.ruleset

@@ -69,7 +69,8 @@ definePageMeta({
 })
 
 useHead({
-  title: () => `${t('titles.settings')} - ${app$.$i18n.t('server.name')}`,
+  title: () => t(localeKey.title.settings.__path__),
+  titleTemplate: title => `${title} - ${app$.$i18n.t(localeKey.server.name.__path__)}`,
 })
 
 const {

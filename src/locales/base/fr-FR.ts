@@ -1,13 +1,15 @@
 import type { GlobalI18n } from '../@types'
-import enGB from './en-GB'
 import { CountryCode } from '~/def/country-code'
 import { Rank } from '~/def'
 import { Scope, UserRole } from '~/def/user'
 
 export default {
-// intentionally omit 'server' to fallback to enGB
-  mode: enGB.mode,
-  ruleset: enGB.ruleset,
+  // reuse en-GB
+  server: {} as any,
+  footer: {} as any,
+
+  mode: {} as any,
+  ruleset: {} as any,
   rank: {
     [Rank.PPv2]: 'Performance(v2)',
     [Rank.PPv1]: 'Performance(v1)',
@@ -15,7 +17,7 @@ export default {
     [Rank.TotalScore]: 'Score Total',
     [Rank.Score]: 'Score',
   },
-  titles: {
+  title: {
     'leaderboard': 'Classement',
     'status': 'Statut',
     'settings': 'Paramètres',
@@ -25,7 +27,11 @@ export default {
     'logs': 'Logs',
     'articles': 'Articles',
     'clans': 'Clans',
+    'user-management': 'Gestion d\'utilisateur',
+    // TODO refine fr translation
+    'account-recovery': 'Account Recovery',
   },
+
   global: {
     'logout': 'Déconnexion',
     'login': 'Connexion',
@@ -43,9 +49,11 @@ export default {
     'users': 'Utilisateur',
     'session': 'Session',
     'password': 'Mot de passe',
+    // TODO refine fr translation
     'email': 'Email',
     'otp': 'One time code',
     'verify': 'Verify',
+    'wip': 'WIP',
   },
   role: {
     [UserRole.Disabled]: 'Désactivé',
@@ -65,6 +73,7 @@ export default {
     [UserRole.Owner]: 'Propriétaire',
     [UserRole.Bot]: 'Bot',
   },
+
   scope: {
     [Scope.Self]: 'Moi',
     [Scope.Friends]: 'Amis',
@@ -75,6 +84,10 @@ export default {
     ranks: 'Classement',
     sessions: 'Connexion Web',
   },
+
+  beatmap: {} as any,
+
+  error: {} as any,
   country: {
     [CountryCode.Unknown]: 'Inconnu',
     [CountryCode.Afghanistan]: 'Afghanistan',
@@ -327,4 +340,5 @@ export default {
     [CountryCode.Zambia]: 'Zambie',
     [CountryCode.Zimbabwe]: 'Zimbabwe',
   },
-} satisfies Omit<GlobalI18n, 'server'>
+  mail: {} as any,
+} satisfies GlobalI18n

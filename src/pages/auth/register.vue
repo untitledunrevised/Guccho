@@ -31,6 +31,11 @@ const email = ref<MailTokenProvider.Email>()
 const otp = ref<MailTokenProvider.OTP>()
 const token = ref<MailTokenProvider.Token>()
 
+useHead({
+  title: t(gLocale.register.__path__),
+  titleTemplate: title => `${title} - ${t(localeKey.server.name.__path__)}`,
+})
+
 async function go() {
   error.value = undefined
 

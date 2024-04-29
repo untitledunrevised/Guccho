@@ -45,6 +45,11 @@ const { data: result, refresh, pending } = await useAsyncData(async () => {
 
 const pages = computed(() => Math.ceil((result.value?.count || 0) / (result.value?.perPage ?? 10)))
 
+useHead({
+  titleTemplate: title => `${title} - ${t(localeKey.server.name.__path__)}`,
+  title: () => t(localeKey.title['admin-panel'].__path__),
+})
+
 function rewrite() {
   const newURL = location.href.replace(location.search, '')
   const searchParams = new URLSearchParams(search.value as any)

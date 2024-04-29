@@ -6,6 +6,9 @@ import type { Mail } from '~/def/mail'
 
 export const root = getPath<GlobalI18n>()()
 
+export const title = root.title
+export const server = root.server
+
 const _role = root.role
 const _scope = root.scope
 const _mode = root.mode

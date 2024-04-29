@@ -49,6 +49,11 @@ const otp = ref<MailTokenProvider.OTP>('' as any)
 const password = ref('')
 const repeatPassword = ref('')
 
+useHead({
+  title: () => t(localeKey.title['account-recovery'].__path__),
+  titleTemplate: title => `${title} - ${t(localeKey.server.name.__path__)}`,
+})
+
 async function step1() {
   state.value = State.Posting
   try {
@@ -155,7 +160,7 @@ fr-FR:
 <template>
   <div class="container max-w-screen-sm mx-auto">
     <h1 class="mb-8 text-3xl">
-      {{ t(localeRoot.titles['account-recovery'].__path__) }}
+      {{ t(localeRoot.title['account-recovery'].__path__) }}
     </h1>
     <form
       v-if="step === Step.Handle"

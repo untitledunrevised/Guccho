@@ -57,7 +57,7 @@ fr-FR:
             {{ t('to-userpage') }}
           </t-nuxt-link-button>
           <t-nuxt-link-button class="btn-shadow" :to="{ name: 'me-settings' }" variant="secondary">
-            {{ $t('titles.settings').toLocaleLowerCase() }}
+            {{ $t('title.settings').toLocaleLowerCase() }}
           </t-nuxt-link-button>
         </template>
         <template v-else>

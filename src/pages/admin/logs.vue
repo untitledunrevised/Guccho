@@ -3,6 +3,12 @@ const app = useNuxtApp()
 const last = ref(50)
 const { data: logs } = await app.$client.admin.log.last.useQuery(last)
 const { t, locale } = useI18n()
+
+useHead({
+  title: () => t(localeKey.title.logs.__path__),
+  titleTemplate: title => `${title} - ${t(localeKey.server.name.__path__)}`,
+})
+
 async function truncate() {
   logs.value = await app.$client.admin.log.truncate.mutate()
 }
@@ -12,7 +18,7 @@ async function truncate() {
   <div>
     <div class="mb-5 px-4 flex justify-between">
       <h1 class="text-xl italic font-bold inline-block">
-        {{ t('titles.logs') }}
+        {{ t('title.logs') }}
       </h1>
       <button class="btn btn-primary" @click="truncate">
         truncate

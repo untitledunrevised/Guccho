@@ -5,21 +5,22 @@ import { CountryCode } from '~/def/country-code'
 import { UserRole } from '~/def/user'
 import { useSession } from '~/store/session'
 
+const DISALLOW_USER_EDIT_ITSELF_ROLE = new Set([
+  UserRole.Owner,
+  UserRole.Admin,
+  UserRole.Staff,
+])
+
 const app = useNuxtApp()
 const { t } = useI18n()
 const route = useRoute('admin-users-id')
 const adapter = useAdapterConfig()
 const session = useSession()
 
-const disallowUserEditItselfRole = new Set([
-  UserRole.Owner,
-  UserRole.Admin,
-  UserRole.Staff,
-])
-
 const error = ref<Error>()
 const f = await app.$client.admin.userManagement.detail.query(route.params.id)
 const detail = ref(f as typeof f & { password?: string })
+const _unchanged = ref(detail.value)
 
 // eslint-disable-next-line antfu/no-const-enum
 const enum Status {
@@ -40,7 +41,7 @@ const opts = computed(() =>
     .map((item) => {
       const attrs: HTMLAttributes & InputHTMLAttributes = {}
       if (
-        (session.user?.id === detail.value.id && disallowUserEditItselfRole.has(item.value)) // prevent self from removing its priv
+        (session.user?.id === detail.value.id && DISALLOW_USER_EDIT_ITSELF_ROLE.has(item.value)) // prevent self from removing its priv
         || !isEditable(session.role, item.value)
       ) {
         attrs.disabled = true
@@ -51,14 +52,27 @@ const opts = computed(() =>
     .filter(i => adapter.supportedRoles.includes(i.value))
 )
 
+useHead({
+  titleTemplate: title => `${title} - ${t(localeKey.server.name.__path__)}`,
+  title: () => `${_unchanged.value.name} - ${t(localeKey.title['admin-panel'].__path__)}`,
+})
+
 async function save() {
   error.value = undefined
   status.value = Status.Pending
   try {
-    const send = { ...detail.value, password: detail.value.password ? md5(detail.value.password) : undefined }
+    const send = {
+      ...detail.value,
+      password: detail.value.password
+        ? md5(detail.value.password)
+        : undefined,
+    }
+
     const newValue = await app.$client.admin.userManagement.saveDetail.mutate([route.params.id, send])
+
     status.value = Status.Succeed
     detail.value = { ...newValue }
+    _unchanged.value = detail.value
   }
   catch (e) {
     status.value = Status.Errored

@@ -49,6 +49,11 @@ const readPrivileges: Record<ArticleProvider.TReadAccess, string> = {
   [Scope.Public]: app.$i18n.t(localeKey.scope(Scope.Public)),
 }
 
+useHead({
+  title: () => t(localeKey.title.articles.__path__),
+  titleTemplate: title => `${title} - ${localeKey.server.name}`,
+})
+
 // Helper function to convert privilege object to select options
 function options(priv: typeof privileges | typeof readPrivileges) {
   return Object.entries(priv).map(([value, label]) => ({ label, value }))

@@ -8,13 +8,14 @@ import type { Scope, UserRole } from '~/def/user'
 import { Lang, type Rank } from '~/def'
 import type { ActiveMode, ActiveRuleset } from '~/def/common'
 
-type Titles =
+type Title =
 | 'leaderboard'
 | 'status'
 | 'settings'
 | 'relations'
 | 'userpage'
 | 'admin-panel'
+| 'user-management'
 | 'logs'
 | 'articles'
 | 'clans'
@@ -60,8 +61,8 @@ export interface GlobalI18n extends PathAccessibleObject {
   }
   role: Record<UserRole, string>
   scope: Record<Scope, string>
-  titles: Record<
-    Titles,
+  title: Record<
+    Title,
     string
   >
   global: Record<KGlobal, string>

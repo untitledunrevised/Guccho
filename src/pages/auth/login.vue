@@ -19,10 +19,6 @@ const route = useRoute<'auth-login'>()
 const app = useNuxtApp()
 const { t } = useI18n()
 
-useHead({
-  title: () => `${app.$i18n.t(lGlobal.login.__path__)} - ${app.$i18n.t(localeRoot.server.name.__path__)}`,
-})
-
 const error = shallowRef('')
 
 const login = shallowReactive<{
@@ -36,6 +32,11 @@ const login = shallowReactive<{
 })
 
 const fetching = shallowRef(false)
+
+useHead({
+  title: () => `${app.$i18n.t(lGlobal.login.__path__)}`,
+  titleTemplate: title => `${title} - ${app.$i18n.t(localeRoot.server.name.__path__)}`,
+})
 
 async function userLogin() {
   fetching.value = true

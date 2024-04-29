@@ -36,7 +36,7 @@ useSeoMeta({
 })
 
 useHead({
-  titleTemplate: `%s - ${app.$i18n.t('server.name')}`,
+  titleTemplate: title => `${title} - ${app.$i18n.t('server.name')}`,
   title: () => page.user?.name || '',
 })
 

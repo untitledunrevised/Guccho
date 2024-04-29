@@ -99,7 +99,7 @@ function clearFocus() {
                   }" @click="clearFocus"
                 >
                   <icon name="solar:settings-bold" class="w-5 h-5" size="100%" />
-                  {{ t('titles.settings') }}
+                  {{ t('title.settings') }}
                 </nuxt-link-locale>
               </li>
               <li>
@@ -109,7 +109,7 @@ function clearFocus() {
                   }" @click="clearFocus"
                 >
                   <icon name="tabler:circles-relation" class="w-5 h-5" size="100%" />
-                  {{ t('titles.relations') }}
+                  {{ t('title.relations') }}
                 </nuxt-link-locale>
               </li>
               <li>
@@ -122,7 +122,7 @@ function clearFocus() {
                   }" @click="clearFocus"
                 >
                   <icon name="mingcute:profile-fill" class="w-5 h-5" size="100%" />
-                  {{ t('titles.userpage') }}
+                  {{ t('title.userpage') }}
                 </nuxt-link-locale>
               </li>
               <li v-if="session.$state.role.staff">
@@ -132,7 +132,7 @@ function clearFocus() {
                   }" @click="clearFocus"
                 >
                   <icon name="material-symbols:admin-panel-settings-rounded" class="w-5 h-5" size="100%" />
-                  {{ t('titles.admin-panel') }}
+                  {{ t('title.admin-panel') }}
                 </nuxt-link-locale>
               </li>
               <div class="divider my-0" />

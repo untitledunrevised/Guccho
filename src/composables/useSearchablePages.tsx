@@ -60,7 +60,7 @@ export const pages: {
           class="w-5 h-5"
           size="100%"
         />
-        {useI18n({ useScope: 'global' }).t('titles.admin-panel')}
+        {useI18n({ useScope: 'global' }).t('title.admin-panel')}
       </>
     ),
     route: () => ({
@@ -81,7 +81,7 @@ export const pages: {
     render: () => (
       <>
         <icon name="tabler:circles-relation" class="w-5 h-5" size="100%" />
-        {useI18n({ useScope: 'global' }).t('titles.relations')}
+        {useI18n({ useScope: 'global' }).t('title.relations')}
       </>
     ),
     route: () => ({
@@ -94,7 +94,7 @@ export const pages: {
     render: () => (
       <>
         <icon name="solar:settings-bold" class="w-5 h-5" size="100%" />
-        {useI18n({ useScope: 'global' }).t('titles.settings')}
+        {useI18n({ useScope: 'global' }).t('title.settings')}
       </>
     ),
     route: () => ({

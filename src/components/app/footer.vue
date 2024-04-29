@@ -36,7 +36,7 @@ const { iconLinks, footerLink, brand } = runtime.public as unknown as { iconLink
       <hr class="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8">
       <div class="sm:flex sm:items-center sm:justify-between">
         <span class="text-sm text-gbase-500 sm:text-center dark:text-gbase-400">
-          © {{ fullYear }} <a href="https://github.com/ppy-sb" class="hover:underline">ppy.sb. All Rights Reserved.</a>
+          © {{ fullYear }} <a href="https://github.com/ppy-sb" class="hover:underline">ppy.sb</a>. All Rights Reserved.
         </span>
         <div v-if="iconLinks?.length" class="flex mt-4 space-x-5 sm:justify-center sm:mt-0">
           <a v-for="link in iconLinks" :key="link.name" :href="link.link" class="text-gbase-500 hover:text-gbase-900 dark:hover:text-white">

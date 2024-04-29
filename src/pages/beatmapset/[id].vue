@@ -88,7 +88,8 @@ const description = computed(() => selectedMap.value?.version)
 const url = useRequestURL()
 
 useHead({
-  title: () => `${title.value} - ${app.$i18n.t('server.name')}`,
+  title,
+  titleTemplate: title => `${title} - ${app.$i18n.t(localeKey.server.name.__path__)}`,
 })
 
 useSeoMeta({
@@ -581,7 +582,7 @@ fr-FR:
   &:before {
     content: "";
     position: absolute;
-    @apply top-20 left-0 right-0 bg-cover;
+    @apply top-20 left-0 right-0 bg-cover z-[-1];
     height: 30vmin;
   }
 

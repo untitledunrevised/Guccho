@@ -10,6 +10,7 @@ export default {
   server: {
     name: 'Guccho',
   },
+
   footer: {
     about: 'About',
     resources: 'Resources',
@@ -33,7 +34,8 @@ export default {
     [Rank.TotalScore]: 'Total Score',
     [Rank.Score]: 'Score',
   },
-  titles: {
+
+  title: {
     'leaderboard': 'Leaderboard',
     'status': 'Status',
     'settings': 'Settings',
@@ -44,6 +46,7 @@ export default {
     'articles': 'Articles',
     'clans': 'Clans',
     'account-recovery': 'Account Recovery',
+    'user-management': 'User Management',
   },
   global: {
     'logout': 'Sign out',
