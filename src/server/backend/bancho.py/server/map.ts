@@ -51,7 +51,12 @@ export class MapProvider implements Base<Id, Id> {
     const source = await this.drizzle.query.sources.findFirst({
       where: eq(schema.sources.id, id),
       with: {
-        beatmaps: true,
+        beatmaps: {
+          orderBy: (fields, operators) => [
+            operators.asc(fields.diff),
+            operators.asc(fields.id),
+          ],
+        },
       },
     }) ?? raise(Error, 'beatmap not found')
 
