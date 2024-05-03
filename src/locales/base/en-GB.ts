@@ -69,6 +69,7 @@ export default {
     'email': 'Email',
     'otp': 'One time code',
     'verify': 'Verify',
+    'max-combo': 'Max combo',
   },
   role: {
     [UserRole.Disabled]: 'Disabled',

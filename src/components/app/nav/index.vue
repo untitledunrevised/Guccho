@@ -36,12 +36,12 @@ function clearFocus() {
     :class="[detached && 'detached']"
   >
     <div
-      class="navbar transition-[border-radius]" :class="[
+      class="navbar w-full transition-[border-radius]" :class="[
         shownMenu.left && 'navbar-tint',
         shownMenu.user && 'navbar-tint',
       ]"
     >
-      <div class="navbar-start">
+      <div class="self-start -navbar-start me-auto">
         <label for="app-drawer-toggle" class="btn btn-ghost drawer-button lg:hidden">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
@@ -63,12 +63,12 @@ function clearFocus() {
           </svg>
         </button>
       </div>
-      <div class="navbar-end w-full items-baseline !gap-2">
-        <ul class="menu nav-menu menu-horizontal hidden lg:inline-flex">
+      <div class="-navbar-end self-end items-baseline !gap-2">
+        <ul class="hidden menu nav-menu menu-horizontal lg:inline-flex flex-nowrap">
           <app-nav-items />
         </ul>
         <button
-          class="btn btn-ghost btn-circle hidden lg:flex"
+          class="hidden btn btn-ghost btn-circle lg:flex"
           @click.prevent="() => searchModalWrapper?.searchModal?.showModal()"
         >
           <svg
@@ -81,13 +81,13 @@ function clearFocus() {
             />
           </svg>
         </button>
-        <div class="dropdown dropdown-end self-center">
-          <label tabindex="0" class="pr-1 flex cursor-pointer active:scale-90 transition-transform">
+        <div class="self-center dropdown dropdown-end">
+          <label tabindex="0" class="flex pr-1 transition-transform cursor-pointer active:scale-90">
             <img v-if="session.loggedIn" :src="session.$state.user?.avatarSrc" class="avatar-img">
             <icon v-else class="w-full h-full avatar-img" name="solar:emoji-funny-circle-broken" />
           </label>
           <ul
-            tabindex="0" class="menu menu-tint menu-md dropdown-content mt-4 p-2 w-52" :class="{
+            tabindex="0" class="p-2 mt-4 menu menu-tint menu-md dropdown-content w-52" :class="{
               'dropdown-open': shownMenu.user,
             }"
           >
@@ -135,7 +135,7 @@ function clearFocus() {
                   {{ t('title.admin-panel') }}
                 </nuxt-link-locale>
               </li>
-              <div class="divider my-0" />
+              <div class="my-0 divider" />
               <li>
                 <nuxt-link-locale :to="{ name: 'auth-logout', query: { redirect: route.fullPath } }" @click="clearFocus">
                   <icon name="majesticons:logout-half-circle-line" class="w-5 h-5" size="100%" />

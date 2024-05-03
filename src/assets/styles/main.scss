@@ -117,3 +117,8 @@ dialog {
     }
   }
 }
+
+.color-theme-light-invert {
+  filter: invert(100%);
+  @apply dark:[filter:invert(0)];
+}

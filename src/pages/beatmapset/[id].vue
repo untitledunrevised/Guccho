@@ -258,7 +258,7 @@ fr-FR:
         <t-tabs
           v-model="selectedMapMd5"
           size="md"
-          class="self-end mx-4 bg-transparent tabs-bordered flex flex-wrap"
+          class="flex flex-wrap self-end mx-4 bg-transparent tabs-bordered"
           @update:model-value="update"
         >
           <t-tab
@@ -313,9 +313,9 @@ fr-FR:
         </div>
         <div class="flex flex-col md:flex-row">
           <div class="w-full md:w-1/3 grow">
-            <div class="p-4 md:p-3 text-center relative">
+            <div class="relative p-4 text-center md:p-3">
               <img
-                class="shadow-md rounded-xl mx-auto min-w-1/2"
+                class="mx-auto shadow-md rounded-xl min-w-1/2"
                 :src="beatmapset.assets['list@2x']"
                 :alt="selectedMap.version"
                 :onerror="placeholder"
@@ -533,14 +533,14 @@ fr-FR:
         :ruleset="switcher.ruleset" @update:model-value="update"
       />
       <div
-        class="overflow-x-auto relative bg-base-100 rounded-lg" :class="{
+        class="relative overflow-x-auto rounded-lg bg-base-100" :class="{
           '!rounded-tl-none': scoreRS?.rankingSystems[0] === switcher.rankingSystem,
           '!rounded-tr-none': scoreRS?.rankingSystems.at(-1) === switcher.rankingSystem,
         }"
       >
         <app-scores-table
           v-if="leaderboard" :scores="leaderboard" :ranking-system="switcher.rankingSystem"
-          class="transition-filter transition-opacity opacity-100"
+          class="transition-opacity opacity-100 transition-filter"
           :class="{
             'clear-rounded-tl': scoreRS?.rankingSystems[0] === switcher.rankingSystem,
             'opacity-30 saturate-50 blur-md': pendingLeaderboard,
@@ -612,11 +612,6 @@ fr-FR:
       filter: opacity(1) contrast(0.5) brightness(0.5) blur(3em);
     }
   }
-}
-
-.color-theme-light-invert {
-  filter: invert(100%);
-  @apply dark:[filter:invert(0)];
 }
 
 .h-mode {

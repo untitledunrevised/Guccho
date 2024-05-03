@@ -106,9 +106,4 @@ watch(switcher, () => emitData())
     @apply w-7 h-7 p-[1px];
   }
 }
-
-.color-theme-light-invert {
-  filter: invert(100%);
-  @apply dark:[filter:invert(0)];
-}
 </style>

@@ -59,6 +59,7 @@ export default {
     'email': '邮箱',
     'otp': '验证码',
     'verify': '验证',
+    'max-combo': '最大连击',
   },
 
   role: {

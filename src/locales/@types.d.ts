@@ -32,6 +32,7 @@ type KGlobal =
 | 'played-at'
 | 'acc'
 | 'accuracy'
+| 'max-combo'
 | 'play-count'
 | 'beatmapsets'
 | 'beatmaps'
