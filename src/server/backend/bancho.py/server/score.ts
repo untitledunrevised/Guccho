@@ -53,10 +53,10 @@ export class ScoreProvider implements Base<bigint, Id> {
   }
 
   #transformScore(dbScore: AbleToTransformToScores & { user: Pick<typeof schema['users']['$inferSelect'], DatabaseUserCompactFields> }) {
-    const [mode, ruleset] = fromBanchoPyMode(dbScore.mode)
+    const [mode, ruleset] = fromBanchoPyMode(dbScore.score.mode)
     return Object.assign(
       toScore({
-        score: dbScore,
+        ...dbScore,
         mode,
         ruleset,
       }),
@@ -77,7 +77,7 @@ export class ScoreProvider implements Base<bigint, Id> {
       },
     }) ?? raise(Error, 'score not found')
 
-    return this.#transformScore(result)
+    return this.#transformScore({ score: result, beatmap: result.beatmap, source: result.beatmap.source, user: result.user })
   }
 
   async findOne(opt: Base.SearchQuery<Id>) {

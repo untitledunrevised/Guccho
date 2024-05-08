@@ -19,7 +19,7 @@ const logger = Logger.child({ label: 'user' })
 const drizzle = useDrizzle(schema)
 
 export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
-  drizzle = drizzle
+  private sbDrizzle = drizzle
   logger = logger
   usernamePatterns = [
     {
@@ -60,7 +60,7 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
   ) {
     const html = await ArticleProvider.render(input.profile)
 
-    const { id } = await this.drizzle.query.userpages.findFirst({
+    const { id } = await this.sbDrizzle.query.userpages.findFirst({
       where: eq(schema.userpages.userId, user.id),
       columns: {
         id: true,
@@ -74,13 +74,13 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
       rawType: 'tiptap',
     } as const
 
-    await this.drizzle.insert(schema.userpages)
+    await this.sbDrizzle.insert(schema.userpages)
       .values({
         id,
         ...data,
       }).onDuplicateKeyUpdate({ set: data })
 
-    const updated = await this.drizzle.query.userpages.findFirst({
+    const updated = await this.sbDrizzle.query.userpages.findFirst({
       where: eq(schema.userpages.userId, user.id),
     }) ?? raise(TRPCError, { code: 'INTERNAL_SERVER_ERROR', message: 'failed saving userpage' })
 
@@ -94,7 +94,7 @@ export class UserProvider extends BanchoPyUser implements Base<Id, ScoreId> {
     const userId = +handle
     const isNumber = !Number.isNaN(userId)
 
-    const [_res] = await this.drizzle.select({
+    const [_res] = await this.sbDrizzle.select({
       user: schema.users,
       clan: schema.clans,
       profile: schema.userpages,

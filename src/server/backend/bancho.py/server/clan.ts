@@ -363,13 +363,7 @@ export class ClanProvider extends Base<Id> {
         return {
           user: toUserCompact(item.user, this.config),
           score: toRankingSystemScore({
-            score: {
-              ...item.score,
-              beatmap: {
-                ...item.beatmap,
-                source: item.source,
-              },
-            },
+            ...item,
             rankingSystem: Rank.PPv2,
             mode,
             rank: index + 1,

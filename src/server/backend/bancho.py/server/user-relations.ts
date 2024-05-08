@@ -1,12 +1,15 @@
-import { dedupeUserRelationship, fromBanchoPyRelationType, idToString, stringToId, toBanchoPyRelationType, toUserCompact } from '../transforms'
+import { aliasedTable, and, eq, notExists } from 'drizzle-orm'
+import { type DatabaseUserCompactFields, dedupeUserRelationship, fromBanchoPyRelationType, idToString, stringToId, toBanchoPyRelationType, toUserCompact } from '../transforms'
 
 // import { idToString, stringToId } from '../transforms'
 import type { Id } from '..'
+import * as schema from '../drizzle/schema'
 import { config as _config } from '../env'
+import { useDrizzle } from './source/drizzle'
 import { prismaClient } from './source/prisma'
-import type { UserRelationProvider as Base } from '$base/server'
-import { Relationship } from '~/def'
 import type { UserCompact } from '~/def/user'
+import { Relationship } from '~/def'
+import type { UserRelationProvider as Base } from '$base/server'
 
 const config = _config()
 
@@ -15,44 +18,46 @@ export class UserRelationProvider implements Base<Id> {
   static readonly idToString = idToString
 
   prisma = prismaClient
+  drizzle = useDrizzle(schema)
   config = config
 
   async getOne(fromUser: { id: Id }, toUser: { id: Id }) {
-    const relationships = await this.prisma.relationship.findFirst({
-      where: {
-        fromUserId: fromUser.id,
-        toUserId: toUser.id,
-      },
-      select: {
+    const relationship = await this.drizzle.query.relationships.findFirst({
+      where: and(
+        eq(schema.relationships.fromUserId, fromUser.id),
+        eq(schema.relationships.toUserId, toUser.id)
+      ),
+      columns: {
         type: true,
       },
     })
-    if (!relationships) {
+
+    if (!relationship) {
       return undefined
     }
-    switch (relationships.type) {
+
+    switch (relationship.type) {
       case 'friend': return Relationship.Friend
       case 'block': return Relationship.Blocked
-      default: assertNotReachable(relationships.type)
+      default: assertNotReachable(relationship.type)
     }
   }
 
   async get({ user }: { user: { id: Id } }) {
-    const pRelationResult = this.prisma.relationship.findMany({
-      where: {
-        fromUserId: user.id,
-      },
-      select: {
+    const pRelationResult = this.drizzle.query.relationships.findMany({
+      where: eq(schema.relationships.fromUserId, user.id),
+      columns: {
         type: true,
-        toUser: true,
         toUserId: true,
       },
-    })
-    const pGotRelationResult = this.prisma.relationship.findMany({
-      where: {
-        toUserId: user.id,
+      with: {
+        toUser: true,
       },
-      select: {
+    })
+
+    const pGotRelationResult = this.drizzle.query.relationships.findMany({
+      where: eq(schema.relationships.toUserId, user.id),
+      columns: {
         type: true,
         fromUserId: true,
       },
@@ -84,20 +89,25 @@ export class UserRelationProvider implements Base<Id> {
   }
 
   async notMutual(user: { id: Id }) {
-    return this.prisma.user.findMany({
-      where: {
-        relations: {
-          some: {
-            toUserId: user.id,
-          },
-        },
-        gotRelations: {
-          none: {
-            fromUserId: user.id,
-          },
-        },
-      },
-    }).then(res => res.map(r => toUserCompact(r, this.config)))
+    // rel toUserId = u.id and exists (fromUser = u.id, toUser = toUserId)
+    const _u = aliasedTable(schema.users, 'pickUsers')
+    const _rel = aliasedTable(schema.relationships, 'r')
+    const _got = aliasedTable(schema.relationships, 'got')
+
+    const res = await this.drizzle
+      .select(pick(_u, ['country', 'id', 'name', 'priv', 'safeName'] satisfies DatabaseUserCompactFields[]))
+      .from(_u)
+      .innerJoin(_rel, eq(_rel.fromUserId, _u.id))
+      .where(
+        and(
+          eq(_rel.type, 'friend'),
+          eq(_rel.toUserId, user.id),
+
+          notExists(this.drizzle.select().from(_got).where(and(eq(_got.fromUserId, user.id), eq(_got.toUserId, _rel.fromUserId))))
+        )
+      )
+
+    return res.map(r => toUserCompact(r, this.config))
   }
 
   async removeOne({

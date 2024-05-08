@@ -42,7 +42,7 @@ export class MapProvider implements Base<Id, Id> {
       source: Source
     }
 
-    return toBeatmapWithBeatmapset(beatmap)
+    return toBeatmapWithBeatmapset(beatmap, beatmap.source)
   }
 
   async getBeatmapset(query: { id: Id }) {
@@ -129,7 +129,7 @@ export class MapProvider implements Base<Id, Id> {
     })
 
     const result = (await sql)
-      .map(toBeatmapWithBeatmapset)
+      .map(i => toBeatmapWithBeatmapset(i, i.source))
       .filter(
         (item): item is typeof item & { status: Exclude<RankingStatus, AbnormalStatus> } =>
           item.status !== RankingStatus.NotFound && item.status !== RankingStatus.Deleted

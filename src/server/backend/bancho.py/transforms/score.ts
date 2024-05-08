@@ -59,10 +59,14 @@ export function toPrismaScore<M extends ActiveMode, RS extends PPRankingSystem>(
 }
 export function toScore<M extends ActiveMode, RS extends PPRankingSystem>({
   score,
+  beatmap,
+  source,
   mode,
   ruleset,
 }: {
-  score: AbleToTransformToScores
+  score: AbleToTransformToScores['score']
+  beatmap: AbleToTransformToScores['beatmap'] | null
+  source: AbleToTransformToScores['source']
   mode: M
   ruleset: ActiveRuleset
 }) {
@@ -75,8 +79,8 @@ export function toScore<M extends ActiveMode, RS extends PPRankingSystem>({
     grade: (score.grade === 'N' ? 'F' : score.grade) as Grade,
     accuracy: score.accuracy,
     hit: createHitCount(mode, score),
-    beatmap: (score.beatmap !== null
-      && toBeatmapWithBeatmapset(score.beatmap)) || {
+    beatmap: (beatmap !== null
+      && toBeatmapWithBeatmapset(beatmap, source)) || {
       status: RankingStatus.NotFound,
     },
     mods: toMods(score.mods),
@@ -92,7 +96,7 @@ export function toScore<M extends ActiveMode, RS extends PPRankingSystem>({
     ActiveMode,
     ActiveRuleset,
     RS,
-    (typeof score)['beatmap'] extends null ? RankingStatus.NotFound : RankingStatus
+    (typeof beatmap) extends null ? RankingStatus.NotFound : RankingStatus
   >
   return rtn1
 }
@@ -150,18 +154,22 @@ export function toRankingSystemScore<
   RS extends LeaderboardRankingSystem,
 >({
   score,
+  beatmap,
+  source,
   rankingSystem,
   mode,
   rank,
 }: {
-  score: AbleToTransformToScores
+  score: AbleToTransformToScores['score']
+  beatmap: AbleToTransformToScores['beatmap']
+  source: AbleToTransformToScores['source']
   rankingSystem: RS
   mode: M
   rank: number
 }) {
-  type HasBeatmap = (typeof score)['beatmap'] extends null
+  type HasBeatmap = (typeof beatmap) extends null
     ? false
-    : Exclude<(typeof score)['beatmap'], null>
+    : Exclude<(typeof beatmap), null>
 
   const result = {
     id: score.id,
@@ -170,8 +178,8 @@ export function toRankingSystemScore<
     accuracy: score.accuracy,
     grade: score.grade as Grade,
     hit: createHitCount(mode, score),
-    beatmap: score.beatmap !== null
-      ? toBeatmapWithBeatmapset(score.beatmap)
+    beatmap: beatmap !== null
+      ? toBeatmapWithBeatmapset(beatmap, source)
       : {
           status: RankingStatus.NotFound,
         },
@@ -230,6 +238,6 @@ export function toRankingSystemScores<M extends ActiveMode, RS extends Leaderboa
   mode: M
 }) {
   return scores.map((score, index) =>
-    toRankingSystemScore({ score, rankingSystem, mode, rank: index + 1 }),
+    toRankingSystemScore({ ...score, rankingSystem, mode, rank: index + 1 }),
   )
 }

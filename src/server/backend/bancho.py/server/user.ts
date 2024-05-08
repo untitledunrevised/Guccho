@@ -19,17 +19,17 @@ import { BanchoPyMode, BanchoPyScoreStatus } from '../enums'
 import { config } from '../env'
 import { Logger } from '../log'
 import {
-  type AbleToTransformToScores,
   BPyMode,
   type DatabaseUserCompactFields,
   type DatabaseUserOptionalFields,
 
+  beatmapRequiredFields,
   createRulesetData,
   fromBanchoPyMode,
   fromCountryCode,
   fromRankingStatus,
   idToString,
-  prismaToRankingSystemScores,
+  scoreRequiredFields,
   stringToId,
   toBanchoPyMode,
   toFullUser,
@@ -99,7 +99,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
   static readonly idToString = idToString
 
   prisma = prismaClient
-  drizzle = drizzle
+  private drizzle = drizzle
   relationships = new UserRelationProvider()
   config = config()
 
@@ -131,13 +131,10 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
   }
 
   async getCompactById(id: Id, _opt?: { scope: Scope }) {
-    /* optimized */
-    const user = await this.prisma.user.findFirstOrThrow({
-      where: {
-        id,
-      },
-      ...prismaUserCompactFields,
-    })
+    const user = await this.drizzle.query.users.findFirst({
+      where: eq(schema.users.id, id),
+      columns: prismaUserCompactFields.select,
+    }) ?? throwGucchoError(GucchoError.UserNotFound)
 
     return toUserCompact(user, this.config)
   }
@@ -214,6 +211,10 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     }
   }
 
+  private _s = aliasedTable(schema.scores, 's')
+  private _bm = aliasedTable(schema.beatmaps, 'b')
+  private _bs = aliasedTable(schema.sources, 'bs')
+
   // https://github.com/prisma/prisma/issues/6570 need two separate query to get count for now
   async getBests<M extends Mode, RS extends LeaderboardRankingSystem>({
     id,
@@ -244,30 +245,39 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     else {
       throw new Error('unknown ranking system')
     }
-    const scores = await this.prisma.score.findMany({
-      where: {
-        userId: id,
-        mode: _mode,
-        status: BanchoPyScoreStatus.Pick,
-        beatmap: {
-          status: {
-            in: banchoPyRankingStatus,
-          },
-        },
-      },
-      include: {
-        beatmap: {
 
-          include: {
-            source: true,
-          },
-        },
-      },
-      orderBy,
-      skip: start,
-      take: perPage,
+    const result = await this.drizzle.select({
+      score: pick(this._s, scoreRequiredFields),
+      beatmap: pick(this._bm, beatmapRequiredFields),
+      source: this._bs,
     })
-    return prismaToRankingSystemScores({ scores, rankingSystem, mode }).map(score =>
+      .from(this._s)
+      .innerJoin(this._bm, eq(this._bm.md5, this._s.mapMd5))
+      .innerJoin(this._bs, and(
+        eq(this._bm.setId, this._bs.id),
+        eq(this._bm.server, this._bs.server)
+      ))
+      .where(({ score, beatmap }) => and(
+        eq(this._s.userId, id),
+        eq(this._s.status, BanchoPyScoreStatus.Pick),
+        eq(score.mode, _mode),
+        inArray(beatmap.status, banchoPyRankingStatus)
+      ))
+
+      .orderBy(({ score }) => rankingSystem === Rank.PPv2
+        ? desc(score.pp)
+        : (rankingSystem === Rank.RankedScore || rankingSystem === Rank.TotalScore)
+            ? desc(score.score)
+            : raiseError('unknown ranking system˝')
+      )
+      .offset(start)
+      .limit(perPage)
+
+    return toRankingSystemScores({
+      scores: result,
+      rankingSystem,
+      mode,
+    }).map(score =>
       Object.assign(score, {
         id: score.id.toString(),
       }),
@@ -314,9 +324,9 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
       .as('sq')
 
     const q2 = this.drizzle.select({
-      score: s,
-      beatmap: bm,
-      beatmapset: bms,
+      score: pick(s, scoreRequiredFields),
+      beatmap: pick(bm, beatmapRequiredFields),
+      source: bms,
       fullCount: sql`COUNT(*) OVER()`.mapWith(Number).as('full_count'),
     }).from(s)
       .innerJoin(maxScores, and(
@@ -344,16 +354,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     const scoresData = await q2
 
     const count = scoresData.length > 0 ? scoresData[0].fullCount : 0
-    const scores = scoresData.map((sd) => {
-      const { score, beatmap, beatmapset } = sd
-      return {
-        ...score,
-        beatmap: {
-          ...beatmap,
-          source: beatmapset,
-        },
-      } satisfies AbleToTransformToScores
-    })
+    const scores = scoresData
 
     return {
       count,
@@ -612,18 +613,18 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
       profile: ArticleProvider.JSONContent
     },
   ) {
-    const html = ArticleProvider.render(input.profile)
+    const html = await ArticleProvider.render(input.profile)
     try {
-      const result = await this.prisma.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          userpageContent: await html,
-        },
-      })
+      const [res] = await this.drizzle.update(schema.users).set({
+        userpageContent: html,
+      }).where(eq(schema.users.id, user.id))
+
+      if (!res.affectedRows) {
+        throwGucchoError(GucchoError.UpdateUserpageFailed)
+      }
+
       return {
-        html: result.userpageContent || '',
+        html,
         raw: input.profile,
       }
     }
@@ -645,35 +646,26 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
   }
 
   async changePassword(user: Pick<UserCompact<Id>, 'id'>, oldPasswordMD5: string, newPasswordMD5: string) {
-    const u = await this.prisma.user.findFirstOrThrow({
-      where: {
-        id: user.id,
+    const u = await this.drizzle.query.users.findFirst({
+      where: eq(schema.users.id, user.id),
+      columns: {
+        ...prismaUserCompactFields.select,
+        pwBcrypt: true,
       },
-    })
+    }) ?? throwGucchoError(GucchoError.UserNotFound)
 
     if (!await compareBanchoPassword(oldPasswordMD5, u.pwBcrypt)) {
       throwGucchoError(GucchoError.OldPasswordMismatch)
     }
 
     const pwBcrypt = await encryptBanchoPassword(newPasswordMD5)
-    const result = await this.prisma.user.update({
-      where: {
-        id: u.id,
-      },
-      data: {
+    await this.drizzle.update(schema.users)
+      .set({
         pwBcrypt,
-      },
-      // columns: {
-      //   id: true,
-      //   name: true,
-      //   safeName: true,
-      //   country: true,
-      //   priv: true,
-      //   email: true,
-      //   preferredMode: true,
-      // } satisfies Record<DatabaseUserCompactFields | DatabaseUserOptionalFields, true>,
-    })
-    return toUserCompact(result, this.config)
+      })
+      .where(eq(schema.users.id, u.id))
+
+    return toUserCompact(u, this.config)
   }
 
   async changeAvatar(user: { id: Id }, avatar: Uint8Array) {
@@ -784,7 +776,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
         },
       })
 
-      await this.prisma.stat.createMany({
+      await tx.stat.createMany({
         data: bpyNumModes.map(mode => ({
           id: user.id,
           mode: Number.parseInt(mode),
@@ -875,7 +867,13 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
   }
 
   async getDynamicSettings({ id }: { id: Id }) {
-    const user = await this.prisma.user.findFirstOrThrow({ where: { id } })
+    const user = await this.drizzle.query.users
+      .findFirst({
+        where: eq(schema.users.id, id),
+        columns: {
+          apiKey: true,
+        },
+      }) ?? throwGucchoError(GucchoError.UserNotFound)
     return {
       apiKey: user.apiKey || undefined,
     } satisfies ServerSetting as ServerSetting
@@ -893,11 +891,6 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     return {
       apiKey: returnValue?.apiKey || undefined,
     }
-
-    // const result = await this.prisma.user.update({ where: { id: user.id }, data: { apiKey: args.apiKey } })
-    // return {
-    //   apiKey: result.apiKey || undefined,
-    // } satisfies ServerSetting
   }
 
   ensureUsernameIsAllowed(input: string) {

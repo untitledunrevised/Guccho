@@ -156,9 +156,8 @@ export function toBeatmapWithBeatmapsetPrisma(
 }
 
 export function toBeatmapWithBeatmapset(
-  beatmap: typeof schema['beatmaps']['$inferSelect'] & {
-    source: typeof schema['sources']['$inferSelect']
-  },
+  beatmap: Pick<typeof schema['beatmaps']['$inferSelect'], BeatmapRequiredFields>,
+  source: typeof schema['sources']['$inferSelect']
 ): BeatmapWithMeta<RankingStatus, typeof schema['beatmaps']['$inferSelect']['id'], typeof schema['beatmaps']['$inferSelect']['id']> {
   const status = toRankingStatus(beatmap.status) || RankingStatus.WIP
   if (status === RankingStatus.Deleted || status === RankingStatus.NotFound) {
@@ -166,9 +165,9 @@ export function toBeatmapWithBeatmapset(
       status,
     }
   }
-  const beatmapset = toBeatmapset(beatmap.source, beatmap)
+  const beatmapset = toBeatmapset(source, beatmap)
   return Object.assign(
-    toBeatmapCompact(beatmap, toBeatmapSource(beatmap.source.server)),
+    toBeatmapCompact(beatmap, toBeatmapSource(source.server)),
     {
       status,
       beatmapset,
@@ -177,10 +176,16 @@ export function toBeatmapWithBeatmapset(
     | (ReferencedBeatmapCompact<Id, Id> & { status: typeof status; beatmapset: ReferencedBeatmapset<Id, Id> })
     | (LocalBeatmapCompact<Id> & { status: typeof status; beatmapset: LocalBeatmapset<Id> })
 }
-export type AbleToTransformToScores = InferSelectModel<typeof schema['scores']> & {
-  beatmap: InferSelectModel<typeof schema['beatmaps']> & {
-    source: InferSelectModel<typeof schema['sources']>
-  }
+
+export type ScoreRequiredFields = 'mode' | 'id' | 'score' | 'accuracy' | 'grade' | 'playTime' | 'maxCombo' | 'pp' | 'n100' | 'n300' | 'n50' | 'nGeki' | 'nKatu' | 'nMiss' | 'mods'
+export const scoreRequiredFields = ['mode', 'id', 'score', 'accuracy', 'grade', 'playTime', 'maxCombo', 'pp', 'n100', 'n300', 'n50', 'nGeki', 'nKatu', 'nMiss', 'mods'] satisfies ScoreRequiredFields[]
+export type BeatmapRequiredFields = 'artist' | 'title' | 'status' | 'id' | 'md5' | 'version' | 'creator' | 'lastUpdate' | 'totalLength' | 'maxCombo' | 'plays' | 'passes' | 'mode' | 'bpm' | 'cs' | 'ar' | 'od' | 'hp' | 'diff'
+export const beatmapRequiredFields = ['artist', 'title', 'status', 'id', 'md5', 'version', 'creator', 'lastUpdate', 'totalLength', 'maxCombo', 'plays', 'passes', 'mode', 'bpm', 'cs', 'ar', 'od', 'hp', 'diff'] satisfies BeatmapRequiredFields[]
+export interface AbleToTransformToScores {
+  score: Pick<InferSelectModel<typeof schema['scores']>, ScoreRequiredFields>
+  beatmap: Pick<InferSelectModel<typeof schema['beatmaps']>, BeatmapRequiredFields>
+  source: InferSelectModel<typeof schema['sources']>
+
 }
 
 export type PrismaAbleToTransformToScores = DBScore & {

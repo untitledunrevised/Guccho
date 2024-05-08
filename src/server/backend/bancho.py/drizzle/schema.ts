@@ -256,13 +256,13 @@ export const emailTokens = mysqlTable('email_tokens', {
 })
 
 export const relationships = mysqlTable('relationships', {
-  fromUser: int('user1').notNull(),
-  toUser: int('user2').notNull(),
+  fromUserId: int('user1').notNull(),
+  toUserId: int('user2').notNull(),
   type: mysqlEnum('type', ['friend', 'block']).notNull(),
 },
 (table) => {
   return {
-    relationshipsFromUserToUserPk: primaryKey({ columns: [table.fromUser, table.toUser], name: 'relationships_user1_user2_pk' }),
+    relationshipsFromUserToUserPk: primaryKey({ columns: [table.fromUserId, table.toUserId], name: 'relationships_user1_user2_pk' }),
   }
 })
 
@@ -442,8 +442,14 @@ export const scoresRelations = relations(scores, ({ one }) => ({
 export const clansRelations = relations(clans, ({ one }) => ({
   owner: one(users, { fields: [clans.ownerId], references: [users.id] }),
 }))
-export const usersRelations = relations(users, ({ one }) => ({
+export const relationshipsRelations = relations(relationships, ({ one }) => ({
+  fromUser: one(users, { fields: [relationships.fromUserId], references: [users.id], relationName: 'fromUser' }),
+  toUser: one(users, { fields: [relationships.toUserId], references: [users.id], relationName: 'toUser' }),
+}))
+export const usersRelations = relations(users, ({ one, many }) => ({
   clan: one(clans, { fields: [users.clanId], references: [clans.id] }),
+  relations: many(relationships, { relationName: 'toUser' }),
+  gorRelations: many(relationships, { relationName: 'fromUser' }),
 }))
 
 export const usersAchievementsRelations = relations(userAchievements, ({ one }) => ({
