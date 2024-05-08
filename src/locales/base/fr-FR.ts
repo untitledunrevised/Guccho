@@ -54,6 +54,7 @@ export default {
     'otp': 'One time code',
     'verify': 'Verify',
     'wip': 'WIP',
+    'max-combo': 'Max combo',
   },
   role: {
     [UserRole.Disabled]: 'Désactivé',
