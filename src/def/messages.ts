@@ -32,7 +32,8 @@ export enum GucchoError {
 
   // session
   UnableToRetrieveSession = 5000,
-  UnableToRefreshToken,
+  UnableToRefreshSession,
+  UnableToUpdateSession,
   YouNeedToLogin,
   SessionNotFound,
 

@@ -262,7 +262,7 @@ export const router = _router({
       if (sId === ctx.session.id) {
         session.current = true
       }
-      delete session.userId
+      delete (session as any).userId
     })
     return results as Record<keyof TRes, TV>
   }),

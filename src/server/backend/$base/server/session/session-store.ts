@@ -8,11 +8,11 @@ export const sessionConfig = {
 
 export abstract class SessionStore<TSession extends Session<any>, TSessionId extends SessionIdType<TSession> = SessionIdType<TSession>> implements Monitored {
   abstract [Monitored.status]: Monitored[typeof Monitored.status]
-  abstract get(key: TSessionId): PromiseLike<TSession | undefined>
-  abstract set(key: TSessionId, value: TSession): PromiseLike<TSessionId>
+  abstract get(key: TSessionId): PromiseLike<Readonly<TSession> | undefined>
+  abstract set(key: TSessionId, value: TSession): PromiseLike<[TSessionId, Readonly<TSession>]>
   abstract destroy(key: TSessionId): PromiseLike<boolean>
   abstract forEach(cb: (session: TSession, id: TSessionId) => void | PromiseLike<void>): PromiseLike<void>
-  abstract findAll(query: Partial<Pick<TSession, 'OS' | 'userId'>>): PromiseLike<Record<TSessionId, TSession>>
+  abstract findAll(query: Partial<Pick<TSession, 'OS' | 'userId'>>): PromiseLike<Record<TSessionId, Readonly<TSession>>>
 }
 
 export abstract class HouseKeeperSession<TSession extends Session<any>, TSessionId extends SessionIdType<TSession> = SessionIdType<TSession>> extends SessionStore<TSession> implements SessionStore<TSession> {
@@ -55,9 +55,9 @@ export class MemorySessionStore<TSession extends Session<any>, TSessionId extend
     return this.store.get(key)
   }
 
-  async set(key: TSessionId, value: TSession): Promise<TSessionId> {
+  async set(key: TSessionId, value: TSession): Promise<[TSessionId, TSession]> {
     this.store.set(key, value)
-    return key
+    return [key, value]
   }
 
   async destroy(key: TSessionId): Promise<boolean> {

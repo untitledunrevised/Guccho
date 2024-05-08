@@ -67,6 +67,7 @@ export function detectDevice(e: H3Event) {
 
   if (res.browser.name) {
     r.client = Client.Browser
+    r.browser = `${res.browser.name} (${res.browser.version})`
   }
 
   return r

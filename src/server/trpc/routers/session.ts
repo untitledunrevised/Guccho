@@ -21,7 +21,7 @@ export const router = _router({
         persist: boolean(),
       }),
     )
-    .query(async ({ input: { handle, md5HashedPassword, persist }, ctx }) => {
+    .mutation(async ({ input: { handle, md5HashedPassword, persist }, ctx }) => {
       try {
         const [ok, user] = await users.testPassword({ handle }, md5HashedPassword)
         if (!ok) {
@@ -33,11 +33,14 @@ export const router = _router({
           maxAge: persist ? Constant.PersistDuration as number : undefined,
         }
         const partialSession = { userId: UserProvider.idToString(user.id) }
-        const newSessionId = ctx.session.id
-          ? await sessions.update(ctx.session.id, partialSession)
+        const [newSessionId] = ctx.session.id
+          ? (
+              await sessions.update(ctx.session.id, partialSession)
+               ?? await sessions.create(Object.assign(partialSession, detectDevice(ctx.h3Event)))
+            )
           : await sessions.create(Object.assign(partialSession, detectDevice(ctx.h3Event)))
 
-        if (newSessionId && (newSessionId !== ctx.session.id || persist)) {
+        if (newSessionId !== ctx.session.id || persist) {
           setCookie(ctx.h3Event, Constant.SessionLabel, newSessionId, opt)
         }
         if (persist) {

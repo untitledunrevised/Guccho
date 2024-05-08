@@ -56,8 +56,8 @@ export class RedisSessionStore<TDoc extends Document & Session<any>> extends Ses
     return key
   }
 
-  async set(key: SessionIdType<TDoc>, value: TDoc): Promise<SessionIdType<TDoc>> {
-    return this.#removePrefix(await this.#set(this.#key(key), value))
+  async set(key: SessionIdType<TDoc>, value: TDoc): Promise<[SessionIdType<TDoc>, TDoc]> {
+    return [this.#removePrefix(await this.#set(this.#key(key), value)), value]
   }
 
   async #destroy(key: SessionIdType<TDoc>): Promise<boolean> {

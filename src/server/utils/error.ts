@@ -53,8 +53,9 @@ export function createGucchoError(code: GucchoError): TRPCError {
       return new TRPCError(merge({ code: 'NOT_FOUND' }))
     }
 
-    case GucchoError.UnableToRefreshToken:
+    case GucchoError.UnableToRefreshSession:
     case GucchoError.UnableToRetrieveSession:
+    case GucchoError.UnableToUpdateSession:
     case GucchoError.UnknownError:
     case GucchoError.UpdateUserSettingsFailed:
     case GucchoError.UpdateUserpageFailed:{

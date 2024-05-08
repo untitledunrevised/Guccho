@@ -23,7 +23,7 @@ import { GucchoError } from '~/def/messages'
 import { type RankingSystemScore } from '~/def/score'
 import { Scope, type UserCompact, UserRole } from '~/def/user'
 import { Constant } from '~/server/common/constants'
-import { MapProvider, ScoreProvider, UserProvider, mail, mailToken, sessions, userRelations, users } from '~/server/singleton/service'
+import { MapProvider, ScoreProvider, UserProvider, mail, mailToken, userRelations, users } from '~/server/singleton/service'
 import ui from '~~/guccho.ui.config'
 
 const logger = Logger.child({ label: 'user' })
@@ -278,11 +278,10 @@ export const router = _router({
           email: rec.email,
         })
 
+        await ctx.session.update({ userId: UserProvider.idToString(user.id) })
+
         // background jobs
         mailToken.deleteAll(rec.email).catch(e => logger.error({ message: `failed to delete mail token: ${e.message}` }))
-
-        const sessionId = ctx.session.id
-        await sessions.update(sessionId, { userId: UserProvider.idToString(user.id) })
 
         return user
       }),

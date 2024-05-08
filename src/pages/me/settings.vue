@@ -939,7 +939,9 @@ fr-FR:
                             >{{ t("session.current") }}</span>
                           </div>
                           <div class="text-sm opacity-50">
-                            {{ Client[session.client] }}
+                            <span v-if="session.client === Client.Browser">
+                              {{ session.browser }}
+                            </span>
                           </div>
                         </div>
                       </div>

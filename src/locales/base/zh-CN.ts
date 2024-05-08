@@ -128,13 +128,14 @@ export default {
     [GucchoError.ConflictRelation]: '您已经与此用户有其他关系了',
     [GucchoError.AtLeastOneUserNotExists]: '至少有一个用户不存在',
     [GucchoError.UnableToRetrieveSession]: '无法加载会话',
-    [GucchoError.UnableToRefreshToken]: '无法更新回话',
+    [GucchoError.UnableToRefreshSession]: '无法更新回话',
     [GucchoError.YouNeedToLogin]: '你还未登录',
     [GucchoError.SessionNotFound]: '找不到会话',
     [GucchoError.RequireAdminPrivilege]: '需要管理员权限',
     [GucchoError.InvalidId]: 'ID不合法',
     [GucchoError.BeatmapNotFound]: '找不到图',
     [GucchoError.EmptyPassword]: '密码不能为空',
+    [GucchoError.UnableToUpdateSession]: '无法更新会话',
   },
 
   country: {

@@ -1,5 +1,3 @@
-// import { TRPCClientError } from '@trpc/client'
-// import { TRPC_ERROR_CODES_BY_KEY } from '@trpc/server/rpc'
 import md5 from 'md5'
 import { defineStore } from 'pinia'
 import type { UserFull } from '~/def/user'
@@ -25,7 +23,7 @@ export const useSession = defineStore('session', {
     },
   }),
   actions: {
-    async gotSession() {
+    gotSession() {
       if (!this.user) {
         return
       }
@@ -33,13 +31,11 @@ export const useSession = defineStore('session', {
     },
     async login(handle: string, passwordText: string, options: { persist: boolean }) {
       const md5HashedPassword = md5(passwordText)
-      const result = await this.loginHashed(handle, md5HashedPassword, options)
-      await this.gotSession()
-      return result
+      return await this.loginHashed(handle, md5HashedPassword, options)
     },
     async loginHashed(handle: string, md5HashedPassword: string, options: { persist: boolean }) {
       const app$ = useNuxtApp()
-      const result = await app$.$client.session.login.query({
+      const result = await app$.$client.session.login.mutate({
         handle,
         md5HashedPassword,
         persist: options.persist,
@@ -48,32 +44,33 @@ export const useSession = defineStore('session', {
         return false
       }
 
-      this.$patch({
-        loggedIn: true,
-        userId: result.user.id,
-        user: result.user,
-      })
+      this.loggedIn = true
+      this.userId = result.user.id
+      this.user = result.user
+
+      this.gotSession()
+
       return true
     },
     async destroy() {
-      const app$ = useNuxtApp()
-      await app$.$client.session.destroy.mutate()
+      const app = useNuxtApp()
+      await app.$client.session.destroy.mutate()
       await this.retrieve()
     },
     async retrieve() {
       try {
-        const app$ = useNuxtApp()
-        const result = await app$.$client.session.retrieve.query()
+        const app = useNuxtApp()
+        const result = await app.$client.session.retrieve.query()
         if (!result.user) {
           this.$reset()
           return false
         }
-        this.$patch({
-          loggedIn: true,
-          userId: result.user.id,
-          user: result.user,
-        })
-        await this.gotSession()
+        this.loggedIn = true
+        this.userId = result.user.id
+        this.user = result.user
+
+        this.gotSession()
+
         return true
       }
       catch (err) {

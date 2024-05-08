@@ -2,6 +2,7 @@ import { v4 } from 'uuid'
 import { MemorySessionStore, type SessionStore } from './session-store'
 import { Logger } from '$base/logger'
 import type { Client, OS } from '~/def/device'
+import { GucchoError } from '~/def/messages'
 
 export const logger = Logger.child({ label: 'session' })
 
@@ -36,7 +37,12 @@ export abstract class SessionProvider<TSession extends Session<string>> {
     this.store = this.prepare()
   }
 
-  async create(data: Omit<Session, 'lastSeen'>) {
+  /**
+   * @deprecated this is internal method, use session binding when possible. Will update immediately
+   * @internal
+   * @private
+   */
+  async create(data: Omit<Session, 'lastSeen'>): Promise<[SessionIdType<TSession>, Readonly<TSession>]> {
     const sessionId = v4() as SessionIdType<TSession>
 
     const _session = {
@@ -45,36 +51,51 @@ export abstract class SessionProvider<TSession extends Session<string>> {
     } as TSession
 
     await this.store.set(sessionId, _session)
-    return sessionId
+    return [sessionId, _session]
   }
 
+  /**
+   * @deprecated this is internal method, use session binding when possible. Will fetch immediately.
+   * @internal
+   * @private
+   */
   async get(sessionId: SessionIdType<TSession>) {
-    const _session = await this.store.get(sessionId)
-    if (!_session) {
-      return undefined
-    }
-
-    return _session
+    return await this.store.get(sessionId)
   }
 
+  /**
+   * @deprecated this is internal method, use session binding when possible. Will delete session immediately.
+   * @internal
+   * @private
+   */
   async destroy(sessionId: SessionIdType<TSession>) {
     await this.store.destroy(sessionId)
   }
 
-  async refresh(sessionId: SessionIdType<TSession>) {
-    const _session = await this.store.get(sessionId)
+  /**
+   * @deprecated this is internal method, use session binding when possible. Will update immediately.
+   * @internal
+   * @private
+   */
+  async refresh(sessionId: SessionIdType<TSession>): Promise<[SessionIdType<TSession>, TSession] | undefined> {
+    const _session = ({ ...await this.store.get(sessionId) }) as TSession
     if (!_session) {
       return
     }
     _session.lastSeen = new Date()
     this.store.set(sessionId, _session)
-    return sessionId
+    return [sessionId, _session]
   }
 
+  /**
+   * @deprecated this is internal method, use session binding when possible. Will update immediately
+   * @internal
+   * @private
+   */
   async update(sessionId: SessionIdType<TSession>, data: Partial<Session>) {
     const _session = await this.store.get(sessionId)
     if (!_session) {
-      return undefined
+      throwGucchoError(GucchoError.SessionNotFound)
     }
     const newSession = {
       ..._session,

@@ -1,30 +1,12 @@
 import { publicProcedure } from '../trpc'
+import { SessionBinding } from '../../common/session-binding'
 import { GucchoError } from '~/def/messages'
 import { Constant } from '~/server/common/constants'
 import { haveSession } from '~/server/middleware/0.session'
 import { sessions } from '~/server/singleton/service'
-import { type Session } from '$base/server/session'
 
 const config = {
   httpOnly: true,
-}
-
-class SessionBinding {
-  persist?: boolean
-  constructor(readonly id: string, opts: { persist?: boolean }) {
-    this.persist = opts.persist
-  }
-
-  async getBinding() {
-    if (!this.id) {
-      return undefined
-    }
-    return (await sessions.get(this.id)) as Awaited<ReturnType<typeof sessions['get']>>
-  }
-
-  update(data: Partial<Session>) {
-    return sessions.update(this.id, data)
-  }
 }
 
 export const sessionProcedure = publicProcedure
@@ -34,37 +16,50 @@ export const sessionProcedure = publicProcedure
       maxAge: ctx.session.persist ? Constant.PersistDuration as number : undefined,
     }
     if (!ctx.session.id) {
-      const sessionId = await sessions.create(detectDevice(ctx.h3Event))
+      const [sessionId, session] = await sessions.create(detectDevice(ctx.h3Event))
       setCookie(ctx.h3Event, Constant.SessionLabel, sessionId, opt)
+
+      const sb = new SessionBinding(sessionId, {
+        persist: ctx.session.persist,
+      })
+
+      sb.populate(session)
       return await next({
         ctx: Object.assign(ctx, {
-          session: new SessionBinding(sessionId, { persist: ctx.session.persist }),
+          session: sb,
         }),
       })
     }
 
     if (haveSession(ctx.h3Event)) {
+      const sb = new SessionBinding(ctx.session.id, { persist: ctx.session.persist })
+      sb.populate(ctx.h3Event.context.session)
+
       return await next({
         ctx: Object.assign(ctx, {
-          session: new SessionBinding(ctx.session.id, { persist: ctx.session.persist }),
+          session: sb,
         }),
       })
     }
     else {
       const session = await sessions.get(ctx.session.id)
       if (session == null) {
-        const sessionId = await sessions.create(detectDevice(ctx.h3Event))
+        const [sessionId, session] = await sessions.create(detectDevice(ctx.h3Event))
         setCookie(ctx.h3Event, Constant.SessionLabel, sessionId, opt)
+
+        const sb = new SessionBinding(sessionId, { persist: ctx.session.persist })
+        sb.populate(session)
+
         return await next({
           ctx: Object.assign(ctx, {
-            session: new SessionBinding(sessionId, { persist: ctx.session.persist }),
+            session: sb,
           }),
         })
       }
       else {
-        const refreshed = await sessions.refresh(ctx.session.id)
+        const [refreshed, _session] = await sessions.refresh(ctx.session.id) ?? []
         if (!refreshed) {
-          throwGucchoError(GucchoError.UnableToRefreshToken)
+          throwGucchoError(GucchoError.UnableToRefreshSession)
         }
 
         setCookie(ctx.h3Event, Constant.SessionLabel, refreshed, opt)

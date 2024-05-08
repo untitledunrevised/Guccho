@@ -126,7 +126,7 @@ export default {
     [GucchoError.RelationTypeNotFound]: 'Relation type unknown.',
     [GucchoError.AtLeastOneUserNotExists]: 'At least one user does not exist.',
     [GucchoError.UnableToRetrieveSession]: 'Unable to retrieve session.',
-    [GucchoError.UnableToRefreshToken]: 'Unable to update your session.',
+    [GucchoError.UnableToRefreshSession]: 'Unable to update your session.',
     [GucchoError.YouNeedToLogin]: 'You need to log in.',
     [GucchoError.SessionNotFound]: 'Session not found.',
     [GucchoError.UpdateUserSettingsFailed]: 'Failed to update user settings.',
@@ -142,6 +142,7 @@ export default {
     [GucchoError.InvalidId]: 'ID Invalid',
     [GucchoError.BeatmapNotFound]: 'Beatmap not found',
     [GucchoError.EmptyPassword]: 'Password cannot be empty',
+    [GucchoError.UnableToUpdateSession]: 'Unable to update session.',
   },
   country: {
     [CountryCode.Unknown]: 'Unknown',
