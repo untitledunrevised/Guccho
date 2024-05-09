@@ -170,8 +170,8 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
             : undefined
         ),
         scope === Scope.Self
-          ? userPriv(schema.users)
-          : undefined
+          ? undefined
+          : userPriv(schema.users)
       ),
       columns: {
         ...prismaUserCompactFields.select,
