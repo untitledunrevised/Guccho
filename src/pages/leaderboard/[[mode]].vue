@@ -145,28 +145,34 @@ fr-FR:
         content: table.length,
       }"
     >
-      <div v-if="table.length" class="relative w-full mx-auto overflow-x-auto xl:rounded-lg max-w-max">
-        <table class="table px-2 table-sm whitespace-nowrap" aria-describedby="desc">
-          <thead>
-            <tr class="bg-base-100">
-              <th>Rank</th>
-              <th>Flag</th>
-              <th>Player</th>
-              <th class="px-4 font-semibold text-center">
+      <div v-if="table.length" class="relative w-full mx-auto overflow-x-auto xl:rounded-lg">
+        <table class="table table-zebra whitespace-nowrap" aria-describedby="desc">
+          <thead class="text-base">
+            <tr>
+              <th class="text-center">
+                Rank
+              </th>
+              <th class="text-center">
+                Flag
+              </th>
+              <th class="text-center">
+                Player
+              </th>
+              <th class="px-4 font-semibold text-end">
                 {{
                   $t(localeKey.rankingSystem(selected.rankingSystem))
                 }}
               </th>
-              <th class="px-4 font-medium text-center">
+              <th class="px-4 font-medium text-end">
                 {{ $t('global.accuracy') }}
               </th>
-              <th class="px-4 font-medium text-center">
+              <th class="px-4 font-medium text-end">
                 {{ $t('global.play-count') }}
               </th>
             </tr>
           </thead>
           <tbody
-            class="origin-center transition-filter transition-opacity"
+            class="transition-opacity origin-center transition-filter"
             :class="{
               'opacity-30 saturate-50 blur-md': pending,
             }"
@@ -199,7 +205,7 @@ fr-FR:
           {{ t('no-score-alt') }}
         </h2>
       </div>
-      <div v-if="totalPages > 1" class="mx-auto join outline outline-2">
+      <div v-if="totalPages > 1" class="mx-auto mt-4 join outline outline-2">
         <input v-for="i in totalPages" :key="`pagination-${i}`" class="join-item btn btn-ghost checked:outline outline-2" type="radio" :checked="page === i" name="options" :aria-label="i.toString()" @click="reloadPage(i)">
       </div>
     </div>

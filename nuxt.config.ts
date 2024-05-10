@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url'
 import { pick } from 'lodash-es'
-import PackageJSON from './package.json'
 import backend from './guccho.backend.config'
 import ui from './guccho.ui.config'
 import './scripts/ensure-env'
@@ -86,7 +85,7 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    public: { version: PackageJSON.version, ...uiConf },
+    public: uiConf,
   },
   watch: [
     /\.\/guccho.(ui|backend).config.ts/,

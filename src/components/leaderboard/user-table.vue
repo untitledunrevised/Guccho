@@ -29,12 +29,12 @@ const formatter = new Intl.NumberFormat(undefined, option)
 <template>
   <tr class="font-medium">
     <th scope="row" class="px-4 py-3 font-bold">
-      <p class="text-gbase-900 dark:text-gbase-100" :data-rank="props.inThisLeaderboard.rank?.toString()">
+      <p class="text-base text-gbase-900 dark:text-gbase-100" :data-rank="props.inThisLeaderboard.rank?.toString()">
         #{{ props.inThisLeaderboard.rank }}
       </p>
     </th>
     <th scope="row">
-      <div class="flex justify-center items-center w-full">
+      <div class="flex items-center justify-center w-full">
         <div class="flex-shrink-0">
           <img
             :alt="t(localeKey.country(props.user.flag || CountryCode.Unknown))" class="w-6"
@@ -44,11 +44,12 @@ const formatter = new Intl.NumberFormat(undefined, option)
       </div>
     </th>
     <th scope="row">
-      <div class="flex gap-2 items-center">
-        <div class="aspect-square mask mask-squircle w-7 overflow-hidden object-cover flex">
-          <img class="m-auto" :src="user.avatarSrc" :alt="user.name" width="30">
+      <div class="flex items-center gap-2">
+        <div class="flex object-cover w-8 overflow-hidden aspect-square mask mask-squircle">
+          <img class="m-auto" :src="user.avatarSrc" :alt="user.name">
         </div>
         <nuxt-link-locale
+          class="text-base"
           :to="{ name: 'user-handle', params: { handle: `@${user.safeName}` } }"
           :class="useUserRoleColor(user)"
         >
@@ -58,20 +59,20 @@ const formatter = new Intl.NumberFormat(undefined, option)
     </th>
     <td class="font-bold text-right">
       <template v-if="sort === Rank.PPv2">
-        {{ addCommas(props.inThisLeaderboard[Rank.PPv2] || 0) }}pp
+        <span class="font-mono text-base">{{ addCommas(props.inThisLeaderboard[Rank.PPv2] || 0) }}</span> <span>pp</span>
       </template>
       <template v-else-if="sort === Rank.PPv1">
-        {{ addCommas(props.inThisLeaderboard[Rank.PPv1] || 0) }}pp
+        <span class="font-mono text-base">{{ addCommas(props.inThisLeaderboard[Rank.PPv1] || 0) }}</span> <span>pp</span>
       </template>
       <template v-else-if="sort in props.inThisLeaderboard">
-        {{ scoreFormat(props.inThisLeaderboard[sort] || 0) }}
+        <span class="font-mono text-base">{{ scoreFormat(props.inThisLeaderboard[sort] || 0) }}</span>
       </template>
     </td>
     <td class="text-right opacity-80">
-      {{ formatter.format((props.inThisLeaderboard.accuracy || 0) / 100) }}
+      <span class="font-mono text-base">{{ formatter.format((props.inThisLeaderboard.accuracy || 0) / 100).slice(0, -1) }}</span><span>%</span>
     </td>
     <td class="text-right opacity-80">
-      {{ addCommas(props.inThisLeaderboard.playCount || 0) }}
+      <span class="font-mono text-base">{{ addCommas(props.inThisLeaderboard.playCount || 0) }}</span>
     </td>
   </tr>
 </template>
