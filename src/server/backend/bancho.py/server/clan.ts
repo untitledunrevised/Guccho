@@ -30,7 +30,7 @@ export class ClanProvider extends Base<Id> {
 
   drizzle = drizzle
 
-  clanLegalPrivFilter = <TCol extends typeof schema['users']>(column: TCol) => inArray(column.clanPriv, keyofBanchoPyChanPriv)
+  clanLegalPrivFilter = <TCol extends typeof schema.users>(column: TCol) => inArray(column.clanPriv, keyofBanchoPyChanPriv)
 
   // clan list prepared stmts
   // aliased tables

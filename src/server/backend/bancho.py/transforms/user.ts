@@ -1,9 +1,6 @@
-import type {
-  Clan,
-  User as DatabaseUser,
-} from 'prisma-client-bancho-py'
 import type { Id } from '..'
 import { Access, BanchoPyUserStatus as B, BanchoPyPrivilege } from '../enums'
+import type * as schema from '../drizzle/schema'
 import { fromBanchoPyMode } from './mode'
 import {
   UserStatus as G,
@@ -18,6 +15,9 @@ import type { ArticleProvider } from '$base/server'
 import type { Relationship } from '~/def'
 import type { CountryCode } from '~/def/country-code'
 import type { UserRelationship } from '~/def/user-relationship'
+
+type DatabaseUser = typeof schema.users.$inferSelect
+type Clan = typeof schema.clans.$inferSelect
 
 export function toRoles(priv: number): UserRole[] {
   const roles: UserRole[] = []
@@ -112,7 +112,7 @@ export function toOneBanchoPyPriv(role: UserRole): number {
   }
 }
 
-export function toPrismaUserClan(user: Pick<DatabaseUser & { clan: Pick<Clan, 'id' | 'name'> | null }, 'name' | 'clan'>) {
+export function toUserClan(user: Pick<DatabaseUser & { clan: Pick<Clan, 'id' | 'name'> | null }, 'name' | 'clan'>) {
   return {
     clan: user.clan
       ? {
@@ -159,13 +159,6 @@ export function toUserOptional(user: Pick<DatabaseUser, DatabaseUserOptionalFiel
     status: UserStatus.Unknown,
   } satisfies UserOptional
 }
-
-// export type DatabaseUserSecretsFields = 'pwBcrypt'
-// export function toUserSecrets(user: Pick<DatabaseUser, DatabaseUserSecretsFields>): UserSecrets {
-//   return {
-//     password: user.pwBcrypt,
-//   }
-// }
 
 export function dedupeUserRelationship(
   relations: Array<{

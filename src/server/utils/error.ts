@@ -17,39 +17,47 @@ export function createGucchoError(code: GucchoError): TRPCError {
     case GucchoError.YouNeedToLogin:
     case GucchoError.RequireAdminPrivilege:
     case GucchoError.OldPasswordMismatch:
-    case GucchoError.IncorrectPassword: {
+    case GucchoError.IncorrectPassword:
+    {
       return new TRPCError(merge({ code: 'UNAUTHORIZED' }))
     }
 
-    case GucchoError.MissingServerAvatarConfig: {
+    case GucchoError.MissingServerAvatarConfig:
+    {
       return new TRPCError(merge({ code: 'NOT_IMPLEMENTED' }))
     }
 
-    case GucchoError.MimeNotImage: {
+    case GucchoError.MimeNotImage:
+    {
       return new TRPCError({ code: 'UNPROCESSABLE_CONTENT' })
     }
 
     case GucchoError.DeletingMoreThanOneAvatars:
     case GucchoError.EmptyPassword:
     case GucchoError.InvalidId:
-    case GucchoError.HackerTryingToDeleteAllAvatars: {
+    case GucchoError.HackerTryingToDeleteAllAvatars:
+    {
       return new TRPCError(merge({ code: 'BAD_REQUEST' }))
     }
 
+    case GucchoError.ProhibitedRelationWithSelf:
     case GucchoError.ConflictRelation:
     case GucchoError.ConflictEmail:
     case GucchoError.PasswordNotMatch:
-    case GucchoError.UserExists: {
+    case GucchoError.UserExists:
+    {
       return new TRPCError(merge({ code: 'CONFLICT' }))
     }
 
     case GucchoError.ModeNotSupported:
     case GucchoError.EmailTokenNotFound:
-    case GucchoError.RelationTypeNotFound:
+    case GucchoError.RelationNotFound:
     case GucchoError.SessionNotFound:
     case GucchoError.UserNotFound:
     case GucchoError.BeatmapNotFound:
-    case GucchoError.AtLeastOneUserNotExists: {
+    case GucchoError.AtLeastOneUserNotExists:
+    case GucchoError.ScoreNotFound:
+    {
       return new TRPCError(merge({ code: 'NOT_FOUND' }))
     }
 
@@ -58,9 +66,12 @@ export function createGucchoError(code: GucchoError): TRPCError {
     case GucchoError.UnableToUpdateSession:
     case GucchoError.UnknownError:
     case GucchoError.UpdateUserSettingsFailed:
-    case GucchoError.UpdateUserpageFailed:{
+    case GucchoError.UpdateUserpageFailed:
+    case GucchoError.RegistrationFailed:
+    {
       return new TRPCError(merge({ code: 'INTERNAL_SERVER_ERROR' }))
     }
+
     default: {
       assertNotReachable(code)
     }

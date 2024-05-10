@@ -1,5 +1,7 @@
-import type { RelationshipType } from 'prisma-client-bancho-py'
+import type { relationships } from '../drizzle/schema'
 import { Relationship } from '~/def'
+
+type RelationshipType = typeof relationships.$inferSelect.type
 
 export function toBanchoPyRelationType(relation: Relationship): RelationshipType {
   switch (relation) {

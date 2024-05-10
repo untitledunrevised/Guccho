@@ -15,8 +15,8 @@ export namespace ScoreProvider {
     mode: ActiveMode
     ruleset: ActiveRuleset
     rankingSystem: LeaderboardRankingSystem
-    user?: Partial<UserCompact<TId>> & {
-      clan?: Partial<ClanProvider.ClanCompact<TId>>
+    user?: Partial<Pick<UserCompact<TId>, 'id' | 'name' | 'safeName' | 'flag'>> & {
+      clan?: Partial<Pick<ClanProvider.ClanCompact<TId>, 'id' | 'name' | 'badge'>>
     }
     beatmap?: {
       id: TId

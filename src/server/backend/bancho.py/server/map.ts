@@ -1,7 +1,3 @@
-import type {
-  Map as DBMap,
-  Source,
-} from 'prisma-client-bancho-py'
 import { and, desc, eq, like, or } from 'drizzle-orm'
 import * as operators from 'drizzle-orm'
 import type { Id } from '..'
@@ -38,8 +34,8 @@ export class MapProvider implements Base<Id, Id> {
       with: {
         source: true,
       },
-    }) ?? raise(Error, 'beatmap not found') satisfies DBMap & {
-      source: Source
+    }) ?? raise(Error, 'beatmap not found') satisfies typeof schema.beatmaps.$inferSelect & {
+      source: typeof schema.sources.$inferSelect
     }
 
     return toBeatmapWithBeatmapset(beatmap, beatmap.source)
@@ -78,9 +74,9 @@ export class MapProvider implements Base<Id, Id> {
     approachRate: 'ar',
     hpDrain: 'hp',
     length: 'totalLength',
-  } as const satisfies Record<Exclude<Tag[0], 'mode'>, keyof typeof schema['beatmaps']>
+  } as const satisfies Record<Exclude<Tag[0], 'mode'>, keyof typeof schema.beatmaps>
 
-  createFiltersFromTags(fields: Pick<typeof schema['beatmaps'], typeof this.MAP [keyof typeof this.MAP] | 'mode'>, filters: Tag[] = []) {
+  createFiltersFromTags(fields: Pick<typeof schema.beatmaps, typeof this.MAP [keyof typeof this.MAP] | 'mode'>, filters: Tag[] = []) {
     const ops: operators.SQL[] = []
     for (const tag of filters ?? []) {
       const [type, op, val] = tag

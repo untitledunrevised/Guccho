@@ -1,4 +1,4 @@
-import { aliasedTable, and, eq, notExists } from 'drizzle-orm'
+import { aliasedTable, and, count, eq, notExists } from 'drizzle-orm'
 import { type DatabaseUserCompactFields, dedupeUserRelationship, fromBanchoPyRelationType, idToString, stringToId, toBanchoPyRelationType, toUserCompact } from '../transforms'
 
 // import { idToString, stringToId } from '../transforms'
@@ -6,10 +6,10 @@ import type { Id } from '..'
 import * as schema from '../drizzle/schema'
 import { config as _config } from '../env'
 import { useDrizzle } from './source/drizzle'
-import { prismaClient } from './source/prisma'
 import type { UserCompact } from '~/def/user'
 import { Relationship } from '~/def'
 import type { UserRelationProvider as Base } from '$base/server'
+import { GucchoError } from '~/def/messages'
 
 const config = _config()
 
@@ -17,7 +17,6 @@ export class UserRelationProvider implements Base<Id> {
   static readonly stringToId = stringToId
   static readonly idToString = idToString
 
-  prisma = prismaClient
   drizzle = useDrizzle(schema)
   config = config
 
@@ -119,24 +118,12 @@ export class UserRelationProvider implements Base<Id> {
     targetUser: UserCompact<Id>
     type: Relationship
   }) {
-    // bancho.py only allows one relationshipType per direction per one user pair
-    // so cannot delete with where condition due to prisma not allowing it.
-    // So to make sure that we are removing right relationship, we have to compare
-    // relation type against input before remove it.
-    const relationship = await this.getOne(fromUser, targetUser)
-
-    if (relationship !== type) {
-      throw new Error('not-found')
-    }
-
-    await this.prisma.relationship.delete({
-      where: {
-        fromUserId_toUserId: {
-          fromUserId: fromUser.id,
-          toUserId: targetUser.id,
-        },
-      },
-    })
+    await this.drizzle.delete(schema.relationships)
+      .where(and(
+        eq(schema.relationships.fromUserId, fromUser.id),
+        eq(schema.relationships.toUserId, targetUser.id),
+        eq(schema.relationships.type, toBanchoPyRelationType(type))
+      ))
   }
 
   async createOneRelationship({
@@ -149,33 +136,39 @@ export class UserRelationProvider implements Base<Id> {
     type: Relationship
   }) {
     if (fromUser.id === targetUser.id) {
-      throw new Error('disallow-add-self')
+      throwGucchoError(GucchoError.ProhibitedRelationWithSelf)
     }
-    // bancho.py only allows one relationshipType per direction per one user pair
-    // so cannot delete with where condition due to prisma not allowing it.
-    // So to make sure that we are removing right relationship, we have to compare
-    // relation type against input before remove it.
+
     const relationship = await this.getOne(fromUser, targetUser)
 
     if (relationship) {
-      throw new Error('has-relationship')
+      throwGucchoError(GucchoError.ConflictRelation)
     }
 
-    await this.prisma.relationship.create({
-      data: {
+    const [res] = await this.drizzle
+      .insert(schema.relationships)
+      .values({
         fromUserId: fromUser.id,
         toUserId: targetUser.id,
         type: toBanchoPyRelationType(type),
-      },
-    })
+      })
+
+    if (!res.affectedRows) {
+      throwGucchoError(GucchoError.ConflictRelation)
+    }
   }
 
   async count({ user, type }: { user: UserCompact<Id>; type: Relationship }) {
-    return await this.prisma.relationship.count({
-      where: {
-        toUserId: user.id,
-        type: toBanchoPyRelationType(type),
-      },
-    })
+    const [{ c } = { c: 0 }] = await this.drizzle
+      .select({ c: count() })
+      .from(schema.relationships)
+      .where(
+        and(
+          eq(schema.relationships.toUserId, user.id),
+          eq(schema.relationships.type, toBanchoPyRelationType(type))
+        )
+      )
+
+    return c
   }
 }

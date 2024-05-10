@@ -217,7 +217,7 @@ export const router = _router({
       }
       catch (err: any) {
         if (err.message === 'not-found') {
-          throwGucchoError(GucchoError.RelationTypeNotFound)
+          throwGucchoError(GucchoError.RelationNotFound)
         }
         throw err
       }

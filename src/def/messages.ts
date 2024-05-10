@@ -16,6 +16,7 @@ export enum GucchoError {
   MimeNotImage,
   HackerTryingToDeleteAllAvatars,
   DeletingMoreThanOneAvatars,
+  RegistrationFailed,
 
   // auth
   IncorrectPassword = 3000,
@@ -25,8 +26,8 @@ export enum GucchoError {
   EmailTokenNotFound,
 
   // relation
-  RelationTypeNotFound = 4000,
-
+  RelationNotFound = 4000,
+  ProhibitedRelationWithSelf,
   ConflictRelation,
   AtLeastOneUserNotExists,
 
@@ -42,4 +43,7 @@ export enum GucchoError {
 
   // beatmap
   BeatmapNotFound = 7000,
+
+  // score
+  ScoreNotFound = 8000,
 }

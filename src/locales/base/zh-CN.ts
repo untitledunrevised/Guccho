@@ -124,7 +124,7 @@ export default {
     [GucchoError.PasswordNotMatch]: '密码不一致',
     [GucchoError.OldPasswordMismatch]: '旧密码不一致',
     [GucchoError.EmailTokenNotFound]: '验证邮箱失败！',
-    [GucchoError.RelationTypeNotFound]: '找不到关系',
+    [GucchoError.RelationNotFound]: '找不到关系',
     [GucchoError.ConflictRelation]: '您已经与此用户有其他关系了',
     [GucchoError.AtLeastOneUserNotExists]: '至少有一个用户不存在',
     [GucchoError.UnableToRetrieveSession]: '无法加载会话',
@@ -135,6 +135,9 @@ export default {
     [GucchoError.InvalidId]: 'ID不合法',
     [GucchoError.BeatmapNotFound]: '找不到图',
     [GucchoError.EmptyPassword]: '密码不能为空',
+    [GucchoError.ProhibitedRelationWithSelf]: '不能与自己建立关系',
+    [GucchoError.RegistrationFailed]: '注册失败',
+    [GucchoError.ScoreNotFound]: '找不到成绩',
     [GucchoError.UnableToUpdateSession]: '无法更新会话',
   },
 
