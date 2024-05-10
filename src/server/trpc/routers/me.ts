@@ -202,7 +202,7 @@ export const router = _router({
     )
     .mutation(async ({ input, ctx }) => {
       const fromUser = ctx.user
-      const targetUser = await users.getCompact({ handle: input.target })
+      const targetUser = await users.getCompact({ handle: input.target, scope: Scope.Self })
 
       if (!fromUser || targetUser == null) {
         throwGucchoError(GucchoError.AtLeastOneUserNotExists)
@@ -232,7 +232,7 @@ export const router = _router({
     )
     .mutation(async ({ input, ctx }) => {
       const fromUser = ctx.user
-      const targetUser = await users.getCompact({ handle: input.target })
+      const targetUser = await users.getCompact({ handle: input.target, scope: Scope.Self })
       if (!fromUser || targetUser == null) {
         throwGucchoError(GucchoError.AtLeastOneUserNotExists)
       }
