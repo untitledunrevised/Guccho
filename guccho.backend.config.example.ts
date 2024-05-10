@@ -34,7 +34,7 @@ export default {
   },
 
   sessionStore: 'redis',
-  leaderboardSource: 'redis',
+  leaderboardSource: 'database',
 
   redisURL: safeEnv('REDIS_URL') ?? 'redis://localhost',
   dsn: env('DB_DSN'),
