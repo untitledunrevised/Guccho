@@ -1,26 +1,21 @@
-import { eq } from 'drizzle-orm'
-import type { User } from 'prisma-client-bancho-py'
+import { and, eq } from 'drizzle-orm'
 import type { Id } from '..'
-import { normal } from '../constants'
+import * as schema from '../drizzle/schema'
 import { config as _config } from '../env'
 import {
   type AbleToTransformToScores,
   type DatabaseUserCompactFields,
-  type PrismaAbleToTransformToScores,
-  assertIsBanchoPyMode,
   fromBanchoPyMode,
   idToString,
   scoreIdToString,
   stringToId,
   stringToScoreId,
   toBanchoPyMode,
-  toPrismaScore,
   toScore,
   toUserCompact,
 } from '../transforms'
-import * as schema from '../drizzle/schema'
-import { prismaClient } from './source/prisma'
 import { useDrizzle } from './source/drizzle'
+import { GucchoError } from '~/def/messages'
 import type {
   ScoreProvider as Base,
 } from '$base/server'
@@ -34,25 +29,10 @@ export class ScoreProvider implements Base<bigint, Id> {
   static readonly stringToScoreId = stringToScoreId
   static readonly scoreIdToString = scoreIdToString
 
-  prima = prismaClient
   drizzle = drizzle
   config = config
 
-  #transformPrismaScore(dbScore: (PrismaAbleToTransformToScores & { user: Pick<User, DatabaseUserCompactFields> })) {
-    assertIsBanchoPyMode(dbScore.mode)
-    const [mode, ruleset] = fromBanchoPyMode(dbScore.mode)
-
-    return Object.assign(
-      toPrismaScore({
-        score: dbScore,
-        mode,
-        ruleset,
-      }),
-      { user: toUserCompact(dbScore.user, this.config) },
-    )
-  }
-
-  #transformScore(dbScore: AbleToTransformToScores & { user: Pick<typeof schema['users']['$inferSelect'], DatabaseUserCompactFields> }) {
+  #transformScore(dbScore: AbleToTransformToScores & { user: Pick<typeof schema.users['$inferSelect'], DatabaseUserCompactFields> }) {
     const [mode, ruleset] = fromBanchoPyMode(dbScore.score.mode)
     return Object.assign(
       toScore({
@@ -80,55 +60,60 @@ export class ScoreProvider implements Base<bigint, Id> {
     return this.#transformScore({ score: result, beatmap: result.beatmap, source: result.beatmap.source, user: result.user })
   }
 
-  async findOne(opt: Base.SearchQuery<Id>) {
-    const banchoPyMode = toBanchoPyMode(opt.mode, opt.ruleset)
-    const score = await this.prima.score.findFirstOrThrow({
-      where: {
-        user: {
-          ...opt.user,
-        },
-        beatmap: opt.beatmap,
-        mode: banchoPyMode,
-      },
-      include: {
-        beatmap: {
-          include: {
-            source: true,
-          },
-        },
-        user: true,
-      },
-    })
-    return this.#transformPrismaScore(score)
+  #getQuery(opt: Omit<Base.SearchQuery<Id>, 'rankingSystem'>) {
+    const { user, beatmap, mode, ruleset } = opt
+
+    return this.drizzle
+      .select({
+        score: schema.scores,
+        user: schema.users,
+        clan: schema.clans,
+        beatmap: schema.beatmaps,
+        source: schema.sources,
+      }).from(schema.scores)
+      .innerJoin(schema.beatmaps, eq(schema.beatmaps.md5, schema.scores.mapMd5))
+      .innerJoin(schema.sources, and(eq(schema.beatmaps.server, schema.sources.server), eq(schema.beatmaps.setId, schema.sources.id)))
+      .innerJoin(schema.users, eq(schema.scores.userId, schema.users.id))
+      .leftJoin(schema.clans, eq(schema.users.clanId, schema.clans.id))
+      .where(
+        and(
+          user
+            ? and(
+              user.clan
+                ? and(
+                  user.clan.id ? eq(schema.clans.id, user.clan.id) : undefined,
+                  user.clan.name ? eq(schema.clans.name, user.clan.name) : undefined,
+                  user.clan.badge ? eq(schema.clans.badge, user.clan.badge) : undefined
+                )
+                : undefined,
+              user.flag ? eq(schema.users.country, user.flag) : undefined,
+              user.name ? eq(schema.users.name, user.name) : undefined,
+              user.safeName ? eq(schema.users.safeName, user.safeName) : undefined,
+              user.id ? eq(schema.users.id, user.id) : undefined,
+            )
+            : undefined,
+
+          beatmap?.id
+            ? eq(schema.beatmaps.id, beatmap.id)
+            : undefined,
+
+          eq(schema.scores.mode, toBanchoPyMode(mode, ruleset)),
+        )
+      ).$dynamic()
   }
 
-  async findMany(opt: Base.SearchQuery<Id>) {
-    const banchoPyMode = toBanchoPyMode(opt.mode, opt.ruleset)
-    const scores = await this.prima.score.findMany({
-      where: {
-        user: {
-          priv: { in: normal },
-          ...opt.user,
-          clan: opt.user?.clan
-            ? {
-                id: opt.user.clan.id,
-                name: opt.user.clan.name,
-                tag: opt.user.clan.badge,
-              }
-            : undefined,
-        },
-        beatmap: opt.beatmap,
-        mode: banchoPyMode,
-      },
-      include: {
-        beatmap: {
-          include: {
-            source: true,
-          },
-        },
-        user: true,
-      },
-    })
-    return scores.map(this.#transformPrismaScore).filter(TSFilter)
+  async findOne(opt: Omit<Base.SearchQuery<Id>, 'rankingSystem'>) {
+    const [res] = await this.#getQuery(opt).limit(1)
+
+    if (!res) {
+      throwGucchoError(GucchoError.ScoreNotFound)
+    }
+    return this.#transformScore(res)
+  }
+
+  async findMany(opt: Omit<Base.SearchQuery<Id>, 'rankingSystem'>) {
+    const scores = await this.#getQuery(opt).limit(20)
+
+    return scores.map(this.#transformScore).filter(TSFilter)
   }
 }

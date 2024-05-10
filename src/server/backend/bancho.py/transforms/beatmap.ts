@@ -1,11 +1,4 @@
-import type {
-  Map as DBMap,
-  Score as DBScore,
-  Source,
-} from 'prisma-client-bancho-py'
-
 import type { InferSelectModel } from 'drizzle-orm'
-
 import { $enum } from 'ts-enum-util'
 import type { Id } from '..'
 import { BanchoPyRankedStatus } from '../enums'
@@ -48,21 +41,6 @@ function toBeatmapsetReal<IdType, Source extends BeatmapSource>(beatmapset: { id
   return base as LocalBeatmapset<IdType>
 }
 
-export function toBeatmapSourcePrisma(source: Source['server']) {
-  return source === 'bancho'
-    ? BeatmapSource.Bancho
-    : source === 'privateServer'
-      ? BeatmapSource.PrivateServer
-      : BeatmapSource.Unknown
-}
-
-export function toBeatmapsetPrisma(beatmapset: Source, luckyOneBeatmapInBeatmapset: DBMap) {
-  return toBeatmapsetReal(
-    beatmapset,
-    luckyOneBeatmapInBeatmapset,
-    toBeatmapSourcePrisma(beatmapset.server)
-  )
-}
 export function toBeatmapSource(source: 'osu!' | 'private') {
   return source === 'osu!'
     ? BeatmapSource.Bancho
@@ -142,23 +120,10 @@ export function toBeatmapCompact<Source extends BeatmapSource>(beatmap: {
     }
 }
 
-export function toBeatmapWithBeatmapsetPrisma(
-  beatmap: DBMap & {
-    source: Source
-  },
-) {
-  const status = toRankingStatus(beatmap.status) || RankingStatus.WIP
-  const beatmapset = toBeatmapsetPrisma(beatmap.source, beatmap)
-  return Object.assign(toBeatmapCompact(beatmap, BeatmapSource.Bancho), {
-    status,
-    beatmapset,
-  })
-}
-
 export function toBeatmapWithBeatmapset(
-  beatmap: Pick<typeof schema['beatmaps']['$inferSelect'], BeatmapRequiredFields>,
-  source: typeof schema['sources']['$inferSelect']
-): BeatmapWithMeta<RankingStatus, typeof schema['beatmaps']['$inferSelect']['id'], typeof schema['beatmaps']['$inferSelect']['id']> {
+  beatmap: Pick<typeof schema.beatmaps.$inferSelect, BeatmapRequiredFields>,
+  source: typeof schema.sources.$inferSelect
+): BeatmapWithMeta<RankingStatus, typeof schema.beatmaps.$inferSelect.id, typeof schema.beatmaps.$inferSelect.id> {
   const status = toRankingStatus(beatmap.status) || RankingStatus.WIP
   if (status === RankingStatus.Deleted || status === RankingStatus.NotFound) {
     return {
@@ -182,18 +147,10 @@ export const scoreRequiredFields = ['mode', 'id', 'score', 'accuracy', 'grade', 
 export type BeatmapRequiredFields = 'artist' | 'title' | 'status' | 'id' | 'md5' | 'version' | 'creator' | 'lastUpdate' | 'totalLength' | 'maxCombo' | 'plays' | 'passes' | 'mode' | 'bpm' | 'cs' | 'ar' | 'od' | 'hp' | 'diff'
 export const beatmapRequiredFields = ['artist', 'title', 'status', 'id', 'md5', 'version', 'creator', 'lastUpdate', 'totalLength', 'maxCombo', 'plays', 'passes', 'mode', 'bpm', 'cs', 'ar', 'od', 'hp', 'diff'] satisfies BeatmapRequiredFields[]
 export interface AbleToTransformToScores {
-  score: Pick<InferSelectModel<typeof schema['scores']>, ScoreRequiredFields>
-  beatmap: Pick<InferSelectModel<typeof schema['beatmaps']>, BeatmapRequiredFields>
-  source: InferSelectModel<typeof schema['sources']>
+  score: Pick<InferSelectModel<typeof schema.scores>, ScoreRequiredFields>
+  beatmap: Pick<InferSelectModel<typeof schema.beatmaps>, BeatmapRequiredFields>
+  source: InferSelectModel<typeof schema.sources>
 
-}
-
-export type PrismaAbleToTransformToScores = DBScore & {
-  beatmap:
-  | (DBMap & {
-    source: Source
-  })
-  | null
 }
 
 const rankingStatusMap = {

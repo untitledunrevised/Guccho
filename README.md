@@ -25,7 +25,7 @@ Guccho is a web-based service designed for interacting with private osu! servers
 
 ## Tooling
 
-For use with `bancho.py` or `ppy.sb@bancho.py`, ensure `DB_DSN` is set in your environment variables to enable Prisma/Drizzle tooling.
+For use with `bancho.py` or `ppy.sb@bancho.py`, ensure `DB_DSN` is set in your environment variables to enable Drizzle tooling.
 
 ## Supported Backends
 

@@ -5,14 +5,12 @@ import { aliasedTable, and, desc, eq, inArray, like, or, sql } from 'drizzle-orm
 import imageType from 'image-type'
 import { glob } from 'glob'
 import { TRPCError } from '@trpc/server'
-import { Prisma } from 'prisma-client-bancho-py'
 import { type QueryError } from 'mysql2'
 import type { Id, ScoreId } from '..'
 import { getLiveUserStatus } from '../api-client'
 import { compareBanchoPassword, encryptBanchoPassword } from '../crypto'
 import {
-  createUserHandleWhereQuery,
-  prismaUserCompactFields,
+  userCompactFields,
 } from '../db-query'
 import type { settings } from '../dynamic-settings'
 import { BanchoPyMode, BanchoPyScoreStatus } from '../enums'
@@ -33,15 +31,14 @@ import {
   stringToId,
   toBanchoPyMode,
   toFullUser,
-  toPrismaUserClan,
   toRankingSystemScores,
   toSafeName,
+  toUserClan,
   toUserCompact,
   toUserOptional,
 } from '../transforms'
 import * as schema from '../drizzle/schema'
 import { ArticleProvider } from './article'
-import { prismaClient } from './source/prisma'
 import { client as redisClient } from './source/redis'
 import { UserRelationProvider } from './user-relations'
 import { useDrizzle, userPriv } from './source/drizzle'
@@ -98,7 +95,6 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
   static readonly stringToId = stringToId
   static readonly idToString = idToString
 
-  prisma = prismaClient
   private drizzle = drizzle
   relationships = new UserRelationProvider()
   config = config()
@@ -119,21 +115,34 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     }
   }
 
-  async uniqueIdent(input: string) {
-    return (
-      await this.prisma.user.count({
-        where: createUserHandleWhereQuery({
-          handle: input,
-          selectAgainst: ['email', 'id', 'name', 'safeName'],
-        }),
-      })
-    ) > 0
+  async uniqueIdent(handle: string) {
+    const handleNum = +handle
+
+    const res = await this.drizzle.query.users.findFirst({
+      columns: { id: true },
+
+      where: or(
+        eq(schema.users.email, handle),
+        eq(schema.users.name, handle),
+        eq(schema.users.safeName, handle),
+
+        Number.isNaN(handleNum)
+          ? undefined
+          : eq(schema.users.id, handleNum),
+
+        handle.startsWith('@')
+          ? eq(schema.users.safeName, handle.slice(1))
+          : undefined
+      ),
+    })
+
+    return !!res
   }
 
   async getCompactById(id: Id, _opt?: { scope: Scope }) {
     const user = await this.drizzle.query.users.findFirst({
       where: eq(schema.users.id, id),
-      columns: prismaUserCompactFields.select,
+      columns: userCompactFields,
     }) ?? throwGucchoError(GucchoError.UserNotFound)
 
     return toUserCompact(user, this.config)
@@ -174,7 +183,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
           : userPriv(schema.users)
       ),
       columns: {
-        ...prismaUserCompactFields.select,
+        ...userCompactFields,
       },
     }) ?? throwGucchoError(GucchoError.UserNotFound)
 
@@ -182,40 +191,40 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
   }
 
   async testPassword(opt: Base.OptType, hashedPassword: string): Promise<[boolean, UserCompact<Id>]> {
-    try {
-      const user = await this.prisma.user.findFirstOrThrow({
-        where: {
-          ...createUserHandleWhereQuery({
-            handle: opt.handle,
-            selectAgainst: ['id', 'name', 'safeName', 'email'],
-          }),
-        },
-        select: {
-          id: true,
-          name: true,
-          safeName: true,
-          country: true,
-          priv: true,
-          pwBcrypt: true,
-        },
-      })
-      return [await compareBanchoPassword(hashedPassword, user.pwBcrypt), toUserCompact(user, this.config)]
-    }
-    catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.name === 'NotFoundError') {
-          throwGucchoError(GucchoError.UserNotFound)
-        }
-      }
-      throw e
-    }
+    const handleNum = +opt.handle
+
+    const user = await this.drizzle.query.users.findFirst({
+      columns: {
+        id: true,
+        name: true,
+        safeName: true,
+        country: true,
+        priv: true,
+        pwBcrypt: true,
+      },
+
+      where: or(
+        eq(schema.users.email, opt.handle),
+        eq(schema.users.name, opt.handle),
+        eq(schema.users.safeName, opt.handle),
+
+        Number.isNaN(handleNum)
+          ? undefined
+          : eq(schema.users.id, handleNum),
+
+        opt.handle.startsWith('@')
+          ? eq(schema.users.safeName, opt.handle.slice(1))
+          : undefined
+      ),
+    }) ?? throwGucchoError(GucchoError.UserNotFound)
+
+    return [await compareBanchoPassword(hashedPassword, user.pwBcrypt), toUserCompact(user, this.config)]
   }
 
   private _s = aliasedTable(schema.scores, 's')
   private _bm = aliasedTable(schema.beatmaps, 'b')
   private _bs = aliasedTable(schema.sources, 'bs')
 
-  // https://github.com/prisma/prisma/issues/6570 need two separate query to get count for now
   async getBests<M extends Mode, RS extends LeaderboardRankingSystem>({
     id,
     mode,
@@ -231,20 +240,6 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
       throwGucchoError(GucchoError.ModeNotSupported)
     }
     const banchoPyRankingStatus = rankingStatus.map(i => fromRankingStatus(i))
-
-    const orderBy: Prisma.ScoreFindManyArgs['orderBy'] = {}
-    if (rankingSystem === Rank.PPv2) {
-      orderBy.pp = 'desc'
-    }
-    else if (rankingSystem === Rank.RankedScore) {
-      orderBy.score = 'desc'
-    }
-    else if (rankingSystem === Rank.TotalScore) {
-      orderBy.score = 'desc'
-    }
-    else {
-      throw new Error('unknown ranking system')
-    }
 
     const result = await this.drizzle.select({
       score: pick(this._s, scoreRequiredFields),
@@ -284,7 +279,6 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     )
   }
 
-  // https://github.com/prisma/prisma/issues/6570 need two separate query to get count for now
   async getTops<M extends ActiveMode, RS extends LeaderboardRankingSystem>(opt: Base.BaseQuery<Id, M, ActiveRuleset, RS>) {
     const { id, mode, ruleset, rankingSystem, page, perPage, rankingStatus } = opt
 
@@ -455,7 +449,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
             eq(schema.users.safeName, handle),
             handle.startsWith('@') ? eq(schema.users.safeName, handle.slice(1)) : undefined,
           ),
-          includeHidden ? undefined : userPriv(schema.users)
+          (includeHidden || scope === Scope.Self) ? undefined : userPriv(schema.users)
         )
       )
       .limit(1)
@@ -488,7 +482,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     }
 
     if (excludes.clan !== true) {
-      returnValue.clan = toPrismaUserClan({ ...user, clan }).clan
+      returnValue.clan = toUserClan({ ...user, clan }).clan
     }
 
     if (excludes.profile !== true) {
@@ -602,7 +596,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
 
     return {
       ...toUserCompact(returning, this.config),
-      ...toPrismaUserClan(returning),
+      ...toUserClan(returning),
       ...toUserOptional(returning),
     }
   }
@@ -649,7 +643,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     const u = await this.drizzle.query.users.findFirst({
       where: eq(schema.users.id, user.id),
       columns: {
-        ...prismaUserCompactFields.select,
+        ...userCompactFields,
         pwBcrypt: true,
       },
     }) ?? throwGucchoError(GucchoError.UserNotFound)
@@ -738,7 +732,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
 
     return result.map(({ user, clan }) => ({
       ...toUserCompact(user, this.config),
-      ...toPrismaUserClan({ ...user, clan }),
+      ...toUserClan({ ...user, clan }),
     }))
   }
 
@@ -765,27 +759,48 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     const { name, email, passwordMd5 } = opt
     this.ensureUsernameIsAllowed(name)
 
-    const user = await this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          name,
-          safeName: toSafeName(name),
-          email,
-          pwBcrypt: await encryptBanchoPassword(passwordMd5),
-          creationTime: Math.floor(Date.now() / 1000),
-        },
+    try {
+      const user = await this.drizzle.transaction(async (tx) => {
+        try {
+          const [res] = await tx
+            .insert(schema.users)
+            .values({
+              name,
+              safeName: toSafeName(name),
+              email,
+              pwBcrypt: await encryptBanchoPassword(passwordMd5),
+              creationTime: Math.floor(Date.now() / 1000),
+            })
+
+          if (!res.affectedRows) {
+            return tx.rollback()
+          }
+
+          const user = await tx.query.users.findFirst({
+            where: eq(schema.users.id, res.insertId),
+            columns: userCompactFields,
+          }) ?? tx.rollback()
+
+          await tx
+            .insert(schema.stats)
+            .values(bpyNumModes.map(mode => ({
+              id: user.id,
+              mode: Number.parseInt(mode),
+            })))
+
+          return user
+        }
+        catch (e) {
+          logger.error(e)
+          return tx.rollback()
+        }
       })
 
-      await tx.stat.createMany({
-        data: bpyNumModes.map(mode => ({
-          id: user.id,
-          mode: Number.parseInt(mode),
-        })),
-      })
-      return user
-    })
-
-    return toUserCompact(user, this.config)
+      return toUserCompact(user, this.config)
+    }
+    catch (e) {
+      throwGucchoError(GucchoError.RegistrationFailed)
+    }
   }
 
   async _toStatistics(

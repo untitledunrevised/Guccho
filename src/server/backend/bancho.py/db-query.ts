@@ -1,19 +1,13 @@
-import type { Prisma } from 'prisma-client-bancho-py'
 import type { DatabaseUserCompactFields } from './transforms/user'
-import { stringToId, toBanchoMode } from './transforms'
-import type { OP, Tag } from '~/def/search'
+import { stringToId } from './transforms'
 
-export const prismaUserCompactFields = {
-  select: {
-    id: true,
-    name: true,
-    safeName: true,
-    country: true,
-    priv: true,
-  },
-} as const satisfies {
-  select: Record<DatabaseUserCompactFields, true>
-}
+export const userCompactFields = {
+  id: true,
+  name: true,
+  safeName: true,
+  country: true,
+  priv: true,
+} satisfies Record<DatabaseUserCompactFields, true>
 
 export function createUserLikeQuery(keyword: string) {
   const idKw = stringToId(keyword)
@@ -84,58 +78,4 @@ export function createUserHandleWhereQuery(
         : undefined,
     ].filter(TSFilter),
   }
-}
-
-const prismaOperator: Record<OP, keyof Prisma.IntFilter> = {
-  eq: 'equals',
-  ne: 'not',
-  lt: 'lt',
-  lte: 'lte',
-  gt: 'gt',
-  gte: 'gte',
-}
-
-export function createFilter(tags: Tag[]) {
-  type Filter = Prisma.Enumerable<Prisma.MapWhereInput>
-
-  const filter: Filter = []
-  tags.forEach((tag) => {
-    const [key, op, value] = tag
-    const operator = prismaOperator[op]
-
-    switch (key) {
-      case 'mode': {
-        filter.push({ mode: { [operator]: toBanchoMode(value) } })
-        break
-      }
-      case 'starRating': {
-        filter.push({ diff: { [operator]: value } })
-        break
-      }
-      case 'accuracy': {
-        filter.push({ od: { [operator]: value } })
-        break
-      }
-      case 'approachRate': {
-        filter.push({ ar: { [operator]: value } })
-        break
-      }
-      case 'circleSize': {
-        filter.push({ cs: { [operator]: value } })
-        break
-      }
-      case 'hpDrain': {
-        filter.push({ hp: { [operator]: value } })
-        break
-      }
-      case 'length': {
-        filter.push({ totalLength: { [operator]: value } })
-        break
-      }
-      default: {
-        filter.push({ [key]: { [operator]: value } })
-      }
-    }
-  })
-  return filter
 }

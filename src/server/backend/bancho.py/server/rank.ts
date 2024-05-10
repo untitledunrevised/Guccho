@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server'
-import { aliasedTable, and, desc, eq, gt, inArray, sql } from 'drizzle-orm'
+import { aliasedTable, and, count, desc, eq, gt, inArray, sql } from 'drizzle-orm'
 import { type Id, hasRuleset } from '..'
 import { config as _config } from '../env'
 import { Logger } from '../log'
@@ -16,7 +16,6 @@ import * as schema from '../drizzle/schema'
 import { BanchoPyScoreStatus } from '../enums'
 import { RedisNotReadyError, client as redisClient } from './source/redis'
 import { useDrizzle, userPriv } from './source/drizzle'
-import { prismaClient } from './source/prisma'
 import { GucchoError } from '~/def/messages'
 import type { ComponentLeaderboard } from '~/def/leaderboard'
 import type { ActiveMode, AvailableRuleset, LeaderboardRankingSystem, RankingSystem } from '~/def/common'
@@ -33,7 +32,6 @@ export class DatabaseRankProvider implements Base<Id> {
   static readonly stringToId = stringToId
   static readonly idToString = idToString
 
-  prisma = prismaClient
   drizzle = drizzle
   config = config
 
@@ -267,15 +265,17 @@ export class RedisRankProvider extends DatabaseRankProvider implements Monitored
         raise(RedisRankProvider.RedisNoDataError, 'redis leaderboard is empty, fallback to database..')
       }
 
-      return this.prisma.stat.count({
-        where: {
-          id: {
-            in: rank,
-          },
-          mode: bPyMode,
-          pp: { gt: 0 },
-        },
-      })
+      const res = await this.drizzle.select({ count: count() })
+        .from(schema.stats)
+        .where(
+          and(
+            inArray(schema.stats.id, rank),
+            eq(schema.stats.mode, bPyMode),
+            gt(schema.stats.pp, 0)
+          )
+        )
+
+      return res[0].count
     }
     catch (e) {
       switch (true) {

@@ -1,7 +1,9 @@
-import type { Score as DBScore } from 'prisma-client-bancho-py'
+import type * as schema from '../drizzle/schema'
 import { Mode } from '~/def'
 import type { ActiveMode } from '~/def/common'
 import type { ManiaHitCount, StandardHitCount } from '~/def/score'
+
+type DBScore = typeof schema.scores.$inferSelect
 
 export function createHitCount<M extends ActiveMode>(
   mode: M,
