@@ -6,13 +6,16 @@ import { Client, OS } from '~/def/device'
 // TODO finish me
 export function detectDevice(e: H3Event) {
   const ua = getRequestHeader(e, 'User-Agent')
-  const r: Omit<Session<string>, 'lastSeen'> = {
+  const r = {
     OS: OS.Unknown,
     client: Client.Unknown,
-  }
+    lastSeen: new Date(),
+  } as Session<string>
+
   if (!ua) {
     return r
   }
+
   const res = UAParser(ua)
 
   switch (res.os.name) {
@@ -68,6 +71,7 @@ export function detectDevice(e: H3Event) {
   if (res.browser.name) {
     r.client = Client.Browser
     r.browser = `${res.browser.name} (${res.browser.version})`
+    r.memo = res.device.model
   }
 
   return r

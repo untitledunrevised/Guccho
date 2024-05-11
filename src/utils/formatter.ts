@@ -41,3 +41,28 @@ export function toDuration(duration: Date, startsFrom: Date = new Date(0)) {
     seconds,
   }
 }
+
+const DIVISIONS = [
+  { amount: 60, name: 'seconds' },
+  { amount: 60, name: 'minutes' },
+  { amount: 24, name: 'hours' },
+  { amount: 7, name: 'days' },
+  { amount: 4.34524, name: 'weeks' },
+  { amount: 12, name: 'months' },
+  { amount: Number.POSITIVE_INFINITY, name: 'years' },
+] as const
+
+export function formatTimeAgo(date: Date, lang: string) {
+  const relativeFormatter = new Intl.RelativeTimeFormat(lang, {
+    numeric: 'auto',
+  })
+  let duration = (date.getTime() - Date.now()) / 1000
+
+  for (const element of DIVISIONS) {
+    const division = element
+    if (Math.abs(duration) < division.amount) {
+      return relativeFormatter.format(Math.round(duration), division.name)
+    }
+    duration /= division.amount
+  }
+}

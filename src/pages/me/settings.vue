@@ -82,7 +82,7 @@ const {
   data: sessions,
   refresh: refreshSession,
   pending: pendingSession,
-} = await useAsyncData(() => app$.$client.me.sessions.query())
+} = await app$.$client.me.sessions.useQuery()
 
 if (!user.value) {
   await navigateTo({
@@ -363,6 +363,10 @@ async function validateOTPAndChangeEmail(closeModal: CallableFunction) {
     changeEmailState.value = [ChangeEmailStep.InputOTP, ChangeEmailState.Errored]
   }
 }
+
+function updateMemo(_session: { memo?: string }) {
+  // TODO update session memo
+}
 </script>
 
 <i18n lang="yaml">
@@ -412,10 +416,10 @@ en-GB:
     refresh: Request a new one
 
   session:
-    name: Name
+    device: Device
     last-activity: Last seen at
     actions: Action
-    current: Current Session
+    current: You
     kick: Kick
 
   change-email:
@@ -467,10 +471,10 @@ zh-CN:
     refresh: 重置你的API秘钥
 
   session:
-    name: 设备名称
+    name: 设备
     last-activity: 上次活跃时间
     actions: 操作
-    current: 当前会话
+    current: 当前
     kick: 强制登出
 
 fr-FR:
@@ -519,10 +523,10 @@ fr-FR:
     refresh: Demander une nouvelle
 
   session:
-    name: Nom de l'appareil
+    device: Appareil
     last-activity: Vu pour la dernière fois
     actions: Action
-    current: Session actuelle
+    current: vous
     kick: Exclure
 </i18n>
 
@@ -871,7 +875,7 @@ fr-FR:
               <table class="table">
                 <thead>
                   <tr>
-                    <th>{{ t("session.name") }}</th>
+                    <th>{{ t("session.device") }}</th>
                     <th>{{ t("session.last-activity") }}</th>
                     <th>{{ t("session.actions") }}</th>
                   </tr>
@@ -938,16 +942,17 @@ fr-FR:
                               class="badge badge-ghost badge-sm whitespace-nowrap"
                             >{{ t("session.current") }}</span>
                           </div>
-                          <div class="text-sm opacity-50">
-                            <span v-if="session.client === Client.Browser">
-                              {{ session.browser }}
-                            </span>
+
+                          <div v-if="session.client === Client.Browser" class="text-xs opacity-50">
+                            {{ session.browser }}
                           </div>
+
+                          <input v-model="session.memo" class="p-0 m-0 text-sm bg-transparent border-b text-base-content/50 input-ghost" disabled @focusout="() => updateMemo(session)">
                         </div>
                       </div>
                     </td>
                     <td>
-                      {{ session.lastSeen.toLocaleString(locale) }}
+                      {{ formatTimeAgo(session.lastSeen, locale) }}
                     </td>
                     <th scope="row">
                       <button

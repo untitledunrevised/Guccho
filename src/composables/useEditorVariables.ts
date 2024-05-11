@@ -38,12 +38,6 @@ function addAppConfigVariables(i: { i18n: { t: (str: string) => string } }) {
     value: config.public.baseUrl,
   })
 
-  setVariable('guccho.version', {
-    description: 'current guccho version',
-    fallback: 'some version',
-    value: config.public.version,
-  })
-
   setVariable('server.name', {
     description: 'name of the server',
     t: true,

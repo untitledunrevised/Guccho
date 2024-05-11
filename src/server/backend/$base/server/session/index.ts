@@ -10,6 +10,8 @@ export interface SessionBase<UserIdType = string> extends Record<string, unknown
   userId?: UserIdType
   lastSeen: Date
   OS: OS
+  client: Client
+  memo?: string
 }
 
 export interface SessionBrowser {
@@ -21,11 +23,12 @@ export interface SessionBrowser {
 //   client: Client.OsuStableClient
 //   version: string
 // }
-// export interface SessionUnknown {
-//   client: Client.Unknown
-// }
 
-export type Session<T = string> = SessionBase<T> & SessionBrowser
+export interface SessionUnknown {
+  client: Client.Unknown
+}
+
+export type Session<T = string> = SessionBase<T> & (SessionBrowser | SessionUnknown)
 export type SessionIdType<T extends Session> = T extends Session<infer R> ? R : never
 
 export abstract class SessionProvider<TSession extends Session<string>> {
