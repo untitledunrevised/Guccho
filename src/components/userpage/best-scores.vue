@@ -174,62 +174,69 @@ fr-FR:
   <div v-if="bpError">
     {{ bpError }}
   </div>
-  <template v-else-if="page.user">
-    <div class="space-y-6">
-      <section v-if="bp?.scores?.length">
-        <div class="card" :class="[pendingBP && 'pointer-events-none']">
-          <div class="p-1 two-tone flex items-center w-100">
-            <icon name="carbon:letter-pp" class="w-1/6" size="2em" />
-            <div class="w-2/3 flex">
-              <div class="text-3xl font-semibold mx-auto">
-                {{ t('bp') }}
-              </div>
+  <div class="space-y-6">
+    <section>
+      <div class="card" :class="[pendingBP && 'pointer-events-none']">
+        <div class="flex items-center p-1 two-tone w-100">
+          <icon name="carbon:letter-pp" class="w-1/6" size="2em" />
+          <div class="flex w-2/3">
+            <div class="mx-auto text-3xl font-semibold">
+              {{ t('bp') }}
             </div>
-          </div>
-          <div
-            class="transition-[filter] transition-opacity duration-200" :class="{
-              'saturate-50 opacity-30': pendingBP,
-            }"
-          >
-            <div class="relative">
-              <transition :name="transition">
-                <ul
-                  :key="bp.lastSwitcherStatus.mode
-                    + bp.lastSwitcherStatus.ruleset
-                    + stabilizeScoreRank(bp.lastSwitcherStatus.rankingSystem)
-                    + page.user.id
-                    + bp.page
-                  "
-                >
-                  <li v-for="i in bp.scores" :key="`bests-${i.id}`" class="score">
-                    <app-score-list-item
-                      :score="i" :mode="bp.lastSwitcherStatus.mode"
-                      :ruleset="bp.lastSwitcherStatus.ruleset" :ranking-system="bp.lastSwitcherStatus.rankingSystem"
-                    />
-                  </li>
-                </ul>
-              </transition>
-            </div>
-          </div>
-          <div
-            class="btn-group flex w-full bg-gbase-300/30 dark:bg-gbase-700/50 rounded-2xl shadow"
-            style="--rounded-btn: 1rem"
-          >
-            <button class="btn btn-ghost" :disabled="bpPage === 0" @click="prevBp">
-              «
-            </button>
-            <button class="btn btn-ghost grow" @click="refreshBP()">
-              {{ t('page', { page: bpPage + 1 }) }}
-            </button>
-            <button class="btn btn-ghost" :disabled="bp.scores.length < 10" @click="nextBp">
-              »
-            </button>
           </div>
         </div>
-      </section>
-      <div v-else-if="!bp?.scores.length && pendingBP">
-        {{ t('loading') }}
+        <div
+          class="transition-[filter] transition-opacity duration-200" :class="{
+            'saturate-50 opacity-30': pendingBP,
+          }"
+        >
+          <div class="relative">
+            <transition v-if="bp?.scores?.length" :name="transition">
+              <ul
+
+                :key="bp.lastSwitcherStatus.mode
+                  + bp.lastSwitcherStatus.ruleset
+                  + stabilizeScoreRank(bp.lastSwitcherStatus.rankingSystem)
+                  + (page.user?.id || '?')
+                  + bp.page
+                "
+              >
+                <li v-for="i in bp.scores" :key="`bests-${i.id}`" class="score">
+                  <app-score-list-item
+                    :score="i" :mode="bp.lastSwitcherStatus.mode"
+                    :ruleset="bp.lastSwitcherStatus.ruleset" :ranking-system="bp.lastSwitcherStatus.rankingSystem"
+                  />
+                </li>
+              </ul>
+            </transition>
+            <ul v-else-if="pendingBP">
+              <li>
+                <app-score-list-skeleton />
+                <app-score-list-skeleton />
+                <app-score-list-skeleton />
+                <app-score-list-skeleton />
+                <app-score-list-skeleton />
+                <app-score-list-skeleton />
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div
+          v-if="bp"
+          class="flex w-full shadow btn-group bg-gbase-300/30 dark:bg-gbase-700/50 rounded-2xl"
+          style="--rounded-btn: 1rem"
+        >
+          <button class="btn btn-ghost" :disabled="bpPage === 0" @click="prevBp">
+            «
+          </button>
+          <button class="btn btn-ghost grow" @click="refreshBP()">
+            {{ t('page', { page: bpPage + 1 }) }}
+          </button>
+          <button class="btn btn-ghost" :disabled="bp.scores.length < 10" @click="nextBp">
+            »
+          </button>
+        </div>
       </div>
-    </div>
-  </template>
+    </section>
+  </div>
 </template>
