@@ -57,6 +57,7 @@ export function createGucchoError(code: GucchoError): TRPCError {
     case GucchoError.BeatmapNotFound:
     case GucchoError.AtLeastOneUserNotExists:
     case GucchoError.ScoreNotFound:
+    case GucchoError.ClanNotFound:
     {
       return new TRPCError(merge({ code: 'NOT_FOUND' }))
     }

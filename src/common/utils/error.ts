@@ -1,4 +1,5 @@
 import type { GucchoError } from '~/def/messages'
+import { root } from '~/common/utils/locales'
 
 export function fromGucchoErrorCode<T extends GucchoError>(err: T): `G:${T}` {
   return `G:${err}`
@@ -24,4 +25,9 @@ export function formatGucchoErrorWithT(t: (input: string, params: unknown) => st
   }
 
   return t(`error.${toGucchoErrorCode(message)}`, params as any)
+}
+
+const pError = root.error
+export function formatGucchoErrorCodeWithT(t: (input: string, params: unknown) => string, input: GucchoError, params?: Record<string, unknown>): string {
+  return t(pError[input].__path__, params)
 }

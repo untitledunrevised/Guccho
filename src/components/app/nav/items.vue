@@ -24,7 +24,7 @@ function clearFocus() {
   <li>
     <nuxt-link-locale :to="{ name: 'clans' }" @click="clearFocus">
       <icon name="ic:outline-group-work" class="w-5 h-5" size="100%" />
-      [{{ t('global.wip') }}] {{ t('title.clans') }}
+      {{ t('title.clans') }}
     </nuxt-link-locale>
   </li>
   <li v-if="session.role.staff">

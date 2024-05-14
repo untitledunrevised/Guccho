@@ -46,4 +46,6 @@ export enum GucchoError {
 
   // score
   ScoreNotFound = 8000,
+  // clan
+  ClanNotFound = 9000,
 }

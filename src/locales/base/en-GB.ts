@@ -146,6 +146,7 @@ export default {
     [GucchoError.RegistrationFailed]: 'Registration Failed.',
     [GucchoError.ScoreNotFound]: 'Score not found.',
     [GucchoError.UnableToUpdateSession]: 'Unable to update session.',
+    [GucchoError.ClanNotFound]: 'Clan not found.',
   },
   country: {
     [CountryCode.Unknown]: 'Unknown',

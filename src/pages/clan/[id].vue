@@ -3,6 +3,7 @@ import { useSession } from '~/store/session'
 import { CountryCode } from '~/def/country-code'
 import type { ActiveMode, ActiveRuleset, LeaderboardRankingSystem } from '~/def/common'
 import { ClanRelation } from '~/def/clan'
+import { GucchoError } from '~/def/messages'
 
 const fmt = createNumberFormatter()
 
@@ -42,7 +43,7 @@ const selected = ref<Required<SwitcherPropType<LeaderboardRankingSystem>>>({
 })
 
 const mergeQuery = computed(() => ({ ...selected.value, id }))
-const { data: clan, refresh: refreshClan } = await app.$client.clan.detail.useQuery(mergeQuery)
+const { data: clan, refresh: refreshClan, error } = await app.$client.clan.detail.useQuery(mergeQuery)
 const relation = ref(
   session.loggedIn
     ? clan.value
@@ -98,9 +99,43 @@ function refresh() {
 }
 </script>
 
+<i18n lang="yaml">
+en-GB:
+  owner: Owner
+  created-at: Created at
+  member: Member
+  members: Members
+  clan-best-scores: Best scores
+
+zh-CN:
+  owner: 家长
+  created-at: 创立于
+  member: 组员
+  members: 组员
+  clan-best-scores: 最好成绩
+</i18n>
+
 <template>
   <section class="container mx-auto custom-container !max-w-5xl">
-    <template v-if="clan">
+    <div v-if="!clan || error" class="mt-10">
+      <template v-if="error">
+        <div class="text-xl font-light">
+          {{ error.data?.code }}
+        </div>
+        <div class="text-3xl font-bold">
+          {{ formatGucchoErrorWithT(t, error) }}
+        </div>
+        <dev-only>
+          <pre class="whitespace-pre-wrap">{{ (error.data! as any).stack || error.message }}</pre>
+        </dev-only>
+      </template>
+      <template v-else>
+        <div class="text-3xl font-bold">
+          {{ formatGucchoErrorCodeWithT(t, GucchoError.ClanNotFound) }}
+        </div>
+      </template>
+    </div>
+    <template v-else>
       <div class="px-2 lg:px-0">
         <div class="flex flex-col items-center gap-8 md:flex-row">
           <div class="relative drop-shadow-md">
@@ -123,7 +158,7 @@ function refresh() {
               <dl class="rounded-lg overflow-clip">
                 <div class="striped">
                   <dt class="py-1 text-sm font-medium text-gbase-500">
-                    Owner
+                    {{ t('owner') }}
                   </dt>
                   <dd class="striped-text">
                     <nuxt-link-locale :to="{ name: 'user-handle', params: { handle: clan.owner.safeName } }" class="flex items-center gap-1">
@@ -136,7 +171,7 @@ function refresh() {
                 </div>
                 <div class="striped">
                   <dt class="text-sm font-medium text-gbase-500">
-                    Created at
+                    {{ t('created-at') }}
                   </dt>
                   <dd class="flex items-center gap-1 striped-text">
                     {{ clan.createdAt.toLocaleString(locale) }}
@@ -144,7 +179,7 @@ function refresh() {
                 </div>
                 <div class="striped">
                   <dt class="text-sm font-medium text-gbase-500">
-                    Member
+                    {{ t('member') }}
                   </dt>
                   <dd class="flex items-center gap-1 striped-text">
                     {{ fmt(clan.countUser) }}
@@ -156,7 +191,7 @@ function refresh() {
         </div>
       </div>
       <div class="pt-6 pb-2 text-3xl font-semibold md:pt-8">
-        Members
+        {{ t('members') }}
       </div>
       <div class="relative overflow-x-auto border rounded-lg bg-base-100 border-base-300">
         <table
@@ -248,7 +283,7 @@ function refresh() {
           class="md:ms-auto md:order-2"
         />
         <div class="pt-6 pb-2 text-3xl font-semibold md:pt-8 md:order-1">
-          Clan best scores
+          {{ t('clan-best-scores') }}
         </div>
       </div>
 
@@ -311,9 +346,6 @@ function refresh() {
           </template>
         </div>
       </div>
-    </template>
-    <template v-else>
-      Clan Not Found.
     </template>
   </section>
 </template>

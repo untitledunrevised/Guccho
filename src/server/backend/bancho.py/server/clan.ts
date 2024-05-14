@@ -208,6 +208,10 @@ export class ClanProvider extends Base<Id> {
   async detail(opt: Base.DetailParam<Id>): Promise<Base.DetailResult<Id>> {
     const [result] = await this._pDetailQuery.execute({ clanId: opt.id })
 
+    if (!result) {
+      throwGucchoError(GucchoError.ClanNotFound)
+    }
+
     const uc = toUserCompact(result.owner, this.config)
 
     return {

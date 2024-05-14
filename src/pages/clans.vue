@@ -9,10 +9,12 @@ const { supportedModes, supportedRulesets } = useAdapterConfig()
 const pp = createPPFormatter()
 const score = createScoreFormatter()
 const { t } = useI18n()
+const route = useRoute('clans')
 
 const availableRankingSystems = Object.keys(config.public.leaderboardRankingSystem)
-const route = useRoute('clans')
+
 const { mode: pMode, ruleset: pRuleset, ranking: pRankingSystem, keyword: pKeyword } = route.query
+
 const mode = (
   (isString(pMode) && includes(pMode, supportedModes))
     ? pMode
@@ -59,17 +61,19 @@ useHead({
 en-GB:
   search-text: Search badges, names...
   search: Search
+  avg: Average
 
 zh-CN:
   search-text: 搜索标签、名称 ...
   search: 搜索
+  avg: 平均
 
 # TODO fr translation
 # fr-FR:
 </i18n>
 
 <template>
-  <div class="container px-2 mx-auto custom-container lg:px-0">
+  <div class="container px-2 mx-auto custom-container !max-w-screen-md lg:px-0">
     <header-simple-title-with-sub
       id="desc"
       :title="$t(localeKey.title.clans.__path__)"
@@ -106,15 +110,15 @@ zh-CN:
         </button>
       </div>
     </form>
-    <div v-if="res" class="grid max-w-2xl gap-8 pt-8 mx-auto md:pt-16 md:gap-y-16 md:grid-cols-2">
+    <div v-if="res" class="grid gap-8 pt-8 md:pt-16 md:gap-y-16 md:grid-cols-2">
       <div v-for="clan in res[Paginated.Data]" :key="clan.id" class="mx-4">
         <nuxt-link-locale
           class="flex flex-row items-center gap-2 md:flex-col"
           :to="{ name: 'clan-id', params: { id: clan.id } }"
         >
-          <div class="relative drop-shadow-md tooltip md:mx-auto" :data-tip="clan.owner.name">
-            <img :alt="clan.owner.name" :src="clan.avatarSrc" class="object-cover w-24 h-24 mask mask-squircle">
-            <span class="absolute bottom-0 right-0 font-semibold badge badge-lg">
+          <div class="relative drop-shadow-md tooltip md:mx-auto">
+            <img :alt="clan.name" :src="clan.avatarSrc" class="object-cover w-24 h-24 mask mask-squircle">
+            <span class="absolute bottom-0 right-0 font-semibold badge badge-lg whitespace-nowrap">
               {{ clan.badge }}
             </span>
           </div>
@@ -128,10 +132,10 @@ zh-CN:
                 +{{ (clan.countUser - clan.users.length).toLocaleString() }}
               </div>
             </div>
-            <span v-if="selected.rankingSystem === Rank.PPv2">Average: <b>{{ pp(clan.sum[Rank.PPv2] / clan.countUser) }}</b>pp</span>
-            <span v-else-if="selected.rankingSystem === Rank.PPv1">Average: <b>{{ pp(clan.sum[Rank.PPv1] / clan.countUser) }}</b>pp</span>
-            <span v-else-if="selected.rankingSystem === Rank.RankedScore">Total Score: <b>{{ score(clan.sum[Rank.RankedScore]) }}</b></span>
-            <span v-else-if="selected.rankingSystem === Rank.TotalScore">Total Score: <b>{{ score(clan.sum[Rank.TotalScore]) }}</b></span>
+            <span v-if="selected.rankingSystem === Rank.PPv2">{{ t('avg') }}: <b>{{ pp(clan.sum[Rank.PPv2] / clan.countUser) }}</b>pp</span>
+            <span v-else-if="selected.rankingSystem === Rank.PPv1">{{ t('avg') }}: <b>{{ pp(clan.sum[Rank.PPv1] / clan.countUser) }}</b>pp</span>
+            <span v-else-if="selected.rankingSystem === Rank.RankedScore">{{ t(localeKey.rankingSystem(Rank.RankedScore)) }}: <b>{{ score(clan.sum[Rank.RankedScore]) }}</b></span>
+            <span v-else-if="selected.rankingSystem === Rank.TotalScore">{{ t(localeKey.rankingSystem(Rank.TotalScore)) }}: <b>{{ score(clan.sum[Rank.TotalScore]) }}</b></span>
           </div>
         </nuxt-link-locale>
       </div>
