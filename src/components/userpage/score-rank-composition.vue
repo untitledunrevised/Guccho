@@ -25,7 +25,7 @@ function createStyleObject(count: number) {
 </script>
 
 <template>
-  <div v-if="composition" class="dropdown dropdown-hover block">
+  <div v-if="composition" class="dropdown dropdown-hover block z-[2]">
     <div
       class="multi-progress-bar-container bg-emerald-200"
       tabindex="0"

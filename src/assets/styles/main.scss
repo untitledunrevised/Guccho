@@ -40,29 +40,29 @@ dialog {
 }
 
 .two-tone {
-  @apply relative;
+  @apply z-[1] sticky top-[3.625rem] mb-1 mx-2 lg:mx-0;
   &::before {
     @apply absolute top-0 left-0 right-0 bottom-0 -z-10;
-    @apply rounded-2xl;
+    @apply rounded-lg shadow-md;
     content: "";
     background: linear-gradient(
       110deg,
-      transparent,
-      theme("colors.gbase.200 / 30%") 16.6%,
-      theme("colors.gbase.300 / 50%") 16.7%,
-      theme("colors.gbase.300 / 60%") 83.3%,
-      theme("colors.gbase.200 / 30%") 83.4%,
-      transparent 100%
+      theme("colors.gbase.50"),
+      theme("colors.gbase.100") 16.6%,
+      theme("colors.gbase.200") 16.7%,
+      theme("colors.gbase.200") 83.3%,
+      theme("colors.gbase.100") 83.4%,
+      theme("colors.gbase.50")
     );
     @media (prefers-color-scheme: dark) {
       background: linear-gradient(
         110deg,
-        transparent,
-        theme("colors.gbase.700 / 30%") 16.6%,
-        theme("colors.gbase.700 / 50%") 16.7%,
-        theme("colors.gbase.700 / 60%") 83.3%,
-        theme("colors.gbase.700 / 30%") 83.4%,
-        transparent 100%
+        theme("colors.gbase.800"),
+        theme("colors.gbase.700") 16.6%,
+        theme("colors.gbase.600") 16.7%,
+        theme("colors.gbase.600") 83.3%,
+        theme("colors.gbase.700") 83.4%,
+        theme("colors.gbase.800")
       );
     }
   }

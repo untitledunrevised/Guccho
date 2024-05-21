@@ -190,71 +190,69 @@ de-DE:
     {{ errorTop }}
   </div>
   <template v-else-if="page.user">
-    <div class="space-y-6">
-      <section v-if="top?.count">
-        <div class="card" :class="[pendingTop && 'pointer-events-none']">
-          <!-- <div
+    <section v-if="top?.count">
+      <div class="card" :class="[pendingTop && 'pointer-events-none']">
+        <!-- <div
             class="justify-center p-1 card-title rounded-2xl bg-gbase-300/30"
           >
             First Ranks ({{ top.count }})
           </div> -->
-          <div class="p-1 two-tone flex items-center w-100">
-            <icon name="pajamas:first-contribution" class="w-1/6 text-3xl opacity-70" />
-            <div class="w-2/3 flex">
-              <div class="text-3xl font-semibold mx-auto">
-                {{ t('top') }}
-              </div>
-            </div>
-            <div class="w-1/6 flex">
-              <div class="text-2xl mx-auto font-light italic opacity-90">
-                {{ top.count }}
-              </div>
+        <div class="flex items-center p-1 two-tone w-100">
+          <icon name="pajamas:first-contribution" class="w-1/6 text-3xl opacity-70" />
+          <div class="flex w-2/3">
+            <div class="mx-auto text-3xl font-semibold">
+              {{ t('top') }}
             </div>
           </div>
-          <div
-            class="transition-[filter] transition-opacity duration-200" :class="{
-              'saturate-50 opacity-30': pendingTop,
-            }"
-          >
-            <div class="relative">
-              <transition :name="transition">
-                <ul
-                  :key="top.lastSwitcherStatus.mode
-                    + top.lastSwitcherStatus.ruleset
-                    + stabilizeScoreRank(top.lastSwitcherStatus.rankingSystem)
-                    + page.user.id
-                    + top.page
-                  "
-                >
-                  <li v-for="i in top.scores" :key="`bests-${i.id}`" class="score">
-                    <app-score-list-item
-                      :score="i" :mode="top.lastSwitcherStatus.mode"
-                      :ruleset="top.lastSwitcherStatus.ruleset" :ranking-system="top.lastSwitcherStatus.rankingSystem"
-                    />
-                  </li>
-                </ul>
-              </transition>
+          <div class="flex w-1/6">
+            <div class="mx-auto text-2xl italic font-light opacity-90">
+              {{ top.count }}
             </div>
-          </div>
-          <div
-            class="btn-group flex w-full bg-gbase-300/30 dark:bg-gbase-700/50 rounded-2xl shadow"
-            style="--rounded-btn: 1rem"
-          >
-            <button class="btn btn-ghost" :disabled="topPage === 0" @click="prevTop">
-              «
-            </button>
-            <button class="btn btn-ghost grow" @click="refreshTop()">
-              {{ t('page', { page: topPage + 1 }) }}
-            </button>
-            <button class="btn btn-ghost" :disabled="top.scores.length < 10" @click="nextTop">
-              »
-            </button>
           </div>
         </div>
-      </section>
-      <div v-else-if="!top?.scores.length && pendingTop">
-        {{ t('loading') }}
+        <div
+          class="transition-[filter] transition-opacity duration-200" :class="{
+            'saturate-50 opacity-30': pendingTop,
+          }"
+        >
+          <div class="relative">
+            <transition :name="transition">
+              <ul
+                :key="top.lastSwitcherStatus.mode
+                  + top.lastSwitcherStatus.ruleset
+                  + stabilizeScoreRank(top.lastSwitcherStatus.rankingSystem)
+                  + page.user.id
+                  + top.page
+                "
+              >
+                <li v-for="i in top.scores" :key="`bests-${i.id}`" class="score">
+                  <app-score-list-item
+                    :score="i" :mode="top.lastSwitcherStatus.mode"
+                    :ruleset="top.lastSwitcherStatus.ruleset" :ranking-system="top.lastSwitcherStatus.rankingSystem"
+                  />
+                </li>
+              </ul>
+            </transition>
+          </div>
+        </div>
+        <div
+          class="flex w-full mt-1 rounded-lg shadow join bg-gbase-300/30 dark:bg-gbase-700/50"
+          style="--rounded-btn: 1rem"
+        >
+          <button class="join-item btn btn-ghost" :disabled="topPage === 0" @click="prevTop">
+            «
+          </button>
+          <button class="join-item btn btn-ghost grow" @click="refreshTop()">
+            {{ t('page', { page: topPage + 1 }) }}
+          </button>
+          <button class="join-item btn btn-ghost" :disabled="top.scores.length < 10" @click="nextTop">
+            »
+          </button>
+        </div>
       </div>
+    </section>
+    <div v-else-if="!top?.scores.length && pendingTop">
+      {{ t('loading') }}
     </div>
   </template>
 </template>
