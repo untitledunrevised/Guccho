@@ -189,7 +189,7 @@ export const router = _router({
       }),
     )
     .query(async ({ input }) => {
-      const user = await users.getCompact({ handle: input.handle })
+      const user = await users.getCompact({ handle: input.handle, scope: Scope.Public })
 
       return mapId(user, UserProvider.idToString)
     }),
@@ -294,7 +294,7 @@ export const router = _router({
       .mutation(async ({ ctx, input }) => {
         const variant = Mail.Variant.AccountRecovery
 
-        const user = await users.getByEmail(input as MailTokenProvider.Email)
+        const user = await users.getByEmail(input as MailTokenProvider.Email, { scope: Scope.Self })
 
         const { otp, token } = await mailToken.getOrCreate(input as MailTokenProvider.Email)
         const t = await useTranslation(ctx.h3Event)

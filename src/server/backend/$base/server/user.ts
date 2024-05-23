@@ -61,7 +61,7 @@ export abstract class UserProvider<Id, ScoreId> extends IdTransformable {
     hashedPassword: string,
   ): Promise<[boolean, UserCompact<Id> | undefined]>
 
-  abstract getCompactById(id: Id /** , opt?: { scope: Scope } */): Promise<UserCompact<Id>>
+  abstract getCompactById(id: Id): Promise<UserCompact<Id>>
 
   abstract getByEmail(email: MailTokenProvider.Email, opt?: { scope: Scope }): Promise<UserCompact<Id>>
 

@@ -139,7 +139,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     return !!res
   }
 
-  async getCompactById(id: Id, _opt?: { scope: Scope }) {
+  async getCompactById(id: Id) {
     const user = await this.drizzle.query.users.findFirst({
       where: eq(schema.users.id, id),
       columns: userCompactFields,
@@ -148,11 +148,11 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     return toUserCompact(user, this.config)
   }
 
-  async getByEmail(email: MailTokenProvider.Email, opt?: { scope: Scope }): Promise<UserCompact<number>> {
+  async getByEmail(email: MailTokenProvider.Email, opt: { scope: Scope }): Promise<UserCompact<number>> {
     return this.getCompact({ handle: email, scope: opt?.scope, keys: ['email'] })
   }
 
-  async getCompact(opt: Base.OptType & { scope?: Scope }) {
+  async getCompact(opt: Base.OptType & { scope: Scope }) {
     const { handle, scope, keys = ['id', 'name', 'safeName', 'email'] } = opt
 
     let handleNum = +handle

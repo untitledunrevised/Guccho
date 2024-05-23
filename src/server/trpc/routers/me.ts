@@ -162,7 +162,7 @@ export const router = _router({
     )
     .query(async ({ input: { target }, ctx }) => {
       const fromUser = ctx.user
-      const targetUser = await users.getCompact({ handle: target })
+      const targetUser = await users.getCompact({ handle: target, scope: Scope.Self })
 
       if (!fromUser || targetUser == null) {
         return
