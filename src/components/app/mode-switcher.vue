@@ -1,21 +1,26 @@
 <script setup lang="ts">
 import type { ActiveMode, ActiveRuleset, LeaderboardRankingSystem } from '~/def/common'
 import * as icon from '~/common/icon'
+import type { RouteLocationRaw } from '#vue-router'
 
-interface modelValue {
+const props = defineProps<{
+  showSort?: boolean
+  modelValue?: SwitcherState
+  toHref?(switcher: SwitcherState): RouteLocationRaw
+}>()
+
+const emit = defineEmits<{
+  (event: 'input', res: SwitcherState): void
+  (event: 'update:modelValue', res: SwitcherState): void
+}>()
+
+const router = useRouter()
+
+export interface SwitcherState {
   mode?: ActiveMode
   ruleset?: ActiveRuleset
   rankingSystem?: LeaderboardRankingSystem
 }
-const props = defineProps<{
-  showSort?: boolean
-  modelValue?: modelValue
-}>()
-
-const emit = defineEmits<{
-  (event: 'input', res: modelValue): void
-  (event: 'update:modelValue', res: modelValue): void
-}>()
 
 const { hasLeaderboardRankingSystem, hasRuleset, supportedModes, supportedRulesets, supportedLeaderboardRankingSystems } = useAdapterConfig()
 useI18n()
@@ -23,11 +28,15 @@ useI18n()
 const [switcher, setSwitcher] = useLeaderboardSwitcher(
   toRaw(props.modelValue) || {},
 )
+watch(switcher, () => emitData())
 function emitData() {
   emit('input', toRaw(switcher))
   emit('update:modelValue', toRaw(switcher))
 }
-watch(switcher, () => emitData())
+
+function resolvePath(path: SwitcherState) {
+  return props.toHref ? router.resolve(props.toHref(path)).fullPath : undefined
+}
 </script>
 
 <template>
@@ -42,7 +51,8 @@ watch(switcher, () => emitData())
           '!opacity-10 pointer-events-none':
             switcher.ruleset && !hasRuleset(mode, switcher.ruleset),
         }"
-        @click="setSwitcher({ mode })"
+        :href="resolvePath({ ...switcher, mode })"
+        @click.prevent="setSwitcher({ mode })"
       >
         <img
           :src="`/icons/mode/${icon.mode[mode].icon}.svg`"
@@ -60,7 +70,8 @@ watch(switcher, () => emitData())
           '!opacity-20 pointer-events-none':
             switcher.mode && !hasRuleset(switcher.mode, ruleset),
         }"
-        @click="setSwitcher({ ruleset })"
+        :href="resolvePath({ ...switcher, ruleset })"
+        @click.prevent="setSwitcher({ ruleset })"
       >
         {{ $t(localeKey.ruleset(ruleset)) }}
       </a>
@@ -87,7 +98,8 @@ watch(switcher, () => emitData())
             '!opacity-80 pointer-events-none':
               switcher.rankingSystem === rankingSystem,
           }"
-          @click="setSwitcher({ rankingSystem })"
+          :href="resolvePath({ ...switcher, rankingSystem })"
+          @click.prevent="setSwitcher({ rankingSystem })"
         >
           {{ $t(localeKey.rankingSystem(rankingSystem)) }}
         </a>
