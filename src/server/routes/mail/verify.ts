@@ -19,7 +19,7 @@ const jumpMap: Record<Mail.Variant, { failed(t: string): string; succeed(t: stri
   },
   [Mail.Variant.AccountRecovery]: {
     failed(_t: string): string {
-      return 'auth/login'
+      return '/auth/login'
     },
     succeed(t: string): string {
       return `/auth/account-recovery?t=${t}`
@@ -27,7 +27,7 @@ const jumpMap: Record<Mail.Variant, { failed(t: string): string; succeed(t: stri
   },
   [Mail.Variant.ChangeMail]: {
     failed(_t: string): string {
-      throw new Error('/me-settings')
+      return '/me-settings'
     },
     succeed(_t: string): string {
       throw new Error('Function not implemented. Please use one time code instead.')

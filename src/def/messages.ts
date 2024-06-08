@@ -1,9 +1,11 @@
 export enum GucchoError {
-  UnknownError = 1,
+  UnknownError = -1,
+  AssertionError,
   MissingServerAvatarConfig,
 
   // basic
   ModeNotSupported = 1000,
+  ModeOrRulesetNotSupported,
   InvalidId,
 
   // user
@@ -20,7 +22,6 @@ export enum GucchoError {
 
   // auth
   IncorrectPassword = 3000,
-
   PasswordNotMatch,
   OldPasswordMismatch,
   EmailTokenNotFound,
@@ -48,4 +49,10 @@ export enum GucchoError {
   ScoreNotFound = 8000,
   // clan
   ClanNotFound = 9000,
+
+  // article
+  ArticleNotFound = 10000,
+  InsufficientPrivilegeToEditArticle,
+  FileSystemArticlePathOutsideArticleRoot,
+  TryingToDeleteFallbackContents,
 }

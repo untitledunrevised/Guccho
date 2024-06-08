@@ -5,6 +5,7 @@ import { optionalUserProcedure } from '../middleware/optional-user'
 import { userProcedure } from '../middleware/user'
 import { type ArticleProvider as BaseArticleProvider } from '$base/server/article'
 import { ArticleProvider, articles } from '~/server/singleton/service'
+import { GucchoError } from '~/def/messages'
 
 export const router = _router({
   get: userProcedure
@@ -21,7 +22,7 @@ export const router = _router({
       if (!r) {
         const notFound = ArticleProvider.fallbacks.get('404')
         if (!notFound) {
-          throw new Error('404 not found')
+          throwGucchoError(GucchoError.ArticleNotFound)
         }
         const html = notFound.dynamic ? await ArticleProvider.render(notFound.json) : notFound.html
 
@@ -49,7 +50,7 @@ export const router = _router({
       if (!r) {
         const notFound = ArticleProvider.fallbacks.get('404')
         if (!notFound) {
-          throw new Error('404 not found')
+          throwGucchoError(GucchoError.ArticleNotFound)
         }
         const html = notFound.dynamic ? await ArticleProvider.render(notFound.json) : notFound.html
 

@@ -18,6 +18,7 @@ export function createGucchoError(code: GucchoError): TRPCError {
     case GucchoError.RequireAdminPrivilege:
     case GucchoError.OldPasswordMismatch:
     case GucchoError.IncorrectPassword:
+    case GucchoError.InsufficientPrivilegeToEditArticle:
     {
       return new TRPCError(merge({ code: 'UNAUTHORIZED' }))
     }
@@ -36,6 +37,8 @@ export function createGucchoError(code: GucchoError): TRPCError {
     case GucchoError.EmptyPassword:
     case GucchoError.InvalidId:
     case GucchoError.HackerTryingToDeleteAllAvatars:
+    case GucchoError.FileSystemArticlePathOutsideArticleRoot:
+    case GucchoError.TryingToDeleteFallbackContents:
     {
       return new TRPCError(merge({ code: 'BAD_REQUEST' }))
     }
@@ -50,6 +53,7 @@ export function createGucchoError(code: GucchoError): TRPCError {
     }
 
     case GucchoError.ModeNotSupported:
+    case GucchoError.ModeOrRulesetNotSupported:
     case GucchoError.EmailTokenNotFound:
     case GucchoError.RelationNotFound:
     case GucchoError.SessionNotFound:
@@ -58,6 +62,7 @@ export function createGucchoError(code: GucchoError): TRPCError {
     case GucchoError.AtLeastOneUserNotExists:
     case GucchoError.ScoreNotFound:
     case GucchoError.ClanNotFound:
+    case GucchoError.ArticleNotFound:
     {
       return new TRPCError(merge({ code: 'NOT_FOUND' }))
     }
@@ -73,6 +78,9 @@ export function createGucchoError(code: GucchoError): TRPCError {
       return new TRPCError(merge({ code: 'INTERNAL_SERVER_ERROR' }))
     }
 
+    case GucchoError.AssertionError: {
+      return assertNotReachable()
+    }
     default: {
       assertNotReachable(code)
     }

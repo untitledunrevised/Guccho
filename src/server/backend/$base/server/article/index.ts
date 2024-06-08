@@ -12,6 +12,7 @@ import { latest, paths, v0, versions } from './v'
 import useEditorExtensions from '~/composables/useEditorExtensionsServer'
 import type { UserCompact, UserRole } from '~/def/user'
 import { Logger } from '$base/logger'
+import { GucchoError } from '~/def/messages'
 
 const logger = Logger.child({ label: 'article' })
 
@@ -116,7 +117,7 @@ export abstract class ArticleProvider {
     dynamic: boolean
   }): Promise<void> {
     if (!opt.user.roles.find(role => ['admin', 'owner'].includes(role))) {
-      throw new Error('you have insufficient privilege to edit this article')
+      throwGucchoError(GucchoError.InsufficientPrivilegeToEditArticle)
     }
     const pContent = ArticleProvider.createContent(opt)
     let meta: ArticleProvider.Meta
@@ -150,14 +151,14 @@ export abstract class ArticleProvider {
   static async deleteLocal(opt: { slug: string; user: UserCompact<any> }) {
     const { user, slug } = opt
     if (!user.roles.find(role => ['admin', 'owner'].includes(role))) {
-      throw new Error('you have insufficient privilege to edit this article')
+      throwGucchoError(GucchoError.InsufficientPrivilegeToEditArticle)
     }
     const loc = join(ArticleProvider.articles, slug)
     if (!ArticleProvider.inside(loc)) {
-      throw new Error('dangerous operation')
+      throwGucchoError(GucchoError.FileSystemArticlePathOutsideArticleRoot)
     }
     if (!relative(join(ArticleProvider.articles, './fallbacks'), loc).startsWith('..')) {
-      throw new Error('trying to delete fallback contents')
+      throwGucchoError(GucchoError.TryingToDeleteFallbackContents)
     }
     return await fs.rm(loc)
   }

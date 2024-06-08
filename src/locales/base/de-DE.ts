@@ -147,6 +147,13 @@ export default {
     [GucchoError.ScoreNotFound]: 'Score nicht gefunden.',
     [GucchoError.UnableToUpdateSession]: 'Fehler beim aktualisieren der Session.',
     [GucchoError.ClanNotFound]: 'Clan nicht gefunden.',
+    // TODO DE translation (hint: use TS autocomplete)
+    // [GucchoError.AssertionError]: '',
+    // [GucchoError.ModeOrRulesetNotSupported]: '',
+    // [GucchoError.InsufficientPrivilegeToEditArticle]: '',
+    // [GucchoError.FileSystemArticlePathOutsideArticleRoot]: '',
+    // [GucchoError.TryingToDeleteFallbackContents]: ''
+    // [GucchoError.ArticleNotFound]: '',
   },
   country: {
     [CountryCode.Unknown]: 'Unbekannt',
@@ -405,15 +412,15 @@ export default {
       subject: '{serverName} - Konto Verifikation',
       content: `
   Hallo,
-  
+
   um deine Email für {serverName} zu verifizieren, bitte folge dem Link:
   {link}
-  
+
   Alternativ, kannst du auch den folgenden Code benutzen: {otp}
-  
+
   Die Verifikation ist gültig für {ttl} Minuten.
   Lass uns wissen, wenn du irgendwelche Fragen hast.
-  
+
   {serverName}
   `,
     },
@@ -421,14 +428,14 @@ export default {
       subject: '{serverName} - Konto Wiederherstellung',
       content: `
   Hallo {name},
-  
+
   um dein Passwort für {serverName} zurückzusetzen, bitte folge dem folgenden Link:
   {link}
-  
+
   Alternativ kannst du auch den folgenden Code benutzen: {otp}
-  
+
   Die Verifikation ist gültig für {ttl} Minuten.
-  
+
   {serverName}
   `,
     },
@@ -436,12 +443,12 @@ export default {
       subject: '{serverName} - E-Mail-Adresse ändern',
       content: `
   Hallo {name},
-  
+
   um deine E-Mail-Adresse für {serverName} zu ändern, benutze bitte den folgenden Code:
   {otp}
-  
+
   Die Verifikation ist gültig für {ttl} Minuten.
-  
+
   {serverName}
   `,
     },

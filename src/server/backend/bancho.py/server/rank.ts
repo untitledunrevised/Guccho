@@ -316,11 +316,6 @@ export class RedisRankProvider extends DatabaseRankProvider implements Monitored
       const start = page * pageSize
       const bPyMode = toBanchoPyMode(mode, ruleset)
 
-      if (bPyMode === undefined) {
-        // throw new Error('no mode')
-        raise(Error, 'no mode')
-      }
-
       // user.id[]
       const rank = await this.getPPv2LiveLeaderboard(bPyMode, 0, start + pageSize * 2).then(res => res.map(Number))
 

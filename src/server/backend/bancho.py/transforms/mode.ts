@@ -2,6 +2,7 @@ import { match } from 'switch-pattern'
 import { BanchoMode, BanchoPyMode } from '../enums'
 import { Mode, Ruleset } from '~/def'
 import type { ActiveMode, ActiveRuleset } from '~/def/common'
+import { GucchoError } from '~/def/messages'
 
 export const BPyMode = {
   [BanchoPyMode.OsuStandard]: [Mode.Osu, Ruleset.Standard],
@@ -25,7 +26,7 @@ export function toBanchoPyMode(
 
   const str = BPyModeEntries.find(([_, mr]) => patterns.exact(mr))?.[0]
   if (!str) {
-    throw new Error('not supported')
+    throwGucchoError(GucchoError.ModeOrRulesetNotSupported)
   }
   return Number.parseInt(str)
 }

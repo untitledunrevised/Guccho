@@ -74,7 +74,6 @@ export default {
   role: {
     [UserRole.Disabled]: 'Disabled',
     [UserRole.Restricted]: 'Restricted',
-    // [UserRole.Registered]: 'Registered',
     [UserRole.Inactive]: 'Inactive',
     [UserRole.Supported]: 'Supported',
     [UserRole.Supporter]: 'Supporter',
@@ -133,6 +132,7 @@ export default {
     [GucchoError.ConflictRelation]: 'You already have a relation with this player.',
     [GucchoError.MissingServerAvatarConfig]: 'The server is not configured correctly; avatar location is missing.',
     [GucchoError.ModeNotSupported]: 'Mode not supported.',
+    [GucchoError.ModeOrRulesetNotSupported]: 'Mode or ruleset not supported.',
     [GucchoError.UpdateUserpageFailed]: 'Failed to update user page.',
     [GucchoError.MimeNotImage]: 'The provided file is not an image.',
     [GucchoError.HackerTryingToDeleteAllAvatars]: 'SOMEONE IS ATTEMPTING TO DELETE ALL AVATARS.',
@@ -147,6 +147,11 @@ export default {
     [GucchoError.ScoreNotFound]: 'Score not found.',
     [GucchoError.UnableToUpdateSession]: 'Unable to update session.',
     [GucchoError.ClanNotFound]: 'Clan not found.',
+    [GucchoError.AssertionError]: 'Assertion Error: Something unexpected happened!',
+    [GucchoError.InsufficientPrivilegeToEditArticle]: 'You can not edit this article due to insufficient privilege.',
+    [GucchoError.FileSystemArticlePathOutsideArticleRoot]: 'Prohibited Saving article outside articles path.',
+    [GucchoError.TryingToDeleteFallbackContents]: 'Trying to delete fallback contents.',
+    [GucchoError.ArticleNotFound]: 'Article not found.',
   },
   country: {
     [CountryCode.Unknown]: 'Unknown',

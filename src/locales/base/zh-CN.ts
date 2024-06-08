@@ -112,6 +112,7 @@ export default {
     [GucchoError.UnknownError]: '未知错误。',
     [GucchoError.MissingServerAvatarConfig]: '头像配置缺失。',
     [GucchoError.ModeNotSupported]: '不支持的模式。',
+    [GucchoError.ModeOrRulesetNotSupported]: '不支持的模式或玩法。',
     [GucchoError.UserNotFound]: '找不到用户。',
     [GucchoError.UserExists]: '已有此用户。',
     [GucchoError.ConflictEmail]: '邮箱已被使用。',
@@ -140,6 +141,11 @@ export default {
     [GucchoError.ScoreNotFound]: '找不到成绩。',
     [GucchoError.UnableToUpdateSession]: '无法更新会话。',
     [GucchoError.ClanNotFound]: '找不到家人。',
+    [GucchoError.AssertionError]: '断言发生错误。不应该出现此状态！',
+    [GucchoError.InsufficientPrivilegeToEditArticle]: '您没有权限修改此文章。',
+    [GucchoError.FileSystemArticlePathOutsideArticleRoot]: '保存路径在文章目录以外。',
+    [GucchoError.TryingToDeleteFallbackContents]: '正在尝试删除缺省的内容。',
+    [GucchoError.ArticleNotFound]: '找不到文章。',
   },
 
   country: {

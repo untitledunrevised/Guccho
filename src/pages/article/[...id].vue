@@ -1,28 +1,38 @@
 <script setup lang="ts">
 const route = useRoute('article-id')
+const { t } = useI18n()
 
 const id = route.params.id
 if (!id) {
-  throw new Error('id required')
+  throw new Error(t('error.no-id'))
 }
 
 const app$ = useNuxtApp()
 const content = await app$.$client.article.getStaticOrDynamic.query(id)
-const { t } = useI18n()
 </script>
 
 <i18n lang="yaml">
 en-GB:
   edit: Edit
+  error:
+    no-id: No article Id provided.
 
 zh-CN:
   edit: 编辑
+  error:
+    no-id: 没有提供文章ID。
 
 fr-FR:
   edit: Modifier
+  # TODO fr translation
+  error:
+    no-id: No article Id provided.
 
 de-DE:
   edit: Bearbeiten
+  # TODO update de translation
+  error:
+    no-id: No article Id provided.
 </i18n>
 
 <template>
