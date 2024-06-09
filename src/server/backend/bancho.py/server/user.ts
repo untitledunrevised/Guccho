@@ -13,7 +13,7 @@ import {
   userCompactFields,
 } from '../db-query'
 import type { settings } from '../dynamic-settings'
-import { BanchoPyMode, BanchoPyScoreStatus } from '../enums'
+import { BanchoPyScoreStatus } from '../enums'
 import { config } from '../env'
 import { Logger } from '../log'
 import {
@@ -45,7 +45,7 @@ import { useDrizzle, userPriv } from './source/drizzle'
 import { GucchoError } from '~/def/messages'
 import { type DynamicSettingStore, Scope, type UserCompact, type UserOptional, UserRole, type UserStatistic, UserStatus } from '~/def/user'
 import type { CountryCode } from '~/def/country-code'
-import type { ActiveMode, ActiveRuleset, LeaderboardRankingSystem } from '~/def/common'
+import type { ActiveMode, ActiveRuleset, AvailableRuleset, LeaderboardRankingSystem } from '~/def/common'
 import { Mode, Rank, Ruleset } from '~/def'
 import { UserProvider as Base, type MailTokenProvider } from '$base/server'
 import type { ExtractLocationSettings, ExtractSettingType } from '$base/@define-setting'
@@ -816,6 +816,29 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
     }
   }
 
+  async _mapModeRulesets<CB extends <M extends Mode, RS extends AvailableRuleset<M>>(mode: M, ruleset: RS) => any>(cb: CB): Promise<{
+    [M in Mode]: Record<AvailableRuleset<M>, Awaited<ReturnType<CB>>>
+  }> {
+    return {
+      [Mode.Osu]: {
+        [Ruleset.Standard]: await cb(Mode.Osu, Ruleset.Standard),
+        [Ruleset.Relax]: await cb(Mode.Osu, Ruleset.Relax),
+        [Ruleset.Autopilot]: await cb(Mode.Osu, Ruleset.Autopilot),
+      },
+      [Mode.Taiko]: {
+        [Ruleset.Standard]: await cb(Mode.Taiko, Ruleset.Standard),
+        [Ruleset.Relax]: await cb(Mode.Taiko, Ruleset.Relax),
+      },
+      [Mode.Fruits]: {
+        [Ruleset.Standard]: await cb(Mode.Fruits, Ruleset.Standard),
+        [Ruleset.Relax]: await cb(Mode.Fruits, Ruleset.Relax),
+      },
+      [Mode.Mania]: {
+        [Ruleset.Standard]: await cb(Mode.Mania, Ruleset.Standard),
+      },
+    }
+  }
+
   async _toStatistics(
     results: ({
       stat: typeof schema.stats.$inferSelect
@@ -835,62 +858,72 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
       ActiveMode,
       ActiveRuleset,
       LeaderboardRankingSystem
-    > = {
-      [Mode.Osu]: {
-        [Ruleset.Standard]: createRulesetData({
-          databaseResult: results.find(
-            i => i.stat.mode === BanchoPyMode.OsuStandard,
-          ),
-          livePPRank: livePPRank?.[Mode.Osu][Ruleset.Standard],
-        }),
-        [Ruleset.Relax]: createRulesetData({
-          databaseResult: results.find(i => i.stat.mode === BanchoPyMode.OsuRelax),
-          livePPRank: livePPRank?.[Mode.Osu][Ruleset.Relax],
-        }),
-        [Ruleset.Autopilot]: createRulesetData({
-          databaseResult: results.find(
-            i => i.stat.mode === BanchoPyMode.OsuAutopilot,
-          ),
-          livePPRank: livePPRank?.[Mode.Osu][Ruleset.Autopilot],
-        }),
-      },
-      [Mode.Taiko]: {
-        [Ruleset.Standard]: createRulesetData({
-          databaseResult: results.find(
-            i => i.stat.mode === BanchoPyMode.TaikoStandard,
-          ),
-          livePPRank: livePPRank?.[Mode.Taiko][Ruleset.Standard],
-        }),
-        [Ruleset.Relax]: createRulesetData({
-          databaseResult: results.find(
-            i => i.stat.mode === BanchoPyMode.TaikoRelax,
-          ),
-          livePPRank: livePPRank?.[Mode.Taiko][Ruleset.Relax],
-        }),
-      },
-      [Mode.Fruits]: {
-        [Ruleset.Standard]: createRulesetData({
-          databaseResult: results.find(
-            i => i.stat.mode === BanchoPyMode.FruitsStandard,
-          ),
-          livePPRank: livePPRank?.[Mode.Fruits][Ruleset.Standard],
-        }),
-        [Ruleset.Relax]: createRulesetData({
-          databaseResult: results.find(
-            i => i.stat.mode === BanchoPyMode.FruitsRelax,
-          ),
-          livePPRank: livePPRank?.[Mode.Fruits][Ruleset.Relax],
-        }),
-      },
-      [Mode.Mania]: {
-        [Ruleset.Standard]: createRulesetData({
-          databaseResult: results.find(
-            i => i.stat.mode === BanchoPyMode.ManiaStandard,
-          ),
-          livePPRank: livePPRank?.[Mode.Mania][Ruleset.Standard],
-        }),
-      },
-    }
+    > = await this._mapModeRulesets((mode, ruleset) => {
+      const bpyMode = toBanchoPyMode(mode, ruleset)
+
+      return createRulesetData({
+        databaseResult: results.find(
+          i => i.stat.mode === bpyMode,
+        ),
+        livePPRank: livePPRank?.[mode]?.[ruleset],
+      })
+    })
+    // {
+    //   [Mode.Osu]: {
+    //     [Ruleset.Standard]: createRulesetData({
+    //       databaseResult: results.find(
+    //         i => i.stat.mode === BanchoPyMode.OsuStandard,
+    //       ),
+    //       livePPRank: livePPRank?.[Mode.Osu][Ruleset.Standard],
+    //     }),
+    //     [Ruleset.Relax]: createRulesetData({
+    //       databaseResult: results.find(i => i.stat.mode === BanchoPyMode.OsuRelax),
+    //       livePPRank: livePPRank?.[Mode.Osu][Ruleset.Relax],
+    //     }),
+    //     [Ruleset.Autopilot]: createRulesetData({
+    //       databaseResult: results.find(
+    //         i => i.stat.mode === BanchoPyMode.OsuAutopilot,
+    //       ),
+    //       livePPRank: livePPRank?.[Mode.Osu][Ruleset.Autopilot],
+    //     }),
+    //   },
+    //   [Mode.Taiko]: {
+    //     [Ruleset.Standard]: createRulesetData({
+    //       databaseResult: results.find(
+    //         i => i.stat.mode === BanchoPyMode.TaikoStandard,
+    //       ),
+    //       livePPRank: livePPRank?.[Mode.Taiko][Ruleset.Standard],
+    //     }),
+    //     [Ruleset.Relax]: createRulesetData({
+    //       databaseResult: results.find(
+    //         i => i.stat.mode === BanchoPyMode.TaikoRelax,
+    //       ),
+    //       livePPRank: livePPRank?.[Mode.Taiko][Ruleset.Relax],
+    //     }),
+    //   },
+    //   [Mode.Fruits]: {
+    //     [Ruleset.Standard]: createRulesetData({
+    //       databaseResult: results.find(
+    //         i => i.stat.mode === BanchoPyMode.FruitsStandard,
+    //       ),
+    //       livePPRank: livePPRank?.[Mode.Fruits][Ruleset.Standard],
+    //     }),
+    //     [Ruleset.Relax]: createRulesetData({
+    //       databaseResult: results.find(
+    //         i => i.stat.mode === BanchoPyMode.FruitsRelax,
+    //       ),
+    //       livePPRank: livePPRank?.[Mode.Fruits][Ruleset.Relax],
+    //     }),
+    //   },
+    //   [Mode.Mania]: {
+    //     [Ruleset.Standard]: createRulesetData({
+    //       databaseResult: results.find(
+    //         i => i.stat.mode === BanchoPyMode.ManiaStandard,
+    //       ),
+    //       livePPRank: livePPRank?.[Mode.Mania][Ruleset.Standard],
+    //     }),
+    //   },
+    // }
     return statistics
   }
 
@@ -961,49 +994,33 @@ export class RedisUserProvider extends DBUserProvider {
     }
   }
 
-  async getRedisRanks({ id, flag }: { id: Id; flag: CountryCode }) {
+  async getRedisRanks({ id, flag }: { id: Id; flag: CountryCode }): Promise<{
+    [M in Mode]?: Partial<Record<AvailableRuleset<M>, { rank: number | null; countryRank: number | null }>>
+  } | undefined> {
     const country = fromCountryCode(flag)
     if (!this.redisClient) {
       return undefined
     }
-    return {
-      [Mode.Osu]: {
-        [Ruleset.Standard]: await this.getLiveRank(
-          id,
-          BanchoPyMode.OsuStandard,
-          country,
-        ),
-        [Ruleset.Relax]: await this.getLiveRank(id, BanchoPyMode.OsuRelax, country),
-        [Ruleset.Autopilot]: await this.getLiveRank(
-          id,
-          BanchoPyMode.OsuAutopilot,
-          country,
-        ),
-      },
-      [Mode.Taiko]: {
-        [Ruleset.Standard]: await this.getLiveRank(
-          id,
-          BanchoPyMode.TaikoStandard,
-          country,
-        ),
-        [Ruleset.Relax]: await this.getLiveRank(id, BanchoPyMode.TaikoRelax, country),
-      },
-      [Mode.Fruits]: {
-        [Ruleset.Standard]: await this.getLiveRank(
-          id,
-          BanchoPyMode.FruitsStandard,
-          country,
-        ),
-        [Ruleset.Relax]: await this.getLiveRank(id, BanchoPyMode.FruitsRelax, country),
-      },
-      [Mode.Mania]: {
-        [Ruleset.Standard]: await this.getLiveRank(
-          id,
-          BanchoPyMode.ManiaStandard,
-          country,
-        ),
-      },
-    }
+
+    return this._mapModeRulesets(async (mode, ruleset) => await this.getLiveRank(id, toBanchoPyMode(mode, ruleset), country))
+    // return {
+    //   [Mode.Osu]: {
+    //     [Ruleset.Standard]: await this.getLiveRank(id, BanchoPyMode.OsuStandard, country),
+    //     [Ruleset.Relax]: await this.getLiveRank(id, BanchoPyMode.OsuRelax, country),
+    //     [Ruleset.Autopilot]: await this.getLiveRank(id, BanchoPyMode.OsuAutopilot, country),
+    //   },
+    //   [Mode.Taiko]: {
+    //     [Ruleset.Standard]: await this.getLiveRank(id, BanchoPyMode.TaikoStandard, country),
+    //     [Ruleset.Relax]: await this.getLiveRank(id, BanchoPyMode.TaikoRelax, country),
+    //   },
+    //   [Mode.Fruits]: {
+    //     [Ruleset.Standard]: await this.getLiveRank(id, BanchoPyMode.FruitsStandard, country),
+    //     [Ruleset.Relax]: await this.getLiveRank(id, BanchoPyMode.FruitsRelax, country),
+    //   },
+    //   [Mode.Mania]: {
+    //     [Ruleset.Standard]: await this.getLiveRank(id, BanchoPyMode.ManiaStandard, country),
+    //   },
+    // }
   }
 
   async getStatistics(opt: { id: Id; flag: CountryCode }) {
