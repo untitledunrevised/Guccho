@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { unlink, writeFile } from 'node:fs/promises'
 import { isAbsolute, join, resolve, sep } from 'node:path'
-import { aliasedTable, and, desc, eq, inArray, like, or, sql } from 'drizzle-orm'
+import { aliasedTable, and, desc, eq, gt, inArray, like, or, sql } from 'drizzle-orm'
 import imageType from 'image-type'
 import { glob } from 'glob'
 import { TRPCError } from '@trpc/server'
@@ -325,6 +325,7 @@ class DBUserProvider extends Base<Id, ScoreId> implements Base<Id, ScoreId> {
       .where(and(
         userPriv(u2),
         eq(s2.mode, toBanchoPyMode(mode, ruleset)),
+        gt(s2.status, BanchoPyScoreStatus.DNF),
       ))
       .groupBy(s2.mapMd5)
       .as('sq')
