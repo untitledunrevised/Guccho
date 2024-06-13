@@ -1,2 +1,3 @@
 User-agent: *
-Disallow: /replay/*
+Disallow: /replay/*/download
+Disallow: /auth/login?*
