@@ -95,12 +95,13 @@ de-DE:
             && beatmap.beatmapset.source === BeatmapSource.Bancho"
         >
           <source v-if="beatmap.beatmapset.assets['list@2x']" :srcset="`${beatmap.beatmapset.assets.list} 1x, ${beatmap.beatmapset.assets['list@2x']} 2x`">
-          <img
+          <nuxt-img
+            loading="lazy"
             :src="beatmap.beatmapset.assets.list"
             :alt="autoLocale(beatmap.beatmapset.meta).title"
             :onerror="placeholder"
             class="object-cover w-20 h-16 shadow-md rounded-xl"
-          >
+          />
         </picture>
         <icon v-else class="w-20 h-16" name="clarity:unknown-status-line" size="100%" />
       </div>
