@@ -98,16 +98,5 @@ de-DE:
 }
 .heading {
   @apply relative flex items-center justify-between px-4 lg:px-0 mx-auto my-auto text-left text-gbase-900 dark:text-gbase-100;
-  /* &::before,
-  &::after {
-    content: "";
-    @apply -z-10 opacity-50;
-    @apply lg:absolute lg:top-[30%] lg:bottom-[30%] lg:left-0 lg:right-0;
-    @apply lg:bg-gradient-to-r lg:from-gbase-500/5 lg:to-transparent;
-    @apply lg:rounded-3xl;
-  }
-  &::before {
-    @apply lg:blur
-  } */
 }
 </style>
