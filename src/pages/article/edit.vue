@@ -5,7 +5,7 @@ import { ContentEditor } from '#components'
 import type { ArticleProvider } from '$base/server'
 
 definePageMeta({
-  middleware: ['auth', 'admin'],
+  middleware: ['auth', 'staff'],
 })
 const app = useNuxtApp()
 const { t } = useI18n()

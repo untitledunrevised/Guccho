@@ -4,12 +4,13 @@ import { encryptBanchoPassword } from '../crypto'
 import * as schema from '../drizzle/schema'
 import { config } from '../env'
 import { Logger } from '../log'
-import { type DatabaseUserCompactFields, type DatabaseUserOptionalFields, fromCountryCode, toBanchoPyPriv, toSafeName, toUserCompact, toUserOptional } from '../transforms'
+import { type DatabaseUserCompactFields, type DatabaseUserOptionalFields, fromCountryCode, toBanchoPyPriv, toRoles, toSafeName, toUserCompact, toUserOptional } from '../transforms'
 import { BanchoPyPrivilege } from '../enums'
 import { useDrizzle } from './source/drizzle'
 import { GucchoError } from '~/def/messages'
 import { type UserClan, type UserCompact, type UserOptional, UserRole, type UserSecrets } from '~/def/user'
 import { AdminProvider as Base } from '$base/server'
+import { type ComputedUserRole } from '~/utils/common'
 
 const logger = Logger.child({ label: 'user' })
 
@@ -20,10 +21,13 @@ export class AdminProvider extends Base<Id> implements Base<Id> {
   config = config()
   drizzle = drizzle
   logger = logger
-  async userList(query: Partial<UserCompact<Id> & Pick<UserOptional, 'email' | 'status'>> & Partial<UserSecrets> & {
-    page: number
-    perPage: number
-  }) {
+  async userList(
+    query: Partial<UserCompact<Id> & Pick<UserOptional, 'email' | 'status'>> &
+    Partial<UserSecrets> & {
+      page: number
+      perPage: number
+    }
+  ) {
     const rolesPriv = toBanchoPyPriv(query.roles || [], 0)
 
     const cond = [
@@ -36,51 +40,72 @@ export class AdminProvider extends Base<Id> implements Base<Id> {
       query.roles?.includes(UserRole.Restricted) ? sql`${schema.users.priv} & 1 = 0` : undefined,
     ]
 
-    const baseQuery = this.drizzle.select({
-      user: pick(schema.users, ['id', 'name', 'safeName', 'priv', 'country', 'email', 'preferredMode', 'lastActivity', 'creationTime'] satisfies Array<DatabaseUserCompactFields | DatabaseUserOptionalFields | DatabaseAdminUserFields>),
-      clan: pick(schema.clans, ['id', 'name', 'badge']),
-    }).from(schema.users)
+    const baseQuery = this.drizzle
+      .select({
+        user: pick(schema.users, [
+          'id',
+          'name',
+          'safeName',
+          'priv',
+          'country',
+          'email',
+          'preferredMode',
+          'lastActivity',
+          'creationTime',
+        ] satisfies Array<
+          | DatabaseUserCompactFields
+          | DatabaseUserOptionalFields
+          | DatabaseAdminUserFields
+        >),
+        clan: pick(schema.clans, ['id', 'name', 'badge']),
+      })
+      .from(schema.users)
       .leftJoin(schema.clans, eq(schema.clans.id, schema.users.clanId))
-      .where(
-        and(
-          ...cond
-        )
-      )
+      .where(and(...cond))
       .orderBy(desc(schema.users.lastActivity))
       .offset(query.page * query.perPage)
       .limit(query.perPage)
 
-    const uCompacts = baseQuery.then(res => res.map(({ user, clan }) => ({
-      ...toUserCompact(user, this.config),
-      ...toUserOptional(user),
-      lastActivityAt: new Date(user.lastActivity * 1000),
-      registeredAt: new Date(user.creationTime * 1000),
-      clan: clan
-        ? {
-          id: clan.id,
-          name: clan.name,
-          badge: clan.badge,
-        } satisfies UserClan<Id>
-        : undefined,
-    }))) satisfies Promise<Array<UserCompact<Id> & Pick<UserOptional, 'email' | 'status'> & {
-      registeredAt: Date
-      lastActivityAt: Date
-      clan?: UserClan<Id>
-    }>>
+    const uCompacts = baseQuery.then(res =>
+      res.map(({ user, clan }) => ({
+        ...toUserCompact(user, this.config),
+        ...toUserOptional(user),
+        lastActivityAt: new Date(user.lastActivity * 1000),
+        registeredAt: new Date(user.creationTime * 1000),
+        clan: clan
+          ? ({
+              id: clan.id,
+              name: clan.name,
+              badge: clan.badge,
+            } satisfies UserClan<Id>)
+          : undefined,
+      }))
+    ) satisfies Promise<
+      Array<
+        UserCompact<Id> &
+        Pick<UserOptional, 'email' | 'status'> & {
+          registeredAt: Date
+          lastActivityAt: Date
+          clan?: UserClan<Id>
+        }
+      >
+    >
 
     return Promise.all([
 
-      this.drizzle.select({
-        count: sql`count(*)`.mapWith(Number),
-      }).from(schema.users)
+      this.drizzle
+        .select({
+          count: sql`count(*)`.mapWith(Number),
+        })
+        .from(schema.users)
         .leftJoin(schema.clans, eq(schema.clans.id, schema.users.clanId))
         .where(
           and(...cond)
-        ).execute()
+        )
+        .execute()
         .then(res => res[0].count),
 
       uCompacts,
-
     ] as const)
   }
 
@@ -95,33 +120,77 @@ export class AdminProvider extends Base<Id> implements Base<Id> {
     }
   }
 
-  async updateUserDetail(query: { id: Id }, updateFields: Partial<UserCompact<Id> & UserOptional & UserSecrets>): Promise<UserCompact<Id> & UserOptional> {
-    const { priv } = await this.drizzle.query.users.findFirst({
-      where: eq(schema.users.id, query.id),
-      columns: {
-        priv: true,
-      },
-    }) ?? throwGucchoError(GucchoError.UserNotFound)
+  /**
+   * This function merges the current roles with the roles to be updated.
+   * It filters out the roles that cannot be edited by the current user,
+   * and then appends the roles that can be edited.
+   *
+   */
+  mergeUpdateRoles(
+    updater: { role: ComputedUserRole },
+    currentRoles: UserRole[],
+    updateRoles: UserRole[]
+  ) {
+    return currentRoles
+      // Filter out the roles that cannot be edited by the current user.
+      // The current user can only edit roles that are not editable by themselves.
+      .filter(r =>
+        !isRoleEditable(updater.role, r)
+      )
+      // Filter out the roles that can be edited by the current user.
+      // The current user can edit roles that are editable by themselves.
+      .concat(
+        updateRoles.filter(r =>
+          isRoleEditable(updater.role, r)
+        )
+      )
+  }
+
+  async updateUserDetail(
+    updater: { role: ComputedUserRole },
+    query: { id: Id },
+    updateFields: Partial<UserCompact<Id> & UserOptional & UserSecrets>
+  ): Promise<UserCompact<Id> & UserOptional> {
+    const { priv }
+      = (await this.drizzle.query.users.findFirst({
+        where: eq(schema.users.id, query.id),
+        columns: {
+          priv: true,
+        },
+      })) ?? throwGucchoError(GucchoError.UserNotFound)
+
+    const currentRoles = toRoles(priv)
 
     const basePriv = updateFields.roles?.includes(UserRole.Restricted)
       ? BanchoPyPrivilege.Any | (priv & BanchoPyPrivilege.Verified)
       : BanchoPyPrivilege.Registered | (priv & BanchoPyPrivilege.Verified)
 
-    await this.drizzle.update(schema.users)
+    await this.drizzle
+      .update(schema.users)
       .set({
         id: updateFields.id,
         name: updateFields.name,
         safeName: updateFields.name ? toSafeName(updateFields.name) : undefined,
-        pwBcrypt: updateFields.password ? await encryptBanchoPassword(updateFields.password) : undefined,
+        pwBcrypt: updateFields.password
+          ? await encryptBanchoPassword(updateFields.password)
+          : undefined,
         email: updateFields.email,
-        country: updateFields.flag ? fromCountryCode(updateFields.flag) : undefined,
-        priv: updateFields.roles ? toBanchoPyPriv(updateFields.roles, basePriv) : undefined,
+        country: updateFields.flag
+          ? fromCountryCode(updateFields.flag)
+          : undefined,
+        priv: updateFields.roles
+          ? toBanchoPyPriv(
+            this.mergeUpdateRoles(updater, currentRoles, updateFields.roles),
+            basePriv
+          )
+          : undefined,
       })
       .where(eq(schema.users.id, query.id))
 
-    const user = await this.drizzle.query.users.findFirst({
-      where: eq(schema.users.id, updateFields.id ?? query.id),
-    }) ?? raise(Error, 'cannot find updated user. Did you changed user id?')
+    const user
+      = (await this.drizzle.query.users.findFirst({
+        where: eq(schema.users.id, updateFields.id ?? query.id),
+      })) ?? raise(Error, 'cannot find updated user. Did you changed user id?')
 
     return {
       ...toUserCompact(user, this.config),

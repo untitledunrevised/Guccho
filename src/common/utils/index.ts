@@ -8,6 +8,7 @@ export * as localeKey from './locales'
 export * from './locale-path'
 export * from './map'
 export * from './roles'
+export * from './admin'
 
 export function noop<T extends undefined | void = void>(): T
 export function noop(): void {}

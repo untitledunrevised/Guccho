@@ -2,44 +2,47 @@ import { array, nativeEnum, number, object, string, tuple } from 'zod'
 import { zodHandle } from '../../shapes'
 import { router as log } from './log'
 import { UserProvider, admin } from '~/server/singleton/service'
-import { adminProcedure as pAdmin } from '~/server/trpc/middleware/admin'
+import { staffProcedure } from '~/server/trpc/middleware/role'
 import { router as _router } from '~/server/trpc/trpc'
 import { UserRole } from '~/def/user'
 import { CountryCode } from '~/def/country-code'
 
-export const router = _router({
-  log,
-  serverStatus: pAdmin.query(() => {
-    return {
-      t: 1,
-    }
-  }),
-  userManagement: _router({
-    search: pAdmin.input(object({
-      id: string().trim(),
-      name: string().trim(),
-      safeName: string().trim(),
-      email: string().email(),
-      flag: nativeEnum(CountryCode),
-      registeredFrom: string().datetime(),
-      registeredTo: string().datetime(),
-      latestActivityFrom: string().datetime(),
-      latestActivityTo: string().datetime(),
-      roles: array(nativeEnum(UserRole)),
-    }).partial().and(object({
+const searchParam = object({
+  id: string().trim(),
+  name: string().trim(),
+  safeName: string().trim(),
+  email: string().email(),
+  flag: nativeEnum(CountryCode),
+  registeredFrom: string().datetime(),
+  registeredTo: string().datetime(),
+  latestActivityFrom: string().datetime(),
+  latestActivityTo: string().datetime(),
+  roles: array(nativeEnum(UserRole)),
+})
+  .partial()
+  .and(
+    object({
       perPage: number().default(10),
       page: number().default(0),
-    }))).query(({ input }) => {
-      return admin.userList({
-        ...input,
-        flag: input.flag === CountryCode.Unknown ? undefined : input.flag,
-        id: input.id ? UserProvider.stringToId(input.id) : undefined,
-      })
-    }),
-    detail: pAdmin.input(string()).query(({ input }) => {
+    })
+  )
+
+export const router = _router({
+  log,
+  userManagement: _router({
+    search: staffProcedure
+      .input(searchParam)
+      .query(({ input }) => {
+        return admin.userList({
+          ...input,
+          flag: input.flag === CountryCode.Unknown ? undefined : input.flag,
+          id: input.id ? UserProvider.stringToId(input.id) : undefined,
+        })
+      }),
+    detail: staffProcedure.input(string()).query(({ input }) => {
       return admin.userDetail({ id: UserProvider.stringToId(input) }).then(detail => mapId(detail, UserProvider.idToString))
     }),
-    saveDetail: pAdmin
+    saveDetail: staffProcedure
       .input(
         tuple([
           string(),
@@ -55,16 +58,23 @@ export const router = _router({
           }).partial(),
         ])
       )
-      .mutation(async ({ input }) => {
-        const [id, newVal] = input
+      .mutation(async ({ input, ctx }) => {
+        let [id, newVal] = input
+        // staff can only change some fields
+        if (!ctx.user.role.admin) {
+          const keys = Object.keys(newVal).filter(i => isUserFieldEditable(i as keyof typeof newVal, ctx.user.role)) as Array<keyof typeof newVal>
+          newVal = pick(newVal, keys)
+        }
         const res = await admin.updateUserDetail(
+          ctx.user,
           {
             id: UserProvider.stringToId(id),
           },
           {
             ...newVal,
             id: newVal.id ? UserProvider.stringToId(newVal.id) : undefined,
-          })
+          },
+        )
 
         return mapId(res, UserProvider.idToString)
       }),

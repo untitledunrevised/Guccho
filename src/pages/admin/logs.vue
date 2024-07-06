@@ -1,4 +1,8 @@
 <script setup lang="ts" async>
+definePageMeta({
+  middleware: 'admin',
+})
+
 const app = useNuxtApp()
 const last = ref(50)
 const { data: logs } = await app.$client.admin.log.last.useQuery(last)

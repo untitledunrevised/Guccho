@@ -51,8 +51,8 @@ export enum UserRole {
   // users that have privileges
   TournamentStaff = 'tournamentStaff',
   ChannelModerator = 'channelModerator',
-  Moderator = 'moderator',
   BeatmapNominator = 'beatmapNominator',
+  Moderator = 'moderator',
   Staff = 'staff',
   Admin = 'admin',
 

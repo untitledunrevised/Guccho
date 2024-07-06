@@ -1,6 +1,6 @@
 import { any, array, boolean, object, record, string, union } from 'zod'
 import { router as _router } from '../trpc'
-import { adminProcedure } from '../middleware/admin'
+import { staffProcedure } from '../middleware/role'
 import { optionalUserProcedure } from '../middleware/optional-user'
 import { userProcedure } from '../middleware/user'
 import { type ArticleProvider as BaseArticleProvider } from '$base/server/article'
@@ -73,7 +73,7 @@ export const router = _router({
           }
     }),
 
-  save: adminProcedure
+  save: staffProcedure
     .input(object({
       slug: string().trim(),
       json: record(any(), any()).refine((arg): arg is BaseArticleProvider.JSONContent => {
@@ -87,13 +87,13 @@ export const router = _router({
     }))
     .mutation(({ input, ctx }) => articles.save(Object.assign(input, { user: ctx.user }))),
 
-  delete: adminProcedure
+  delete: staffProcedure
     .input(object({
       slug: string().trim(),
     }))
     .mutation(({ input, ctx }) => articles.delete(Object.assign(input, { user: ctx.user }))),
 
-  localSlugs: adminProcedure
+  localSlugs: staffProcedure
     .input(string().trim().optional())
     .query(({ input }) => ArticleProvider.getLocalSlugs(input)),
 })

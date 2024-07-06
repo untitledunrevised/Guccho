@@ -1,6 +1,6 @@
 import { number } from 'zod'
 import { logs } from '~/server/singleton/service'
-import { adminProcedure as pAdmin } from '~/server/trpc/middleware/admin'
+import { staffProcedure as pAdmin } from '~/server/trpc/middleware/role'
 import { router as _router } from '~/server/trpc/trpc'
 
 export const router = _router({

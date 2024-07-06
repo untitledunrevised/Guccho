@@ -6,14 +6,12 @@ const session = useSession()
 const app = useNuxtApp()
 const { t } = useI18n()
 
-const showAdminStatus = session.role.staff
-
-const serverConfig = showAdminStatus
+const serverConfig = session.role.owner
   ? await app.$client.status.config.query()
   : undefined
 
 const { data: adminData, refresh: refreshAdmin } = await useAsyncData(async () =>
-  showAdminStatus
+  session.role.admin
     ? { metrics: await app.$client.status.metrics.query() }
     : {},
 )
@@ -27,7 +25,7 @@ onBeforeMount(() => {
   onBeforeUnmount(() => clearInterval(publicInterval))
 })
 
-if (showAdminStatus) {
+if (session.role.admin) {
   let adminInterval: ReturnType<typeof setInterval>
   onBeforeMount(() => {
     clearInterval(adminInterval)
@@ -221,42 +219,44 @@ de-DE:
           {{ t('free') }}
         </div>
       </div>
-      <h1 class="my-1 text-xl drop-shadow-lg">
-        {{ t('app-config') }}
-      </h1>
-      <JsonViewer
-        :value="$config"
-        :expand-depth="999"
-        theme="light"
-        copyable
-        boxed
-        class="rounded-xl"
-      />
-      <h1 class="my-1 text-xl drop-shadow-lg">
-        {{ t('npm-env') }}
-      </h1>
-      <JsonViewer
-        :value="serverConfig?.npm"
-        :expand-depth="999"
-        theme="light"
-        copyable
-        boxed
-        class="rounded-xl"
-      />
-      <h1 class="my-1 text-xl drop-shadow-lg">
-        {{ t('env') }}
-      </h1>
-      <JsonViewer
-        :value="{
-          ...serverConfig,
-          npm: '...',
-        }"
-        :expand-depth="999"
-        theme="light"
-        copyable
-        boxed
-        class="rounded-xl"
-      />
+      <template v-if="session.role.owner">
+        <h1 class="my-1 text-xl drop-shadow-lg">
+          {{ t('app-config') }}
+        </h1>
+        <JsonViewer
+          :value="$config"
+          :expand-depth="999"
+          theme="light"
+          copyable
+          boxed
+          class="rounded-xl"
+        />
+        <h1 class="my-1 text-xl drop-shadow-lg">
+          {{ t('npm-env') }}
+        </h1>
+        <JsonViewer
+          :value="serverConfig?.npm"
+          :expand-depth="999"
+          theme="light"
+          copyable
+          boxed
+          class="rounded-xl"
+        />
+        <h1 class="my-1 text-xl drop-shadow-lg">
+          {{ t('env') }}
+        </h1>
+        <JsonViewer
+          :value="{
+            ...serverConfig,
+            npm: '...',
+          }"
+          :expand-depth="999"
+          theme="light"
+          copyable
+          boxed
+          class="rounded-xl"
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -269,4 +269,3 @@ de-DE:
   }
 }
 </style>
-$base/server/@traits
