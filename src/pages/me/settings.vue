@@ -75,7 +75,6 @@ useHead({
 
 const {
   data: user,
-  refresh: refreshSettings,
 } = await useAsyncData(() => app$.$client.me.settings.query())
 
 const {
@@ -158,8 +157,10 @@ async function saveAvatar() {
   uploadingAvatarState.value = UploadingAvatarState.Succeed
   newAvatarURL.value = url
   session.setAvatarTimestamp()
-  await refreshSettings()
-  editor.value?.reload()
+  user.value && (user.value.avatarSrc = url)
+  // do not refresh settings, user might have changed their other settings without saving.
+  // await refreshSettings()
+  // editor.value?.reload()
 }
 async function updateUserSettings() {
   dyn.save()
