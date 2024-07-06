@@ -34,7 +34,8 @@ type LiveUserStatus =
     json: () => Promise<
       | {
         status: 'success'
-        player_status: {
+        player_status:
+        | {
           online: true
           login_time: number
           status: {
@@ -42,12 +43,10 @@ type LiveUserStatus =
             info_text: string // player.status.info_text,
             mode: BanchoPyMode // int(player.status.mode),
             mods: number // int(player.status.mods),
+            beatmap?: null
           }
         }
-      }
-      | {
-        status: 'success'
-        player_status: {
+        | {
           online: true
           login_time: number
           status: {
@@ -58,14 +57,12 @@ type LiveUserStatus =
             beatmap: GulagStatusBeatmap
           }
         }
-      }
-      | {
-        status: 'success'
-        player_status: {
+        | {
           online: false
           last_seen: number
         }
-      }>
+      }
+     >
   }
   | {
     ok: false
@@ -123,7 +120,7 @@ export async function getLiveUserStatus({ id }: { id: number }, config: { api: {
     ruleset,
     beatmap: undefined,
   } as const
-  if (!('beatmap' in s.status)) {
+  if (!s.status.beatmap) {
     return base
   }
   const bm = s.status.beatmap
