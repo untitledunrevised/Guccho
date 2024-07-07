@@ -146,7 +146,7 @@ de-DE:
   <div v-else-if="page.user" ref="handle" class="flex flex-col justify-stretch">
     <div v-if="page.user.roles.includes(UserRole.Restricted)" class="container mx-auto custom-container">
       <div role="alert" class="alert alert-error">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 stroke-current shrink-0" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         <span v-if="page.user.id === session.user?.id">{{ t('self-banned', { server: t('server.name') }) }}</span>
         <span v-else>{{ t('banned') }}</span>
       </div>
@@ -156,23 +156,23 @@ de-DE:
     <userpage-profile />
 
     <template v-if="page.currentStatistic?.level === 0">
-      <div class="container custom-container py-20 mx-auto">
-        <h1 class="text-center text-3xl text-gbase-400 dark:text-gbase-600">
+      <div class="container py-20 mx-auto custom-container">
+        <h1 class="text-3xl text-center text-gbase-400 dark:text-gbase-600">
           {{ t('mode-no-data') }}
         </h1>
       </div>
     </template>
     <template v-else>
       <userpage-ranking-system-switcher class="z-10" />
-      <div class="container mx-auto custom-container">
+      <div class="container max-w-screen-lg mx-auto">
         <userpage-statistics id="statistics" ref="statistics" />
         <userpage-score-rank-composition />
       </div>
       <template v-if="page.currentRankingSystem">
-        <div id="bestScores" ref="bestScores" class="container py-2 mx-auto custom-container">
+        <div id="bestScores" ref="bestScores" class="container max-w-screen-lg py-2 mx-auto">
           <userpage-best-scores />
         </div>
-        <div id="topScores" ref="topScores" class="container py-4 mx-auto custom-container">
+        <div id="topScores" ref="topScores" class="container max-w-screen-lg py-4 mx-auto">
           <userpage-top-scores />
         </div>
       </template>
@@ -205,6 +205,7 @@ de-DE:
 <style lang="postcss" scoped>
 .up-nav-item {
   justify-content: center;
+  @apply z-40;
 }
 
 .up-nav-item>* {

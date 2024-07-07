@@ -86,29 +86,30 @@ de-DE:
 </i18n>
 
 <template>
-  <div class="flex justify-between mx-1 lg:mx-0">
-    <div class="flex min-w-0 gap-4">
-      <div class="hidden md:block">
-        <picture
-          v-if="beatmap
-            && beatmapIsVisible(beatmap)
-            && beatmap.beatmapset.source === BeatmapSource.Bancho"
-        >
-          <source v-if="beatmap.beatmapset.assets['list@2x']" :srcset="`${beatmap.beatmapset.assets.list} 1x, ${beatmap.beatmapset.assets['list@2x']} 2x`">
-          <nuxt-img
-            loading="lazy"
-            :src="beatmap.beatmapset.assets.list"
-            :alt="autoLocale(beatmap.beatmapset.meta).title"
-            :onerror="placeholder"
-            class="object-cover w-20 h-16 shadow-md rounded-xl"
-          />
-        </picture>
-        <icon v-else class="w-20 h-16" name="clarity:unknown-status-line" size="100%" />
-      </div>
-      <div class="flex flex-col min-w-0">
+  <div class="flex gap-2 px-1 lg:mx-0">
+    <div class="h-20 w-14 shrink-0 md:w-24 transition-[width]">
+      <picture
+        v-if="beatmap
+          && beatmapIsVisible(beatmap)
+          && beatmap.beatmapset.source === BeatmapSource.Bancho"
+      >
+        <source v-if="beatmap.beatmapset.assets['list@2x']" :srcset="`${beatmap.beatmapset.assets.list} 1x, ${beatmap.beatmapset.assets['list@2x']} 2x`">
+        <nuxt-img
+          loading="lazy"
+          :src="beatmap.beatmapset.assets.list"
+          :alt="autoLocale(beatmap.beatmapset.meta).title"
+          :onerror="placeholder"
+          class="object-cover w-full h-full shadow-md rounded-xl"
+        />
+      </picture>
+      <icon v-else class="w-full h-full" name="clarity:unknown-status-line" size="100%" />
+    </div>
+
+    <div class="truncate shrink grow leading-[1]">
+      <template
+        v-if="beatmap && beatmapIsVisible(beatmap)"
+      >
         <router-link
-          v-if="beatmap && beatmapIsVisible(beatmap)"
-          class="truncate"
           :to="{
             name: 'beatmapset-id',
             params: {
@@ -126,83 +127,78 @@ de-DE:
             },
           }"
         >
-          <icon
-            v-if="rankingStatusIconMapping[beatmap.status]"
-            size="100%"
-            class="w-5 h-5 md:w-6 md:h-6"
-            :name="rankingStatusIconMapping[beatmap.status]!"
-            :aria-label="beatmap.status"
-          />
-          <span v-if="meta" class="text-sm font-bold truncate md:text-md xl:text-lg">
-            {{ meta.artist }} - {{ meta.title }}
-          </span>
-          <div class="absolute flex flex-wrap gap-2 text-xs md:text-sm lg:text-md">
-            <span v-if="beatmap" class="font-semibold">
+          <template v-if="meta">
+            <span class="text-xs font-semibold md:text-sm transition-[font-size]">{{ meta.artist }}</span><br>
+            <span class="text-sm font-bold md:text-lg transition-[font-size]">{{ meta.title }}</span>
+          </template>
+          <div class="leading-snug md:leading-tight">
+            <icon
+              v-if="rankingStatusIconMapping[beatmap.status]"
+              size="100%"
+              class="w-5 h-auto"
+              :name="rankingStatusIconMapping[beatmap.status]!"
+              :aria-label="beatmap.status"
+            />
+            <span v-if="beatmap" class="text-xs !leading-none font-semibold md:text-sm lg:text-md transition-[font-size]">
               {{ beatmap.version }}
             </span>
-            <span v-if="score.mods.length" class="flex justify-end gap-1 tooltip tooltip-primary lg:tooltip-right" :data-tip="score.mods.map(m => StableMod[m]).join(', ')">
-              <app-mod v-for="mod in score.mods" :key="mod" :mod="mod" class="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
-            </span>
-          </div>
-          <div class="text-xs md:text-sm lg:text-md opacity-0 pointer-events-none">
-            IM HERE TO TAKE HEIGHT
           </div>
         </router-link>
-        <div v-else>
-          {{ t('unknown-beatmap') }}
-        </div>
-        <div class="mt-auto map-date">
-          <time class="text-xs italic lg:text-sm font-extralight">
-            {{ score.playedAt.toLocaleString(locale, { dateStyle: 'long', timeStyle: 'full' }) }}
-          </time>
-        </div>
+      </template>
+      <div v-else>
+        {{ t('unknown-beatmap') }}
       </div>
+      <time class="text-xs italic lg:text-sm font-extralight transition-[font-size]">
+        {{ score.playedAt.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'medium' }) }}
+      </time>
     </div>
-    <div class="relative flex">
-      <div class="flex flex-col">
-        <div class="flex items-center justify-end flex-grow text-lg sm:text-xl lg:text-2xl">
-          <template v-if="(ppRankingSystems).includes(props.rankingSystem as LeaderboardPPRankingSystem)">
-            <div class="font-mono font-bold">
-              {{ score.pp.toFixed(2) }}
-            </div>
-            <span class="font-light">{{ $t('global.pp') }}</span>
-          </template>
-          <template v-else-if="(leaderboardScoreRankingSystems).includes(props.rankingSystem as LeaderboardScoreRankingSystem)">
-            <div class="font-mono font-bold">
-              {{ numberFmt(score.score) }}
-            </div>
-          </template>
-        </div>
-        <div class="justify-end mt-auto text-sm md:text-md lg:text-md whitespace-nowrap">
-          <div class="text-right">
-            <template v-if="beatmap">
-              <span class="font-semibold align-middle">
-                {{ score.maxCombo }}
-              </span>
-              <span class="font-light align-middle">
-                /
-              </span>
-              <span class="align-middle">
-                {{ beatmap.properties.maxCombo }}
-              </span>
-            </template>
-            <span v-else class="align-middle">
-              {{ score.maxCombo }}
-            </span>
-            <span class="font-light align-middle">
-              x
-            </span>
+    <span v-if="score.mods.length" class="hidden p-1 mt-auto space-x-4 rounded-lg lg:block bg-neutral/40 tooltip tooltip-primary" :data-tip="score.mods.map(m => StableMod[m]).join(', ')">
+      <app-mod v-for="mod in score.mods" :key="mod" :mod="mod" class="w-8 h-8 opacity-80" />
+    </span>
+    <div class="flex flex-col justify-between">
+      <div class="flex justify-end text-lg lg:text-2xl transition-[font-size]">
+        <template v-if="(ppRankingSystems).includes(props.rankingSystem as LeaderboardPPRankingSystem)">
+          <div class="font-mono font-bold">
+            {{ score.pp.toFixed(2) }}
           </div>
-
-          <span class="text-right">
-            <span><b class="font-mono">{{ score.accuracy.toFixed(2) }}</b></span>
-            <span class="text-light">% {{ $t('global.acc') }}</span>
+          <span class="font-light">{{ $t('global.pp') }}</span>
+        </template>
+        <template v-else-if="(leaderboardScoreRankingSystems).includes(props.rankingSystem as LeaderboardScoreRankingSystem)">
+          <div class="font-mono font-bold">
+            {{ numberFmt(score.score) }}
+          </div>
+        </template>
+      </div>
+      <div class="text-xs sm:text-sm lg:text-base text-end text-nowrap transition-[font-size]">
+        <template v-if="beatmap">
+          <span class="font-semibold align-middle">
+            {{ score.maxCombo }}
           </span>
-        </div>
+          <span class="font-light align-middle">
+            /
+          </span>
+          <span class="align-middle">
+            {{ beatmap.properties.maxCombo }}
+          </span>
+        </template>
+        <span v-else class="align-middle">
+          {{ score.maxCombo }}
+        </span>
+        <span class="font-light align-middle">
+          x
+        </span>
       </div>
-      <div class="font-mono text-4xl text-center md:text-5xl w-14 md:w-20">
-        {{ score.grade }}
+
+      <div class="text-xs sm:text-sm lg:text-base text-end text-nowrap transition-[font-size]">
+        <span><b class="font-mono">{{ score.accuracy.toFixed(2) }}</b></span>
+        <span class="text-light">% {{ $t('global.acc') }}</span>
       </div>
+      <span v-if="score.mods.length" class="block px-2 mt-auto space-x-1 rounded-lg lg:hidden bg-neutral/40 tooltip tooltip-primary" :data-tip="score.mods.map(m => StableMod[m]).join(', ')">
+        <app-mod v-for="mod in score.mods" :key="mod" :mod="mod" class="w-5 h-5" />
+      </span>
+    </div>
+    <div class="self-center font-mono text-4xl text-center md:text-5xl w-14 md:w-20 transition-[font-size]">
+      {{ score.grade }}
     </div>
   </div>
 </template>

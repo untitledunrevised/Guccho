@@ -155,7 +155,6 @@ de-DE:
     <!-- info -->
     <div class="flex flex-col w-full p-2 lg:p-0 md:p-0 bg-gbase-200 dark:bg-gbase-700 md:bg-transparent dark:md:bg-transparent md:grow">
       <div
-        v-if="session.$state.userId !== page.user.id"
         class="container flex items-center justify-center order-3 gap-3 pb-2 mx-auto lg:justify-between md:order-1 md:justify-end md:pb-0"
       >
         <p class="flex flex-wrap gap-1">
@@ -169,6 +168,7 @@ de-DE:
           </span>
         </p>
         <t-button
+          v-if="session.$state.userId !== page.user.id"
           ref="changeFriendStateButton" class="gap-1 btn-shadow" size="sm"
           :variant="isMutualFriend ? 'primary' : isFriend ? 'secondary' : 'gbase'" @click="toggleFriend"
         >
@@ -189,24 +189,8 @@ de-DE:
           />
           <span v-else>{{ friendButtonContent }}</span>
         </t-button>
-        <!-- <t-button class="btn-shadow"
-          v-if="session.$state.loggedIn"
-          size="sm"
-          variant="secondary"
-          class="gap-1"
-        >
-          icon[name=ph:chat-circle-dots-fill]
-          <span>send message</span>
-        </t-button> -->
-      </div>
-      <div v-else class="container flex justify-around order-3 gap-3 pb-4 mx-auto md:order-1 md:justify-end md:pb-0">
-        <!-- <t-button class="btn-shadow"
-          size="sm"
-          variant="primary"
-        >
-          add as friend
-        </t-button> -->
         <t-nuxt-link-button
+          v-else
           class="btn-shadow" size="sm" variant="accent" :to="{
             name: 'me-settings',
           }"
@@ -214,6 +198,7 @@ de-DE:
           {{ t('edit') }}
         </t-nuxt-link-button>
       </div>
+
       <div
         class="container flex flex-col flex-wrap gap-4 mx-auto lg:flex-row lg:gap-0 sm:order-2 md:items-end md:justify-between md:pb-2"
       >
