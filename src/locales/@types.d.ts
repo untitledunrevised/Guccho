@@ -1,4 +1,4 @@
-import type { VueMessageType } from '@nuxtjs/i18n/dist/runtime/composables'
+import type { LocaleMessageValue, VueMessageType } from '@nuxtjs/i18n/dist/runtime/composables'
 import type { DeepPartial } from '@trpc/server'
 import type { CountryCode } from '~/def/country-code'
 import type { GucchoError } from '~/def/messages'
@@ -80,7 +80,7 @@ export interface GlobalI18n extends PathAccessibleObject {
   }>
 }
 
-interface T { [x: string]: localeMessages<VueMessageType> }
+interface T { [x: string]: LocaleMessages<VueMessageValue> }
 export interface AllLocales extends T {
   [lang in Lang]: lang extends Lang.enGB ? GlobalI18n : DeepPartial<GlobalI18n>
 }
