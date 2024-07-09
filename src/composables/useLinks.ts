@@ -20,8 +20,8 @@ export function useExternalBeatmapsetLinks(beatmapset: AnyBeatmapset) {
 
     returnValue.directDownload.push(
       {
-        label: 'Chimu.moe',
-        link: `https://api.chimu.moe/v1/download/${beatmapset.foreignId}`,
+        label: 'catboy.best',
+        link: `https://catboy.best/d/${beatmapset.foreignId}`,
       },
       {
         label: 'osu.direct (previously known as Kitsu.moe)',
