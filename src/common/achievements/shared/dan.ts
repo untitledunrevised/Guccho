@@ -13,6 +13,34 @@ export const _4kDanCommon = $remark(
         StableMod.NoFail
         | StableMod.Easy
         | StableMod.HalfTime
+        | StableMod.Random
+        | StableMod['1K']
+        | StableMod['2K']
+        | StableMod['3K']
+        | StableMod['5K']
+        | StableMod['6K']
+        | StableMod['7K']
+        | StableMod['8K']
+        | StableMod['9K']
+      ),
+    ),
+  ),
+)
+
+export const _4kUjLnDanCommon = $remark(
+  '4k _underjoy ln dan common',
+  $and(
+    $modeEq(Mode.Mania),
+    $accGte(97),
+    $withStableMod(
+      StableMod.ScoreV2
+    )
+    $not(
+      $withStableMod(
+        StableMod.NoFail
+        | StableMod.Easy
+        | StableMod.HalfTime
+        | StableMod.Random
         | StableMod['1K']
         | StableMod['2K']
         | StableMod['3K']
